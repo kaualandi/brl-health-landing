@@ -91,46 +91,50 @@ export function PlanSummary({ plan }: { plan: NutriPlan }) {
   ];
 
   return (
-    <div className="grid gap-5 lg:grid-cols-[1fr_1.1fr]">
-      <div className="flex flex-col justify-center rounded-2xl border border-brl-purple/30 bg-gradient-to-br from-brl-purple/15 to-transparent p-6 text-center sm:p-8">
-        <p className="text-xs font-medium tracking-wide text-brl-purple uppercase">
-          Sua meta diária
-        </p>
-        <p className="mt-3 font-display text-5xl font-extrabold tracking-tight text-foreground sm:text-6xl">
-          <AnimatedCounter to={plan.targetCalories} />
-        </p>
-        <p className="mt-1 text-sm text-muted-foreground">kcal por dia</p>
-        <p className="mt-4 text-xs text-muted-foreground">
-          Gasto estimado (TDEE):{" "}
-          <span className="font-medium text-foreground">
-            {plan.tdee.toLocaleString("pt-BR")} kcal
-          </span>
-        </p>
-      </div>
-
-      <div className="flex flex-col gap-5 rounded-2xl border border-white/5 bg-brl-card p-6 sm:p-8">
-        <div className="flex flex-col gap-4">
-          {rows.map((row) => (
-            <MacroBar key={row.key} row={row} />
-          ))}
+    // container query: adapta à largura do próprio container (não da viewport).
+    // Onboarding (estreito) empilha; /nutri (largo) fica lado a lado.
+    <div className="@container">
+      <div className="grid gap-5 @3xl:grid-cols-[1fr_1.1fr]">
+        <div className="flex flex-col justify-center rounded-2xl border border-brl-purple/30 bg-gradient-to-br from-brl-purple/15 to-transparent p-6 text-center sm:p-8">
+          <p className="text-xs font-medium tracking-wide text-brl-purple uppercase">
+            Sua meta diária
+          </p>
+          <p className="mt-3 font-display text-5xl font-extrabold tracking-tight text-foreground sm:text-6xl">
+            <AnimatedCounter to={plan.targetCalories} />
+          </p>
+          <p className="mt-1 text-sm text-muted-foreground">kcal por dia</p>
+          <p className="mt-4 text-xs text-muted-foreground">
+            Gasto estimado (TDEE):{" "}
+            <span className="font-medium text-foreground">
+              {plan.tdee.toLocaleString("pt-BR")} kcal
+            </span>
+          </p>
         </div>
 
-        <div className="grid grid-cols-3 gap-3">
-          <Stat
-            icon={<DropletIcon className="size-5" />}
-            value={`${(plan.waterMl / 1000).toFixed(1)} L`}
-            label="Água / dia"
-          />
-          <Stat
-            icon={<ScaleIcon className="size-5" />}
-            value={String(plan.bmi)}
-            label={plan.bmiLabel}
-          />
-          <Stat
-            icon={<FlameIcon className="size-5" />}
-            value={plan.bmr.toLocaleString("pt-BR")}
-            label="Metabolismo basal"
-          />
+        <div className="flex flex-col gap-5 rounded-2xl border border-white/5 bg-brl-card p-6 sm:p-8">
+          <div className="flex flex-col gap-4">
+            {rows.map((row) => (
+              <MacroBar key={row.key} row={row} />
+            ))}
+          </div>
+
+          <div className="grid grid-cols-3 gap-3">
+            <Stat
+              icon={<DropletIcon className="size-5" />}
+              value={`${(plan.waterMl / 1000).toFixed(1)} L`}
+              label="Água / dia"
+            />
+            <Stat
+              icon={<ScaleIcon className="size-5" />}
+              value={String(plan.bmi)}
+              label={plan.bmiLabel}
+            />
+            <Stat
+              icon={<FlameIcon className="size-5" />}
+              value={plan.bmr.toLocaleString("pt-BR")}
+              label="Metabolismo basal"
+            />
+          </div>
         </div>
       </div>
     </div>
