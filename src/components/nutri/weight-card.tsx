@@ -72,12 +72,16 @@ export function WeightCard({ profile }: { profile: NutriProfile }) {
   const toast = useToast();
   const [value, setValue] = useState("");
 
+  // Linha-base (peso do onboarding) + registros. Um registro no mesmo dia
+  // sobrescreve a base — senão o ponto de hoje sumia do gráfico.
   const baselineDate = (profile.createdAt || "").slice(0, 10) || "0000-00-00";
-  const baseline: WeightEntry = { date: baselineDate, kg: profile.weightKg };
-  const points: WeightEntry[] = [
-    baseline,
-    ...entries.filter((e) => e.date !== baseline.date),
-  ].sort((a, b) => a.date.localeCompare(b.date));
+  const byDate = new Map<string, number>();
+  byDate.set(baselineDate, profile.weightKg);
+  for (const entry of entries) byDate.set(entry.date, entry.kg);
+  const points: WeightEntry[] = Array.from(byDate, ([date, kg]) => ({
+    date,
+    kg,
+  })).sort((a, b) => a.date.localeCompare(b.date));
 
   const start = points[0].kg;
   const current = points[points.length - 1].kg;
