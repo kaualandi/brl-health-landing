@@ -43,6 +43,55 @@
 
 ---
 
+## 💡 Brainstorm — inspirado no Smart Fit Nutri (screenshots)
+
+> Ideias destiladas de 5 telas do Smart Fit Nutri (cardápio com IA). ⭐ = maior impacto.
+> Tipo: 🎨 frontend · 🔌 integração · 🗄️ backend.
+
+### A. Cardápio em nível de alimento ⭐ (o maior salto)
+Hoje o BRL Nutri mostra só "Café da manhã — 600 kcal". O Smart Fit monta a refeição com **alimentos de verdade** (uva passa, leite UHT, omelete com muçarela...).
+- [ ] 🎨 Gerar **alimentos por refeição** a partir de dieta + kcal/macros do slot (não só o nome da refeição).
+- [ ] 🎨 **Trocar/substituir** cada alimento (lápis por item) por uma opção equivalente em kcal/macros.
+- [ ] 🎨 **Banco de alimentos** seed (por grupo) com porção + kcal/macros, pra montar e substituir.
+- [ ] 🎨 Sheet/tela de **detalhe da refeição** (alimentos, porções, total do prato).
+- [ ] 🗄️ Backend: cardápio gerado por **IA de verdade** (LLM) a partir do perfil + banco de alimentos (TACO/USDA).
+
+### B. Metas e prazo ⭐
+- [ ] 🎨 **Meta de peso** no perfil (peso atual → peso alvo). Hoje só temos o peso atual.
+- [ ] 🎨 **Tempo pro objetivo** ("sem pressa" / data alvo) — ajusta o déficit/superávit sugerido.
+- [ ] 🎨 Card de peso mostra **progresso até a meta** (faltam X kg, % do caminho) + linha da meta no gráfico.
+- [ ] 🎨 Estimativa de **tempo pra meta** com base no ritmo (ex.: "~8 semanas no déficit atual").
+
+### C. Refeições: tipos, horários e timing inteligente
+- [ ] 🎨 **Selecionar quais** refeições você faz (não só a quantidade): Café, Almoço, Jantar, **Ceia, Pré-treino, Pós-treino, Lanche da madrugada**.
+- [ ] 🎨 **Horário por refeição** (time picker). Hoje o plano divide por ratio, sem horário.
+- [ ] 🎨 **Hora de acordar / dormir / treinar** no perfil → distribui refeições de forma inteligente (pré/pós-treino perto do treino; ceia antes de dormir).
+- [ ] 🎨 **Timeline do dia** (refeições por horário) no /nutri.
+
+### D. Fluxo guiado / conversacional + estado de geração
+- [ ] 🎨 Variante **conversacional** do onboarding (estilo chat, uma pergunta por vez) — ou enriquecer o wizard com esse tom.
+- [ ] 🎨 **Revisão de dados** antes de gerar ("Hora de personalizar seu cardápio"): resumo editável por campo + "Meus dados estão certos / Editar".
+- [ ] ✨ **Estado de "gerando cardápio"** com avatar/bot + animação ("Estamos combinando suas escolhas..."). Casa com o item de animação de "gerando plano" já no TODO.
+- [ ] 🎨 Opções com **descrição de percepção de esforço** (ex.: "Moderada — coração acelerado, fala com um pouco de esforço"). Já temos descrições; dá pra enriquecer.
+
+### E. Caminho humano: nutricionista 🔌
+- [ ] 🎨 Card "Acompanhamento com um nutri" no /nutri — dois caminhos (IA + profissional), como o Smart Fit.
+- [ ] 🎨 **Agendar consulta** (UI de agenda/horários) + estado de **saldo de consultas**.
+- [ ] 🔌 Agendamento real (Calendly-like) / chat com profissional — backend depois.
+
+### F. Estrutura do app: seções e navegação
+- [ ] 🎨 **Navegação por abas** no app logado (Início · Meu Corpo · Nutrição · Saúde). Hoje /nutri é um scroll só.
+- [ ] 🎨 **"Meu Corpo"** — medidas (cintura etc.), fotos de progresso, evolução além do peso.
+- [ ] 🎨 **"Saúde"** — painel consolidado (sono, passos, hidratação) num lugar só.
+
+### G. Preferências e detalhe da atividade
+- [ ] 🎨 **Preferências culinárias** (cozinhas favoritas, alimentos que não curte) além do estilo de dieta — afina as sugestões.
+- [ ] 🎨 **Detalhe da atividade física**: duração, frequência (x/semana) e intensidade — hoje só o "nível". Refina o TDEE.
+
+**Top picks pra atacar primeiro:** A (cardápio em alimentos) + B (meta de peso) — são os que mais aproximam o BRL Nutri de um app de nutrição "de verdade" e reaproveitam muito do que já existe (plano, refeições, card de peso).
+
+---
+
 ## 0. Estado atual (baseline)
 
 **Telas existentes**
