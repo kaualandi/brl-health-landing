@@ -4,8 +4,9 @@ type FooterLink = { href: string; label: string };
 
 const productLinks: FooterLink[] = [
   { href: "/#produtos", label: "Produtos" },
-  { href: "/#como-funciona", label: "Como funciona" },
-  { href: "/#planos", label: "Planos" },
+  { href: "/fit", label: "BRL Fit" },
+  { href: "/precos", label: "Planos" },
+  { href: "/conteudos", label: "Conteúdos" },
 ];
 
 const companyLinks: FooterLink[] = [

@@ -2,16 +2,25 @@
 
 import { useForm } from "@tanstack/react-form";
 import { useMutation } from "@tanstack/react-query";
-import { AlertCircleIcon, Loader2Icon } from "lucide-react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { AlertCircleIcon, EyeIcon, EyeOffIcon, Loader2Icon } from "lucide-react";
 import { useState, type ReactNode } from "react";
 import { z } from "zod";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useToast } from "@/components/ui/toast";
+import { useAuth } from "@/hooks/use-auth";
 import { cn } from "@/lib/utils";
 import { loginUser } from "@/services/auth.service";
 import type { AuthResponse } from "@/types";
+
+/** Só aceita caminhos internos — evita open redirect via `?next=`. */
+function safeNext(value: string | null): string {
+  if (value && value.startsWith("/") && !value.startsWith("//")) return value;
+  return "/nutri";
+}
 
 const loginSchema = z.object({
   email: z.string().email("E-mail inválido"),
@@ -33,14 +42,23 @@ function FieldError({ children }: { children?: ReactNode }) {
 }
 
 export function LoginForm() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const toast = useToast();
+  const { login } = useAuth();
   const [authError, setAuthError] = useState<string | null>(null);
+  const [showPassword, setShowPassword] = useState(false);
 
   const mutation = useMutation<AuthResponse, Error, LoginValues>({
     mutationFn: ({ email, password }) => loginUser(email, password),
     onSuccess: (data) => {
       setAuthError(null);
-      console.log("[BRL] login ok — token:", data.token);
-      // TODO: redirecionar para /dashboard após integração BetterAuth
+      login(data.user, data.token);
+      toast({
+        variant: "success",
+        title: `Bem-vindo de volta, ${data.user.name.split(" ")[0]}!`,
+      });
+      router.push(safeNext(searchParams.get("next")));
     },
     onError: (error) => {
       setAuthError(error.message);
@@ -110,18 +128,32 @@ export function LoginForm() {
           return (
             <div>
               <Label htmlFor={field.name}>Senha</Label>
-              <Input
-                id={field.name}
-                name={field.name}
-                type="password"
-                autoComplete="current-password"
-                placeholder="••••••"
-                value={field.state.value}
-                onBlur={field.handleBlur}
-                onChange={(event) => field.handleChange(event.target.value)}
-                aria-invalid={Boolean(errorMessage)}
-                className={cn("mt-2 h-11")}
-              />
+              <div className="relative mt-2">
+                <Input
+                  id={field.name}
+                  name={field.name}
+                  type={showPassword ? "text" : "password"}
+                  autoComplete="current-password"
+                  placeholder="••••••"
+                  value={field.state.value}
+                  onBlur={field.handleBlur}
+                  onChange={(event) => field.handleChange(event.target.value)}
+                  aria-invalid={Boolean(errorMessage)}
+                  className={cn("h-11 pr-11")}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword((v) => !v)}
+                  aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"}
+                  className="absolute inset-y-0 right-0 flex w-11 items-center justify-center rounded-r-lg text-muted-foreground outline-none hover:text-foreground focus-visible:text-foreground"
+                >
+                  {showPassword ? (
+                    <EyeOffIcon className="size-4" />
+                  ) : (
+                    <EyeIcon className="size-4" />
+                  )}
+                </button>
+              </div>
               <FieldError>{errorMessage}</FieldError>
             </div>
           );

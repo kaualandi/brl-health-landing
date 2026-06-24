@@ -13,6 +13,7 @@ import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useToast } from "@/components/ui/toast";
 import { cn } from "@/lib/utils";
 import { sendContactMessage } from "@/services/contact.service";
 import type { ContactFormData, ContactSubject } from "@/types";
@@ -87,12 +88,20 @@ function SuccessCard({ onReset }: { onReset: () => void }) {
 }
 
 export function ContactForm() {
+  const toast = useToast();
   const [sent, setSent] = useState(false);
 
   const mutation = useMutation<void, Error, ContactFormData>({
     mutationFn: (data) => sendContactMessage(data),
     onSuccess: () => {
       setSent(true);
+    },
+    onError: (error) => {
+      toast({
+        variant: "error",
+        title: "Não consegui enviar",
+        description: error.message || "Tenta de novo daqui a pouco.",
+      });
     },
   });
 

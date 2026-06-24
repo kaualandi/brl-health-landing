@@ -1,4 +1,4 @@
-import type { Plan } from "@/types";
+import type { Plan, PlanId } from "@/types";
 
 const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -26,7 +26,7 @@ const PLANS: Plan[] = [
     tagline: "Treino e nutrição jogando junto.",
     features: [
       "Integração completa Fit + Nutri",
-      "IA personalizada (GPT-4o)",
+      "IA personalizada",
       "Histórico ilimitado",
       "1 usuário",
     ],
@@ -56,4 +56,9 @@ export async function getPlans(): Promise<Plan[]> {
   await wait(400);
   return PLANS;
   // TODO: substituir por api.get('/plans')
+}
+
+/** Lookup síncrono de um plano pelo id (usado no checkout). */
+export function getPlanById(id: PlanId): Plan | undefined {
+  return PLANS.find((plan) => plan.id === id);
 }

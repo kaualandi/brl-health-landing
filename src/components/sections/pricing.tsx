@@ -73,7 +73,7 @@ function PlanCard({ plan }: { plan: Plan }) {
             : "border border-white/15 bg-white/5 text-foreground hover:bg-white/10",
         )}
         variant={plan.highlighted ? "default" : "outline"}
-        render={<Link href="/cadastro">{plan.ctaLabel}</Link>}
+        render={<Link href="/precos">{plan.ctaLabel}</Link>}
       />
     </article>
   );

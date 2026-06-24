@@ -2,8 +2,9 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { MenuIcon } from "lucide-react";
+import { LogOutIcon, MenuIcon, SaladIcon } from "lucide-react";
 
+import { UserMenu } from "@/components/layout/user-menu";
 import { Button } from "@/components/ui/button";
 import {
   Sheet,
@@ -12,12 +13,14 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
+import { useAuth } from "@/hooks/use-auth";
 import { cn } from "@/lib/utils";
 
 const navItems = [
   { href: "/#produtos", label: "Produtos" },
-  { href: "/#como-funciona", label: "Como funciona" },
-  { href: "/#planos", label: "Planos" },
+  { href: "/precos", label: "Planos" },
+  { href: "/conteudos", label: "Conteúdos" },
+  { href: "/fit", label: "BRL Fit" },
   { href: "/sobre", label: "Sobre" },
   { href: "/contato", label: "Contato" },
 ];
@@ -41,6 +44,7 @@ function Logo({ className }: { className?: string }) {
 export function Header() {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
+  const { user, isAuthenticated, logout } = useAuth();
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 12);
@@ -77,18 +81,24 @@ export function Header() {
         </nav>
 
         <div className="hidden items-center gap-2 md:flex">
-          <Button
-            variant="ghost"
-            size="lg"
-            nativeButton={false}
-            render={<Link href="/login">Entrar</Link>}
-          />
-          <Button
-            size="lg"
-            nativeButton={false}
-            className="bg-brl-purple text-white hover:bg-brl-purple/90"
-            render={<Link href="/cadastro">Começar grátis</Link>}
-          />
+          {isAuthenticated && user ? (
+            <UserMenu user={user} />
+          ) : (
+            <>
+              <Button
+                variant="ghost"
+                size="lg"
+                nativeButton={false}
+                render={<Link href="/login">Entrar</Link>}
+              />
+              <Button
+                size="lg"
+                nativeButton={false}
+                className="bg-brl-purple text-white hover:bg-brl-purple/90"
+                render={<Link href="/cadastro">Começar grátis</Link>}
+              />
+            </>
+          )}
         </div>
 
         <div className="md:hidden">
@@ -126,26 +136,63 @@ export function Header() {
                 ))}
               </nav>
               <div className="mt-8 flex flex-col gap-3">
-                <Button
-                  variant="outline"
-                  size="lg"
-                  nativeButton={false}
-                  render={
-                    <Link href="/login" onClick={() => setOpen(false)}>
-                      Entrar
-                    </Link>
-                  }
-                />
-                <Button
-                  size="lg"
-                  nativeButton={false}
-                  className="bg-brl-purple text-white hover:bg-brl-purple/90"
-                  render={
-                    <Link href="/cadastro" onClick={() => setOpen(false)}>
-                      Começar grátis
-                    </Link>
-                  }
-                />
+                {isAuthenticated && user ? (
+                  <>
+                    <div className="rounded-xl border border-white/10 bg-white/5 px-4 py-3">
+                      <p className="truncate text-sm font-semibold">
+                        {user.name}
+                      </p>
+                      <p className="truncate text-xs text-muted-foreground">
+                        {user.email}
+                      </p>
+                    </div>
+                    <Button
+                      size="lg"
+                      nativeButton={false}
+                      className="bg-brl-purple text-white hover:bg-brl-purple/90"
+                      render={
+                        <Link href="/nutri" onClick={() => setOpen(false)}>
+                          <SaladIcon />
+                          Meu Nutri
+                        </Link>
+                      }
+                    />
+                    <Button
+                      variant="outline"
+                      size="lg"
+                      onClick={() => {
+                        setOpen(false);
+                        logout();
+                      }}
+                    >
+                      <LogOutIcon />
+                      Sair
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    <Button
+                      variant="outline"
+                      size="lg"
+                      nativeButton={false}
+                      render={
+                        <Link href="/login" onClick={() => setOpen(false)}>
+                          Entrar
+                        </Link>
+                      }
+                    />
+                    <Button
+                      size="lg"
+                      nativeButton={false}
+                      className="bg-brl-purple text-white hover:bg-brl-purple/90"
+                      render={
+                        <Link href="/cadastro" onClick={() => setOpen(false)}>
+                          Começar grátis
+                        </Link>
+                      }
+                    />
+                  </>
+                )}
               </div>
             </SheetContent>
           </Sheet>

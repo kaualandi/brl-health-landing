@@ -1,4 +1,4 @@
-import { authTokenKey } from "@/lib/axios";
+import { setAuth } from "@/lib/auth-store";
 import { registerUser } from "@/services/auth.service";
 import type { NutriProfile } from "@/types";
 
@@ -100,9 +100,7 @@ export async function completeOnboarding({
     password,
   );
 
-  if (typeof window !== "undefined") {
-    window.localStorage.setItem(authTokenKey, auth.token);
-  }
+  setAuth(auth.user, auth.token);
 
   const profile: NutriProfile = {
     ...profileInput,
@@ -112,4 +110,20 @@ export async function completeOnboarding({
   saveNutriProfile(profile);
   return profile;
   // TODO: substituir por api.post('/auth/register') + api.put('/nutri/profile')
+}
+
+/**
+ * Salva o plano pra um usuário JÁ autenticado — sem criar conta de novo.
+ * Usado quando alguém logado monta (ou refaz) o plano pelo onboarding.
+ */
+export function saveNutriProfileForCurrentUser(
+  input: Omit<NutriProfile, "createdAt">,
+): NutriProfile {
+  const profile: NutriProfile = {
+    ...input,
+    createdAt: new Date().toISOString(),
+  };
+  saveNutriProfile(profile);
+  return profile;
+  // TODO: substituir por api.put('/nutri/profile') na fase de backend
 }

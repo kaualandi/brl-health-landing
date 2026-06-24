@@ -1,20 +1,26 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import {
   ArrowRightIcon,
   ClockIcon,
   DumbbellIcon,
   Loader2Icon,
-  RotateCcwIcon,
+  PencilIcon,
   UtensilsCrossedIcon,
 } from "lucide-react";
 import { useState, useSyncExternalStore, type ReactNode } from "react";
 
 import { AnimatedSection } from "@/components/animations/animated-section";
+import { UserMenu } from "@/components/layout/user-menu";
 import { PlanSummary } from "@/components/nutri/plan-summary";
+import { WaterCard } from "@/components/nutri/water-card";
+import { WeightCard } from "@/components/nutri/weight-card";
+import { UpgradeNudge } from "@/components/plan/upgrade-nudge";
 import { Button } from "@/components/ui/button";
+import { Confetti } from "@/components/ui/confetti";
+import { useAuth } from "@/hooks/use-auth";
+import { useHabits } from "@/hooks/use-nutri-tracking";
 import { computeNutriPlan } from "@/lib/nutri-plan";
 import { curatedArticles, DAILY_HABITS, QUICK_TIPS, recipeForDiet } from "@/lib/nutri-content";
 import {
@@ -23,7 +29,6 @@ import {
   goalLabel,
 } from "@/lib/nutri-options";
 import {
-  clearNutriProfile,
   getNutriProfileServerSnapshot,
   getNutriProfileSnapshot,
   subscribeNutriProfile,
@@ -39,7 +44,8 @@ const GOAL_HEADLINE: Record<Goal, string> = {
   health: "Comer melhor e manter o peso, com leveza.",
 };
 
-function NutriBar({ onReset }: { onReset: () => void }) {
+function NutriBar() {
+  const { user } = useAuth();
   return (
     <header className="sticky top-0 z-40 border-b border-white/5 bg-background/70 backdrop-blur-xl">
       <div className="mx-auto flex h-16 w-full max-w-5xl items-center justify-between px-4 md:px-6">
@@ -51,24 +57,7 @@ function NutriBar({ onReset }: { onReset: () => void }) {
           <span className="text-brl-purple">BRL</span>
           <span className="text-foreground"> Nutri</span>
         </Link>
-        <div className="flex items-center gap-1">
-          <Button
-            variant="ghost"
-            size="lg"
-            nativeButton={false}
-            className="text-muted-foreground hover:text-foreground"
-            render={<Link href="/">Ir pro site</Link>}
-          />
-          <Button
-            variant="ghost"
-            size="lg"
-            className="text-muted-foreground hover:text-foreground"
-            onClick={onReset}
-          >
-            <RotateCcwIcon />
-            <span className="hidden sm:inline">Refazer plano</span>
-          </Button>
-        </div>
+        {user ? <UserMenu user={user} /> : null}
       </div>
     </header>
   );
@@ -102,16 +91,43 @@ function SectionTitle({
 }
 
 function HabitsCard() {
-  const [done, setDone] = useState<Record<string, boolean>>({});
+  const { done, streak, setHabits, markDayComplete } = useHabits();
+  const [fireKey, setFireKey] = useState(0);
   const total = DAILY_HABITS.length;
-  const count = Object.values(done).filter(Boolean).length;
+  const count = DAILY_HABITS.filter((habit) => done[habit.id]).length;
+  const allDone = count === total;
+
+  function toggleHabit(id: string) {
+    const wasChecked = Boolean(done[id]);
+    const next = { ...done, [id]: !wasChecked };
+    setHabits(next);
+    const nextCount = DAILY_HABITS.filter((habit) => next[habit.id]).length;
+    // Comemora só na virada pro "tudo feito" — não a cada clique.
+    if (!wasChecked && nextCount === total) {
+      setFireKey((k) => k + 1);
+      markDayComplete();
+    }
+  }
 
   return (
     <div className="rounded-2xl border border-white/5 bg-brl-card p-6 md:p-8">
-      <div className="mb-5 flex items-baseline justify-between">
-        <h3 className="font-display text-lg font-bold">Hábitos de hoje</h3>
-        <span className="text-sm tabular-nums text-muted-foreground">
-          {count}/{total}
+      <Confetti fireKey={fireKey} />
+      <div className="mb-5 flex items-center justify-between gap-3">
+        <div className="flex items-center gap-2.5">
+          <h3 className="font-display text-lg font-bold">Hábitos de hoje</h3>
+          {streak > 0 ? (
+            <span className="inline-flex items-center gap-1 rounded-full bg-brl-orange/15 px-2.5 py-0.5 text-xs font-semibold text-brl-orange">
+              🔥 {streak} {streak === 1 ? "dia" : "dias"}
+            </span>
+          ) : null}
+        </div>
+        <span
+          className={cn(
+            "shrink-0 text-sm font-medium tabular-nums transition-colors",
+            allDone ? "text-emerald-400" : "text-muted-foreground",
+          )}
+        >
+          {allDone ? "Tudo feito! 🎉" : `${count}/${total}`}
         </span>
       </div>
       <ul className="flex flex-col gap-2.5">
@@ -121,9 +137,7 @@ function HabitsCard() {
             <li key={habit.id}>
               <button
                 type="button"
-                onClick={() =>
-                  setDone((prev) => ({ ...prev, [habit.id]: !prev[habit.id] }))
-                }
+                onClick={() => toggleHabit(habit.id)}
                 aria-pressed={checked}
                 className={cn(
                   "flex w-full items-center gap-3 rounded-xl border p-3 text-left transition-all outline-none focus-visible:ring-3 focus-visible:ring-ring/50",
@@ -164,20 +178,14 @@ function HabitsCard() {
 }
 
 function ReadyHome({ profile }: { profile: NutriProfile }) {
-  const router = useRouter();
   const plan = computeNutriPlan(profile);
   const firstName = profile.name.split(" ")[0] || profile.name;
   const recipe = recipeForDiet(profile.diet);
   const articles = curatedArticles(profile.goal, 6);
 
-  function handleReset() {
-    clearNutriProfile();
-    router.push("/cadastro");
-  }
-
   return (
     <div className="min-h-dvh bg-brl-dark pb-20">
-      <NutriBar onReset={handleReset} />
+      <NutriBar />
 
       <main className="mx-auto w-full max-w-5xl px-4 md:px-6">
         {/* Greeting */}
@@ -195,6 +203,13 @@ function ReadyHome({ profile }: { profile: NutriProfile }) {
             <Chip>🍽️ {dietLabel(profile.diet)}</Chip>
             <Chip>🍴 {profile.mealsPerDay} refeições/dia</Chip>
           </div>
+          <Link
+            href="/nutri/perfil"
+            className="mt-4 inline-flex items-center gap-1.5 text-sm font-medium text-brl-purple transition-colors hover:text-brl-purple/80"
+          >
+            <PencilIcon className="size-3.5" />
+            Editar meus dados
+          </Link>
         </section>
 
         {/* Resumo do plano */}
@@ -277,6 +292,15 @@ function ReadyHome({ profile }: { profile: NutriProfile }) {
           </div>
         </section>
 
+        {/* Acompanhe — água e peso */}
+        <section className="pt-10 md:pt-14">
+          <SectionTitle eyebrow="Acompanhe" title="Seu progresso de hoje" />
+          <div className="grid gap-5 lg:grid-cols-2">
+            <WaterCard goalMl={plan.waterMl} />
+            <WeightCard profile={profile} />
+          </div>
+        </section>
+
         {/* Hábitos */}
         <section className="pt-10 md:pt-14">
           <HabitsCard />
@@ -295,8 +319,9 @@ function ReadyHome({ profile }: { profile: NutriProfile }) {
             delay={70}
           >
             {articles.map((article) => (
-              <article
+              <Link
                 key={article.id}
+                href={`/conteudos/${article.id}`}
                 className="group flex h-full flex-col gap-3 rounded-2xl border border-white/5 bg-brl-card p-6 transition-colors hover:border-brl-purple/40"
               >
                 <div className="flex items-center justify-between">
@@ -317,7 +342,7 @@ function ReadyHome({ profile }: { profile: NutriProfile }) {
                   Ler · {article.readTime}
                   <ArrowRightIcon className="size-3 transition-transform group-hover:translate-x-0.5" />
                 </span>
-              </article>
+              </Link>
             ))}
           </AnimatedSection>
         </section>
@@ -338,6 +363,11 @@ function ReadyHome({ profile }: { profile: NutriProfile }) {
               </li>
             ))}
           </ul>
+        </section>
+
+        {/* Upgrade — discreto e dispensável; some no Family */}
+        <section className="pt-10 md:pt-14">
+          <UpgradeNudge />
         </section>
 
         {/* Integração BRL Fit */}
@@ -368,9 +398,9 @@ function ReadyHome({ profile }: { profile: NutriProfile }) {
                 nativeButton={false}
                 className="h-12 shrink-0 bg-brl-orange px-6 text-base text-brl-dark hover:bg-brl-orange/90"
                 render={
-                  <Link href="/#planos">
+                  <Link href="/fit">
                     <DumbbellIcon />
-                    Ativar integração
+                    Conhecer o BRL Fit
                   </Link>
                 }
               />
@@ -385,7 +415,7 @@ function ReadyHome({ profile }: { profile: NutriProfile }) {
 function EmptyHome() {
   return (
     <div className="flex min-h-dvh flex-col bg-brl-dark">
-      <NutriBarStatic />
+      <NutriBar />
       <main className="mx-auto flex w-full max-w-md flex-1 flex-col items-center justify-center px-4 py-16 text-center">
         <span className="text-6xl" aria-hidden>
           🥗
@@ -416,23 +446,6 @@ function EmptyHome() {
         </Link>
       </main>
     </div>
-  );
-}
-
-function NutriBarStatic() {
-  return (
-    <header className="border-b border-white/5">
-      <div className="mx-auto flex h-16 w-full max-w-5xl items-center px-4 md:px-6">
-        <Link
-          href="/"
-          className="font-display text-lg font-extrabold tracking-tight"
-          aria-label="BRL Health — página inicial"
-        >
-          <span className="text-brl-purple">BRL</span>
-          <span className="text-foreground"> Nutri</span>
-        </Link>
-      </div>
-    </header>
   );
 }
 

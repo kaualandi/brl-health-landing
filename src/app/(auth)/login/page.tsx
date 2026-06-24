@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { Metadata } from "next";
-import { ArrowLeftIcon } from "lucide-react";
+import { ArrowLeftIcon, Loader2Icon } from "lucide-react";
+import { Suspense } from "react";
 
 import { LoginForm } from "@/components/forms/login-form";
 import { Button } from "@/components/ui/button";
@@ -51,7 +52,15 @@ export default function LoginPage() {
             </CardDescription>
           </CardHeader>
           <CardContent className="px-6 pb-6">
-            <LoginForm />
+            <Suspense
+              fallback={
+                <div className="flex h-48 items-center justify-center">
+                  <Loader2Icon className="size-5 animate-spin text-brl-purple" />
+                </div>
+              }
+            >
+              <LoginForm />
+            </Suspense>
             <p className="mt-6 text-center text-sm text-muted-foreground">
               Não tem conta?{" "}
               <Link
