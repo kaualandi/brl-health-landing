@@ -14,22 +14,22 @@ import {
   getWeightSnapshot,
   markDayComplete,
   setHabits,
-  setWaterGlasses,
+  setWaterMl,
   subscribeTracking,
   type WeightEntry,
 } from "@/lib/nutri-tracking";
 
 export function useWater() {
-  const glasses = useSyncExternalStore(
+  const ml = useSyncExternalStore(
     subscribeTracking,
     getWaterSnapshot,
     getWaterServerSnapshot,
   );
   return {
-    glasses,
-    add: () => setWaterGlasses(getWaterSnapshot() + 1),
-    remove: () => setWaterGlasses(getWaterSnapshot() - 1),
-    set: setWaterGlasses,
+    ml,
+    add: (amount: number) => setWaterMl(getWaterSnapshot() + amount),
+    remove: (amount: number) => setWaterMl(getWaterSnapshot() - amount),
+    set: setWaterMl,
   };
 }
 

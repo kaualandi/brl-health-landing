@@ -56,13 +56,24 @@ function yesterdayKey(): string {
 /* Água — copos de hoje (snapshot = number)                            */
 /* ------------------------------------------------------------------ */
 
+/** Água consumida hoje, em ml. */
 export function getWaterSnapshot(): number {
   if (typeof window === "undefined") return 0;
   try {
     const raw = window.localStorage.getItem(WATER_KEY);
     if (!raw) return 0;
-    const value = JSON.parse(raw) as { date: string; glasses: number };
-    return value.date === todayKey() ? Math.max(0, value.glasses ?? 0) : 0;
+    const value = JSON.parse(raw) as {
+      date: string;
+      ml?: number;
+      glasses?: number;
+    };
+    if (value.date !== todayKey()) return 0;
+    if (typeof value.ml === "number") return Math.max(0, value.ml);
+    // compat com o formato antigo (copos de 250 ml)
+    if (typeof value.glasses === "number") {
+      return Math.max(0, value.glasses * 250);
+    }
+    return 0;
   } catch {
     return 0;
   }
@@ -72,12 +83,12 @@ export function getWaterServerSnapshot(): number {
   return 0;
 }
 
-export function setWaterGlasses(glasses: number): void {
+export function setWaterMl(ml: number): void {
   if (typeof window === "undefined") return;
-  const next = Math.max(0, Math.round(glasses));
+  const next = Math.max(0, Math.round(ml));
   window.localStorage.setItem(
     WATER_KEY,
-    JSON.stringify({ date: todayKey(), glasses: next }),
+    JSON.stringify({ date: todayKey(), ml: next }),
   );
   emit();
 }
