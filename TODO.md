@@ -109,7 +109,7 @@
 - [x] **Registro de peso** + **gráfico de evolução** SVG (seed com o peso do perfil, reset N/A).
 - [x] **Hábitos persistidos** + **streak** (🔥 dias seguidos) com reset diário.
 - [x] **Diário de refeições** — marca refeições do dia, totaliza kcal consumidas vs meta com barra de progresso. Persistido + reset diário.
-- [ ] **Lista de compras** gerada a partir do plano/refeições da semana.
+- [x] **Lista de compras** (`/nutri/compras`) gerada da dieta + restrições, por categoria, itens marcáveis e persistidos, com copiar/limpar.
 - [ ] **Tela "Meu plano" detalhada** — substituição de alimentos, ver macros por refeição.
 
 ### Conta & comercial

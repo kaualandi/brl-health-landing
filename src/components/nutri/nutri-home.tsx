@@ -7,6 +7,7 @@ import {
   DumbbellIcon,
   Loader2Icon,
   PencilIcon,
+  ShoppingCartIcon,
 } from "lucide-react";
 import { useState, useSyncExternalStore, type ReactNode } from "react";
 
@@ -203,13 +204,22 @@ function ReadyHome({ profile }: { profile: NutriProfile }) {
             <Chip>🍽️ {dietLabel(profile.diet)}</Chip>
             <Chip>🍴 {profile.mealsPerDay} refeições/dia</Chip>
           </div>
-          <Link
-            href="/nutri/perfil"
-            className="mt-4 inline-flex items-center gap-1.5 text-sm font-medium text-brl-purple transition-colors hover:text-brl-purple/80"
-          >
-            <PencilIcon className="size-3.5" />
-            Editar meus dados
-          </Link>
+          <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm font-medium">
+            <Link
+              href="/nutri/perfil"
+              className="inline-flex items-center gap-1.5 text-brl-purple transition-colors hover:text-brl-purple/80"
+            >
+              <PencilIcon className="size-3.5" />
+              Editar meus dados
+            </Link>
+            <Link
+              href="/nutri/compras"
+              className="inline-flex items-center gap-1.5 text-brl-purple transition-colors hover:text-brl-purple/80"
+            >
+              <ShoppingCartIcon className="size-3.5" />
+              Lista de compras
+            </Link>
+          </div>
         </section>
 
         {/* Resumo do plano */}
