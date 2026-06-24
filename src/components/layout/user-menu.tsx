@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import {
   ChevronDownIcon,
   LogOutIcon,
+  PencilIcon,
   SaladIcon,
   UserIcon,
 } from "lucide-react";
@@ -100,6 +101,15 @@ export function UserMenu({ user }: { user: User }) {
             >
               <SaladIcon className="size-4 text-brl-purple" />
               Meu Nutri
+            </Link>
+            <Link
+              href="/nutri/perfil"
+              role="menuitem"
+              onClick={() => setOpen(false)}
+              className="flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm text-foreground/90 transition-colors hover:bg-white/5"
+            >
+              <PencilIcon className="size-4 text-brl-purple" />
+              Editar perfil
             </Link>
             <Link
               href="/conta"

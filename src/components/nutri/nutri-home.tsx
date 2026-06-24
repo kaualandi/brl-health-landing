@@ -6,7 +6,6 @@ import {
   ClockIcon,
   DumbbellIcon,
   Loader2Icon,
-  PencilIcon,
   ShoppingCartIcon,
 } from "lucide-react";
 import { useState, useSyncExternalStore, type ReactNode } from "react";
@@ -45,7 +44,7 @@ const GOAL_HEADLINE: Record<Goal, string> = {
   health: "Comer melhor e manter o peso, com leveza.",
 };
 
-function NutriBar() {
+function NutriBar({ showShopping = false }: { showShopping?: boolean }) {
   const { user } = useAuth();
   return (
     <header className="sticky top-0 z-40 border-b border-white/5 bg-background/70 backdrop-blur-xl">
@@ -58,7 +57,23 @@ function NutriBar() {
           <span className="text-brl-purple">BRL</span>
           <span className="text-foreground"> Nutri</span>
         </Link>
-        {user ? <UserMenu user={user} /> : null}
+        <div className="flex items-center gap-2">
+          {showShopping ? (
+            <Button
+              size="lg"
+              variant="outline"
+              nativeButton={false}
+              className="border-brl-purple/30 bg-brl-purple/10 text-brl-purple hover:bg-brl-purple/20"
+              render={
+                <Link href="/nutri/compras" aria-label="Lista de compras">
+                  <ShoppingCartIcon />
+                  <span className="hidden sm:inline">Lista de compras</span>
+                </Link>
+              }
+            />
+          ) : null}
+          {user ? <UserMenu user={user} /> : null}
+        </div>
       </div>
     </header>
   );
@@ -186,7 +201,7 @@ function ReadyHome({ profile }: { profile: NutriProfile }) {
 
   return (
     <div className="min-h-dvh bg-brl-dark pb-20">
-      <NutriBar />
+      <NutriBar showShopping />
 
       <main className="mx-auto w-full max-w-5xl px-4 md:px-6">
         {/* Greeting */}
@@ -203,22 +218,6 @@ function ReadyHome({ profile }: { profile: NutriProfile }) {
             <Chip>🏃 {activityLabel(profile.activity)}</Chip>
             <Chip>🍽️ {dietLabel(profile.diet)}</Chip>
             <Chip>🍴 {profile.mealsPerDay} refeições/dia</Chip>
-          </div>
-          <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm font-medium">
-            <Link
-              href="/nutri/perfil"
-              className="inline-flex items-center gap-1.5 text-brl-purple transition-colors hover:text-brl-purple/80"
-            >
-              <PencilIcon className="size-3.5" />
-              Editar meus dados
-            </Link>
-            <Link
-              href="/nutri/compras"
-              className="inline-flex items-center gap-1.5 text-brl-purple transition-colors hover:text-brl-purple/80"
-            >
-              <ShoppingCartIcon className="size-3.5" />
-              Lista de compras
-            </Link>
           </div>
         </section>
 
