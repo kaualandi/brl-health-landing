@@ -41,6 +41,7 @@ type FormState = {
   age: string;
   heightCm: string;
   weightKg: string;
+  goalWeightKg: string;
   goal: Goal;
   activity: ActivityLevel;
   diet: DietStyle;
@@ -106,6 +107,7 @@ function EditorForm({ initial }: { initial: NutriProfile }) {
     age: String(initial.age),
     heightCm: String(initial.heightCm),
     weightKg: String(initial.weightKg),
+    goalWeightKg: String(initial.goalWeightKg ?? initial.weightKg),
     goal: initial.goal,
     activity: initial.activity,
     diet: initial.diet,
@@ -136,6 +138,7 @@ function EditorForm({ initial }: { initial: NutriProfile }) {
       age: Number(state.age),
       heightCm: Number(state.heightCm),
       weightKg: Number(state.weightKg),
+      goalWeightKg: Number(state.goalWeightKg),
       goal: state.goal,
       activity: state.activity,
       diet: state.diet,
@@ -169,6 +172,7 @@ function EditorForm({ initial }: { initial: NutriProfile }) {
     const age = Number(state.age);
     const height = Number(state.heightCm);
     const weight = Number(state.weightKg);
+    const goalWeight = Number(state.goalWeightKg);
     const water = Number(state.waterGlasses);
     if (
       age < 14 ||
@@ -177,6 +181,8 @@ function EditorForm({ initial }: { initial: NutriProfile }) {
       height > 230 ||
       weight < 35 ||
       weight > 250 ||
+      goalWeight < 35 ||
+      goalWeight > 250 ||
       water < 0 ||
       water > 25
     ) {
@@ -256,10 +262,20 @@ function EditorForm({ initial }: { initial: NutriProfile }) {
             />
             <NumberField
               id="weight"
-              label="Peso"
+              label="Peso atual"
               suffix="kg"
               value={state.weightKg}
               onChange={(v) => update("weightKg", v)}
+            />
+          </div>
+
+          <div className="max-w-xs">
+            <NumberField
+              id="goalWeight"
+              label="Meta de peso"
+              suffix="kg"
+              value={state.goalWeightKg}
+              onChange={(v) => update("goalWeightKg", v)}
             />
           </div>
 

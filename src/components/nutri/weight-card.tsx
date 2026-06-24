@@ -7,17 +7,25 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/toast";
 import { useWeightLog, type WeightEntry } from "@/hooks/use-nutri-tracking";
+import { estimateWeeksToGoal } from "@/lib/nutri-plan";
 import { cn } from "@/lib/utils";
-import type { NutriProfile } from "@/types";
+import type { NutriPlan, NutriProfile } from "@/types";
 
 const W = 320;
 const H = 96;
 const PAD = 10;
 
-function WeightChart({ points }: { points: WeightEntry[] }) {
+function WeightChart({
+  points,
+  goalKg,
+}: {
+  points: WeightEntry[];
+  goalKg?: number;
+}) {
   const kgs = points.map((p) => p.kg);
-  const min = Math.min(...kgs);
-  const max = Math.max(...kgs);
+  const all = goalKg != null ? [...kgs, goalKg] : kgs;
+  const min = Math.min(...all);
+  const max = Math.max(...all);
   const range = max - min || 1;
   const stepX = points.length > 1 ? (W - PAD * 2) / (points.length - 1) : 0;
 
@@ -25,6 +33,9 @@ function WeightChart({ points }: { points: WeightEntry[] }) {
     x: points.length > 1 ? PAD + i * stepX : W / 2,
     y: PAD + (1 - (p.kg - min) / range) * (H - PAD * 2),
   }));
+
+  const goalY =
+    goalKg != null ? PAD + (1 - (goalKg - min) / range) * (H - PAD * 2) : null;
 
   const line = coords.map((c, i) => `${i === 0 ? "M" : "L"} ${c.x} ${c.y}`).join(" ");
   const area = `${line} L ${coords[coords.length - 1].x} ${H} L ${coords[0].x} ${H} Z`;
@@ -42,6 +53,18 @@ function WeightChart({ points }: { points: WeightEntry[] }) {
           <stop offset="100%" stopColor="rgb(150 86 161 / 0)" />
         </linearGradient>
       </defs>
+      {goalY != null ? (
+        <line
+          x1={PAD}
+          y1={goalY}
+          x2={W - PAD}
+          y2={goalY}
+          stroke="#34d399"
+          strokeWidth={1.5}
+          strokeDasharray="5 4"
+          vectorEffect="non-scaling-stroke"
+        />
+      ) : null}
       {points.length > 1 ? <path d={area} fill="url(#weightFill)" /> : null}
       {points.length > 1 ? (
         <path
@@ -67,13 +90,18 @@ function WeightChart({ points }: { points: WeightEntry[] }) {
   );
 }
 
-export function WeightCard({ profile }: { profile: NutriProfile }) {
+export function WeightCard({
+  profile,
+  plan,
+}: {
+  profile: NutriProfile;
+  plan: NutriPlan;
+}) {
   const { entries, add } = useWeightLog();
   const toast = useToast();
   const [value, setValue] = useState("");
 
-  // Linha-base (peso do onboarding) + registros. Um registro no mesmo dia
-  // sobrescreve a base — senão o ponto de hoje sumia do gráfico.
+  // Linha-base (peso do onboarding) + registros. Mesmo dia sobrescreve a base.
   const baselineDate = (profile.createdAt || "").slice(0, 10) || "0000-00-00";
   const byDate = new Map<string, number>();
   byDate.set(baselineDate, profile.weightKg);
@@ -87,6 +115,25 @@ export function WeightCard({ profile }: { profile: NutriProfile }) {
   const current = points[points.length - 1].kg;
   const delta = Number((current - start).toFixed(1));
   const lost = delta < 0;
+
+  const goal = profile.goalWeightKg;
+  const hasGoal =
+    typeof goal === "number" && goal > 0 && Math.abs(goal - start) >= 0.1;
+  const totalToGo = hasGoal ? goal - start : 0;
+  const progressPct =
+    hasGoal && totalToGo !== 0
+      ? Math.round(
+          Math.min(100, Math.max(0, ((current - start) / totalToGo) * 100)),
+        )
+      : 0;
+  const reached = hasGoal
+    ? totalToGo < 0
+      ? current <= goal
+      : current >= goal
+    : false;
+  const remaining = hasGoal ? Math.abs(current - goal) : 0;
+  const weeks =
+    hasGoal && !reached ? estimateWeeksToGoal(plan, current, goal) : null;
 
   function handleAdd() {
     const kg = Number(value.replace(",", "."));
@@ -105,7 +152,7 @@ export function WeightCard({ profile }: { profile: NutriProfile }) {
 
   return (
     <div className="rounded-2xl border border-white/5 bg-brl-card p-6 md:p-8">
-      <div className="mb-5 flex items-baseline justify-between">
+      <div className="mb-4 flex items-baseline justify-between gap-3">
         <h3 className="flex items-center gap-2 font-display text-lg font-bold">
           <ScaleIcon className="size-4 text-brl-purple" />
           Seu peso
@@ -125,11 +172,7 @@ export function WeightCard({ profile }: { profile: NutriProfile }) {
             {lost ? "" : "+"}
             {delta} kg
           </span>
-        ) : (
-          <span className="text-sm text-muted-foreground">
-            {entries.length === 0 ? "Registre pra começar" : ""}
-          </span>
-        )}
+        ) : null}
       </div>
 
       <div className="flex items-baseline gap-2">
@@ -139,8 +182,39 @@ export function WeightCard({ profile }: { profile: NutriProfile }) {
         <span className="text-sm text-muted-foreground">kg hoje</span>
       </div>
 
-      <div className="mt-3">
-        <WeightChart points={points} />
+      {/* Meta de peso */}
+      {hasGoal ? (
+        <div className="mt-4">
+          <div className="flex items-baseline justify-between text-xs tabular-nums">
+            <span className="text-muted-foreground">Início {start} kg</span>
+            <span className="font-semibold text-emerald-400">Meta {goal} kg</span>
+          </div>
+          <div className="mt-1.5 h-2 overflow-hidden rounded-full bg-white/5">
+            <div
+              className="h-full rounded-full bg-emerald-400 transition-[width] duration-500"
+              style={{ width: `${progressPct}%` }}
+            />
+          </div>
+          <p className="mt-1.5 text-xs text-muted-foreground">
+            {reached ? (
+              "Meta atingida! 🎯"
+            ) : (
+              <>
+                faltam{" "}
+                <span className="font-medium text-foreground">
+                  {remaining.toFixed(1).replace(/\.0$/, "")} kg
+                </span>
+                {weeks
+                  ? ` · ~${weeks} ${weeks === 1 ? "semana" : "semanas"} no ritmo atual`
+                  : ""}
+              </>
+            )}
+          </p>
+        </div>
+      ) : null}
+
+      <div className="mt-4">
+        <WeightChart points={points} goalKg={hasGoal ? goal : undefined} />
         {points.length > 1 ? (
           <div className="mt-1 flex justify-between text-xs text-muted-foreground tabular-nums">
             <span>{start} kg</span>

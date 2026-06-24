@@ -57,10 +57,10 @@ Hoje o BRL Nutri mostra só "Café da manhã — 600 kcal". O Smart Fit monta a 
 - [ ] 🗄️ Backend: cardápio gerado por **IA de verdade** (LLM) a partir do perfil + banco de alimentos (TACO/USDA).
 
 ### B. Metas e prazo ⭐
-- [ ] 🎨 **Meta de peso** no perfil (peso atual → peso alvo). Hoje só temos o peso atual.
-- [ ] 🎨 **Tempo pro objetivo** ("sem pressa" / data alvo) — ajusta o déficit/superávit sugerido.
-- [ ] 🎨 Card de peso mostra **progresso até a meta** (faltam X kg, % do caminho) + linha da meta no gráfico.
-- [ ] 🎨 Estimativa de **tempo pra meta** com base no ritmo (ex.: "~8 semanas no déficit atual").
+- [x] 🎨 **Meta de peso** no perfil (onboarding + editor) — peso atual → peso alvo.
+- [x] 🎨 Card de peso mostra **progresso até a meta** (faltam X kg, % do caminho) + **linha da meta** no gráfico.
+- [x] 🎨 Estimativa de **tempo pra meta** pelo déficit/superávit do plano (`estimateWeeksToGoal`).
+- [ ] 🎨 **Tempo pro objetivo** como entrada do usuário ("sem pressa" / data alvo) — ajustaria o déficit sugerido.
 
 ### C. Refeições: tipos, horários e timing inteligente
 - [ ] 🎨 **Selecionar quais** refeições você faz (não só a quantidade): Café, Almoço, Jantar, **Ceia, Pré-treino, Pós-treino, Lanche da madrugada**.

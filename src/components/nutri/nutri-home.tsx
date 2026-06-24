@@ -276,7 +276,7 @@ function ReadyHome({ profile }: { profile: NutriProfile }) {
           <SectionTitle eyebrow="Acompanhe" title="Seu progresso de hoje" />
           <div className="grid gap-5 lg:grid-cols-2">
             <WaterCard goalMl={plan.waterMl} />
-            <WeightCard profile={profile} />
+            <WeightCard profile={profile} plan={plan} />
           </div>
         </section>
 
