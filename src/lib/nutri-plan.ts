@@ -137,3 +137,20 @@ export function macroKcal(plan: NutriPlan) {
     fatPct: Math.round((fat / total) * 100),
   };
 }
+
+/**
+ * Estimativa de semanas pra atingir a meta de peso, a partir do
+ * déficit/superávit diário do plano (~7700 kcal ≈ 1 kg).
+ * Retorna null quando não dá pra estimar (sem déficit ou já na meta).
+ */
+export function estimateWeeksToGoal(
+  plan: NutriPlan,
+  currentKg: number,
+  goalKg: number,
+): number | null {
+  const dailyDelta = plan.tdee - plan.targetCalories; // >0 = déficit, <0 = superávit
+  const kgPerWeek = (Math.abs(dailyDelta) * 7) / 7700;
+  const remaining = Math.abs(goalKg - currentKg);
+  if (kgPerWeek < 0.02 || remaining < 0.1) return null;
+  return Math.ceil(remaining / kgPerWeek);
+}

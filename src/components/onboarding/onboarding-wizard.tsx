@@ -56,6 +56,7 @@ type WizardData = {
   age: string;
   heightCm: string;
   weightKg: string;
+  goalWeightKg: string;
   goal: Goal | null;
   activity: ActivityLevel | null;
   diet: DietStyle | null;
@@ -72,6 +73,7 @@ const INITIAL: WizardData = {
   age: "",
   heightCm: "",
   weightKg: "",
+  goalWeightKg: "",
   goal: null,
   activity: null,
   diet: null,
@@ -292,6 +294,9 @@ export function OnboardingWizard() {
         next.heightCm = "Altura entre 120 e 230 cm";
       if (!data.weightKg || weight < 35 || weight > 250)
         next.weightKg = "Peso entre 35 e 250 kg";
+      const goalWeight = Number(data.goalWeightKg);
+      if (!data.goalWeightKg || goalWeight < 35 || goalWeight > 250)
+        next.goalWeightKg = "Meta entre 35 e 250 kg";
     }
 
     if (current.id === "goal" && !data.goal) next.goal = "Escolha um objetivo";
@@ -340,6 +345,7 @@ export function OnboardingWizard() {
       age: Number(data.age),
       heightCm: Number(data.heightCm),
       weightKg: Number(data.weightKg),
+      goalWeightKg: Number(data.goalWeightKg),
       goal: data.goal,
       activity: data.activity,
       diet: data.diet,
@@ -374,6 +380,7 @@ export function OnboardingWizard() {
           age: profile.age,
           heightCm: profile.heightCm,
           weightKg: profile.weightKg,
+          goalWeightKg: profile.goalWeightKg,
           goal: profile.goal,
           activity: profile.activity,
           diet: profile.diet,
@@ -544,13 +551,27 @@ export function OnboardingWizard() {
                 />
                 <NumberField
                   id="weight"
-                  label="Peso"
+                  label="Peso atual"
                   suffix="kg"
                   placeholder="72"
                   value={data.weightKg}
                   error={errors.weightKg}
                   onChange={(value) => update("weightKg", value)}
                 />
+              </div>
+              <div className="max-w-xs">
+                <NumberField
+                  id="goalWeight"
+                  label="Meta de peso"
+                  suffix="kg"
+                  placeholder="70"
+                  value={data.goalWeightKg}
+                  error={errors.goalWeightKg}
+                  onChange={(value) => update("goalWeightKg", value)}
+                />
+                <p className="mt-1.5 text-xs text-muted-foreground">
+                  Onde você quer chegar — deixe igual ao atual pra manter.
+                </p>
               </div>
             </div>
           ) : null}

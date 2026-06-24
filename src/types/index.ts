@@ -76,6 +76,8 @@ export interface NutriProfile {
   restrictions: Restriction[];
   mealsPerDay: number;
   waterGlasses: number;
+  /** Peso alvo (kg). Opcional — perfis antigos podem não ter. */
+  goalWeightKg?: number;
   createdAt: string;
 }
 
