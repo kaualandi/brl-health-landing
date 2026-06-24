@@ -50,10 +50,10 @@
 
 ### A. Cardápio em nível de alimento ⭐ (o maior salto)
 Hoje o BRL Nutri mostra só "Café da manhã — 600 kcal". O Smart Fit monta a refeição com **alimentos de verdade** (uva passa, leite UHT, omelete com muçarela...).
-- [ ] 🎨 Gerar **alimentos por refeição** a partir de dieta + kcal/macros do slot (não só o nome da refeição).
-- [ ] 🎨 **Trocar/substituir** cada alimento (lápis por item) por uma opção equivalente em kcal/macros.
-- [ ] 🎨 **Banco de alimentos** seed (por grupo) com porção + kcal/macros, pra montar e substituir.
-- [ ] 🎨 Sheet/tela de **detalhe da refeição** (alimentos, porções, total do prato).
+- [x] 🎨 Gerar **alimentos por refeição** (por papel/dieta/restrição) — diário expansível mostra cada alimento + porção + kcal.
+- [x] 🎨 **Trocar/substituir** cada alimento (🔄) por alternativa compatível, persistido (`menu-store`).
+- [x] 🎨 **Banco de alimentos** seed (`lib/foods.ts`) por papel (proteína, carbo, vegetal, fruta, gordura, laticínio, bebida) com porção + kcal + dieta + restrições.
+- [x] 🎨 Sheet/tela de **detalhe da refeição** dedicada (abre ao tocar na refeição) com **macros por prato** + alimentos + troca.
 - [ ] 🗄️ Backend: cardápio gerado por **IA de verdade** (LLM) a partir do perfil + banco de alimentos (TACO/USDA).
 
 ### B. Metas e prazo ⭐
