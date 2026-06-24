@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 
+import { RequireAuth } from "@/components/auth/require-auth";
 import { NutriHome } from "@/components/nutri/nutri-home";
 
 export const metadata: Metadata = {
@@ -9,5 +10,9 @@ export const metadata: Metadata = {
 };
 
 export default function NutriPage() {
-  return <NutriHome />;
+  return (
+    <RequireAuth>
+      <NutriHome />
+    </RequireAuth>
+  );
 }

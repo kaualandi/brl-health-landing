@@ -37,9 +37,9 @@ export function Products(): ReactNode {
               "Planos adaptativos por objetivo",
               "Progressão inteligente sem platôs",
               "Integração em tempo real com o Nutri",
-              "IA personalizada via GPT-4o",
+              "IA personalizada",
             ]}
-            cta={{ href: "/cadastro", label: "Conhecer o BRL Fit" }}
+            cta={{ href: "/fit", label: "Conhecer o BRL Fit" }}
           />
         </AnimatedSection>
         <AnimatedSection

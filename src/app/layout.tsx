@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter, Syne } from "next/font/google";
 
+import { ToastProvider } from "@/components/ui/toast";
 import { QueryProvider } from "@/providers/query-provider";
 
 import "./globals.css";
@@ -36,7 +37,9 @@ export default function RootLayout({
       className={`${syne.variable} ${inter.variable} h-full`}
     >
       <body className="min-h-full bg-background font-sans text-foreground antialiased">
-        <QueryProvider>{children}</QueryProvider>
+        <QueryProvider>
+          <ToastProvider>{children}</ToastProvider>
+        </QueryProvider>
       </body>
     </html>
   );

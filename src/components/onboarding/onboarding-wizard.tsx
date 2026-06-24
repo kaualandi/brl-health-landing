@@ -7,17 +7,21 @@ import {
   AlertCircleIcon,
   ArrowLeftIcon,
   ArrowRightIcon,
+  EyeIcon,
+  EyeOffIcon,
   Loader2Icon,
   SparklesIcon,
 } from "lucide-react";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { z } from "zod";
 
+import { PasswordStrength } from "@/components/forms/password-strength";
 import { PlanSummary } from "@/components/nutri/plan-summary";
 import { OptionCard } from "@/components/onboarding/option-card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useAuth } from "@/hooks/use-auth";
 import { computeNutriPlan } from "@/lib/nutri-plan";
 import {
   ACTIVITY_OPTIONS,
@@ -27,7 +31,13 @@ import {
   RESTRICTION_OPTIONS,
   SEX_OPTIONS,
 } from "@/lib/nutri-options";
-import { completeOnboarding } from "@/services/nutri.service";
+import {
+  completeOnboarding,
+  getNutriProfileServerSnapshot,
+  getNutriProfileSnapshot,
+  saveNutriProfileForCurrentUser,
+  subscribeNutriProfile,
+} from "@/services/nutri.service";
 import { cn } from "@/lib/utils";
 import type {
   ActivityLevel,
@@ -70,7 +80,7 @@ const INITIAL: WizardData = {
   waterGlasses: "",
 };
 
-const STEPS = [
+const ALL_STEPS = [
   {
     id: "account",
     title: "Bora criar sua conta",
@@ -175,18 +185,41 @@ function NumberField({
 
 export function OnboardingWizard() {
   const router = useRouter();
+  const { user, isAuthenticated, status } = useAuth();
   const [step, setStep] = useState(0);
   const [data, setData] = useState<WizardData>(INITIAL);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [showPassword, setShowPassword] = useState(false);
 
   const contentRef = useRef<HTMLDivElement | null>(null);
   const directionRef = useRef(1);
 
-  const current = STEPS[step];
-  const isLast = step === STEPS.length - 1;
-  const progress = ((step + 1) / STEPS.length) * 100;
+  // Plano que já existe (undefined = ainda lendo, null = sem plano).
+  const existingProfile = useSyncExternalStore(
+    subscribeNutriProfile,
+    getNutriProfileSnapshot,
+    getNutriProfileServerSnapshot,
+  );
+
+  // Já tem plano? Não refaz o onboarding à toa — vai direto pro /nutri.
+  // (O "refazer" limpa o plano antes, então cai no wizard normalmente.)
+  useEffect(() => {
+    if (isAuthenticated && existingProfile) {
+      router.replace("/nutri");
+    }
+  }, [isAuthenticated, existingProfile, router]);
+
+  // Já logado? Pula a etapa de criar conta — não pede credencial de novo.
+  const steps = useMemo(
+    () => (isAuthenticated ? ALL_STEPS.filter((s) => s.id !== "account") : ALL_STEPS),
+    [isAuthenticated],
+  );
+
+  const current = steps[step];
+  const isLast = step === steps.length - 1;
+  const progress = ((step + 1) / steps.length) * 100;
 
   useEffect(() => {
     const el = contentRef.current;
@@ -281,7 +314,7 @@ export function OnboardingWizard() {
   function goNext() {
     if (!validateStep()) return;
     directionRef.current = 1;
-    setStep((s) => Math.min(s + 1, STEPS.length - 1));
+    setStep((s) => Math.min(s + 1, steps.length - 1));
   }
 
   function goBack() {
@@ -300,8 +333,9 @@ export function OnboardingWizard() {
       return null;
     }
     return {
-      name: data.name,
-      email: data.email,
+      // Logado pula o passo de conta — usa nome/e-mail da sessão.
+      name: data.name || user?.name || "",
+      email: data.email || user?.email || "",
       sex: data.sex,
       age: Number(data.age),
       heightCm: Number(data.heightCm),
@@ -314,7 +348,7 @@ export function OnboardingWizard() {
       waterGlasses: Number(data.waterGlasses),
       createdAt: "",
     };
-  }, [data]);
+  }, [data, user]);
 
   const plan = useMemo(
     () => (profile ? computeNutriPlan(profile) : null),
@@ -326,21 +360,28 @@ export function OnboardingWizard() {
     setSubmitting(true);
     setSubmitError(null);
     try {
-      await completeOnboarding({
-        name: profile.name,
-        email: profile.email,
-        password: data.password,
-        sex: profile.sex,
-        age: profile.age,
-        heightCm: profile.heightCm,
-        weightKg: profile.weightKg,
-        goal: profile.goal,
-        activity: profile.activity,
-        diet: profile.diet,
-        restrictions: profile.restrictions,
-        mealsPerDay: profile.mealsPerDay,
-        waterGlasses: profile.waterGlasses,
-      });
+      if (isAuthenticated) {
+        // Já tem conta — só salva o plano, sem registrar de novo.
+        const { createdAt: _omit, ...profileInput } = profile;
+        void _omit;
+        saveNutriProfileForCurrentUser(profileInput);
+      } else {
+        await completeOnboarding({
+          name: profile.name,
+          email: profile.email,
+          password: data.password,
+          sex: profile.sex,
+          age: profile.age,
+          heightCm: profile.heightCm,
+          weightKg: profile.weightKg,
+          goal: profile.goal,
+          activity: profile.activity,
+          diet: profile.diet,
+          restrictions: profile.restrictions,
+          mealsPerDay: profile.mealsPerDay,
+          waterGlasses: profile.waterGlasses,
+        });
+      }
       router.push("/nutri");
     } catch (error) {
       setSubmitError(
@@ -348,6 +389,16 @@ export function OnboardingWizard() {
       );
       setSubmitting(false);
     }
+  }
+
+  // Espera a sessão resolver, e segura a tela se for redirecionar quem já tem
+  // plano (existingProfile undefined = lendo, truthy = tem plano → vai pro /nutri).
+  if (status === "loading" || (isAuthenticated && existingProfile !== null)) {
+    return (
+      <div className="flex min-h-dvh items-center justify-center bg-brl-dark">
+        <Loader2Icon className="size-6 animate-spin text-brl-purple" />
+      </div>
+    );
   }
 
   return (
@@ -362,7 +413,7 @@ export function OnboardingWizard() {
           <span className="text-foreground"> Nutri</span>
         </Link>
         <span className="text-xs font-medium text-muted-foreground tabular-nums">
-          Passo {step + 1} de {STEPS.length}
+          Passo {step + 1} de {steps.length}
         </span>
       </header>
 
@@ -424,16 +475,31 @@ export function OnboardingWizard() {
               </div>
               <div>
                 <Label htmlFor="password">Senha</Label>
-                <Input
-                  id="password"
-                  type="password"
-                  autoComplete="new-password"
-                  placeholder="Mínimo 6 caracteres"
-                  value={data.password}
-                  onChange={(event) => update("password", event.target.value)}
-                  aria-invalid={Boolean(errors.password)}
-                  className="mt-2 h-12 text-base"
-                />
+                <div className="relative mt-2">
+                  <Input
+                    id="password"
+                    type={showPassword ? "text" : "password"}
+                    autoComplete="new-password"
+                    placeholder="Mínimo 6 caracteres"
+                    value={data.password}
+                    onChange={(event) => update("password", event.target.value)}
+                    aria-invalid={Boolean(errors.password)}
+                    className="h-12 pr-12 text-base"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword((v) => !v)}
+                    aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"}
+                    className="absolute inset-y-0 right-0 flex w-12 items-center justify-center rounded-r-lg text-muted-foreground outline-none hover:text-foreground focus-visible:text-foreground"
+                  >
+                    {showPassword ? (
+                      <EyeOffIcon className="size-4" />
+                    ) : (
+                      <EyeIcon className="size-4" />
+                    )}
+                  </button>
+                </div>
+                <PasswordStrength value={data.password} />
                 <FieldError>{errors.password}</FieldError>
               </div>
             </div>
@@ -657,7 +723,9 @@ export function OnboardingWizard() {
               ) : (
                 <>
                   <SparklesIcon />
-                  Criar conta e ver meu BRL Nutri
+                  {isAuthenticated
+                    ? "Ver meu BRL Nutri"
+                    : "Criar conta e ver meu BRL Nutri"}
                 </>
               )}
             </Button>
@@ -673,7 +741,7 @@ export function OnboardingWizard() {
           )}
         </div>
 
-        {step === 0 ? (
+        {step === 0 && !isAuthenticated ? (
           <p className="mt-5 text-center text-sm text-muted-foreground">
             Já tem conta?{" "}
             <Link

@@ -147,3 +147,24 @@
     letter-spacing: -0.02em;
   }
 }
+
+/* Onda do tracker de água (Waterllama-like): desloca 1 comprimento e repete. */
+@keyframes water-wave {
+  to {
+    transform: translateX(-100px);
+  }
+}
+
+.water-wave {
+  animation: water-wave 2s linear infinite;
+}
+
+.water-wave--back {
+  animation-duration: 3.1s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .water-wave {
+    animation: none;
+  }
+}
