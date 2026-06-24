@@ -12,6 +12,7 @@ const WATER_KEY = "brl.nutri.water";
 const WEIGHT_KEY = "brl.nutri.weights";
 const HABITS_KEY = "brl.nutri.habits";
 const STREAK_KEY = "brl.nutri.streak";
+const MEALS_KEY = "brl.nutri.meals";
 
 type Listener = () => void;
 const listeners = new Set<Listener>();
@@ -226,5 +227,51 @@ export function markDayComplete(): void {
     STREAK_KEY,
     JSON.stringify({ count: nextCount, lastDate: todayKey() }),
   );
+  emit();
+}
+
+/* ------------------------------------------------------------------ */
+/* Refeições — marcadas hoje (objeto, cacheado, reset diário)          */
+/* ------------------------------------------------------------------ */
+
+const EMPTY_MEALS: Record<string, boolean> = {};
+let mealsRaw: string | null | undefined;
+let mealsDay: string | undefined;
+let mealsSnap: Record<string, boolean> = EMPTY_MEALS;
+
+function readMeals(): Record<string, boolean> {
+  const raw = window.localStorage.getItem(MEALS_KEY);
+  const day = todayKey();
+  if (raw !== mealsRaw || day !== mealsDay) {
+    mealsRaw = raw;
+    mealsDay = day;
+    try {
+      const value = raw
+        ? (JSON.parse(raw) as { date: string; done: Record<string, boolean> })
+        : null;
+      mealsSnap = value && value.date === day ? (value.done ?? {}) : EMPTY_MEALS;
+    } catch {
+      mealsSnap = EMPTY_MEALS;
+    }
+  }
+  return mealsSnap;
+}
+
+export function getMealsSnapshot(): Record<string, boolean> {
+  if (typeof window === "undefined") return EMPTY_MEALS;
+  return readMeals();
+}
+
+export function getMealsServerSnapshot(): Record<string, boolean> {
+  return EMPTY_MEALS;
+}
+
+export function setMeals(done: Record<string, boolean>): void {
+  if (typeof window === "undefined") return;
+  const raw = JSON.stringify({ date: todayKey(), done });
+  window.localStorage.setItem(MEALS_KEY, raw);
+  mealsRaw = raw;
+  mealsDay = todayKey();
+  mealsSnap = done;
   emit();
 }

@@ -6,6 +6,8 @@ import {
   addWeight,
   getHabitsServerSnapshot,
   getHabitsSnapshot,
+  getMealsServerSnapshot,
+  getMealsSnapshot,
   getStreakServerSnapshot,
   getStreakSnapshot,
   getWaterServerSnapshot,
@@ -14,6 +16,7 @@ import {
   getWeightSnapshot,
   markDayComplete,
   setHabits,
+  setMeals,
   setWaterMl,
   subscribeTracking,
   type WeightEntry,
@@ -56,4 +59,17 @@ export function useHabits() {
     getStreakServerSnapshot,
   );
   return { done, streak, setHabits, markDayComplete };
+}
+
+export function useMeals() {
+  const done = useSyncExternalStore(
+    subscribeTracking,
+    getMealsSnapshot,
+    getMealsServerSnapshot,
+  );
+  return {
+    done,
+    toggle: (name: string) =>
+      setMeals({ ...getMealsSnapshot(), [name]: !getMealsSnapshot()[name] }),
+  };
 }

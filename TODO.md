@@ -108,7 +108,7 @@
 - [x] **Tracker de água interativo** + persistência (copos vs meta do plano, +/-, pips, reset diário).
 - [x] **Registro de peso** + **gráfico de evolução** SVG (seed com o peso do perfil, reset N/A).
 - [x] **Hábitos persistidos** + **streak** (🔥 dias seguidos) com reset diário.
-- [ ] **Diário de refeições** — marcar refeições do dia como feitas, totalizar kcal consumidas vs meta.
+- [x] **Diário de refeições** — marca refeições do dia, totaliza kcal consumidas vs meta com barra de progresso. Persistido + reset diário.
 - [ ] **Lista de compras** gerada a partir do plano/refeições da semana.
 - [ ] **Tela "Meu plano" detalhada** — substituição de alimentos, ver macros por refeição.
 

@@ -7,12 +7,12 @@ import {
   DumbbellIcon,
   Loader2Icon,
   PencilIcon,
-  UtensilsCrossedIcon,
 } from "lucide-react";
 import { useState, useSyncExternalStore, type ReactNode } from "react";
 
 import { AnimatedSection } from "@/components/animations/animated-section";
 import { UserMenu } from "@/components/layout/user-menu";
+import { MealDiary } from "@/components/nutri/meal-diary";
 import { PlanSummary } from "@/components/nutri/plan-summary";
 import { WaterCard } from "@/components/nutri/water-card";
 import { WeightCard } from "@/components/nutri/weight-card";
@@ -220,40 +220,9 @@ function ReadyHome({ profile }: { profile: NutriProfile }) {
 
         {/* Seu dia */}
         <section className="pt-10 md:pt-14">
-          <SectionTitle eyebrow="Seu dia" title="Como distribuir suas calorias" />
+          <SectionTitle eyebrow="Seu dia" title="Marque o que já comeu" />
           <div className="grid gap-5 lg:grid-cols-[1.2fr_1fr]">
-            <AnimatedSection
-              as="ul"
-              className="flex flex-col gap-3 rounded-2xl border border-white/5 bg-brl-card p-6 md:p-8"
-              translateY={24}
-              duration={500}
-              delay={70}
-            >
-              {plan.meals.map((meal) => (
-                <li
-                  key={meal.name}
-                  className="flex items-center justify-between gap-3 border-b border-white/5 pb-3 last:border-0 last:pb-0"
-                >
-                  <span className="flex items-center gap-3">
-                    <span
-                      aria-hidden
-                      className="flex size-9 items-center justify-center rounded-lg bg-brl-purple/15 text-brl-purple"
-                    >
-                      <UtensilsCrossedIcon className="size-4" />
-                    </span>
-                    <span className="text-sm font-medium text-foreground md:text-base">
-                      {meal.name}
-                    </span>
-                  </span>
-                  <span className="font-display text-base font-bold tabular-nums text-foreground">
-                    {meal.kcal}{" "}
-                    <span className="text-xs font-normal text-muted-foreground">
-                      kcal
-                    </span>
-                  </span>
-                </li>
-              ))}
-            </AnimatedSection>
+            <MealDiary plan={plan} />
 
             <div className="relative flex flex-col gap-3 overflow-hidden rounded-2xl border border-emerald-400/20 bg-brl-card p-6 md:p-8">
               <div
