@@ -231,7 +231,7 @@ function ReadyHome({ profile }: { profile: NutriProfile }) {
         <section className="pt-10 md:pt-14">
           <SectionTitle eyebrow="Seu dia" title="Marque o que já comeu" />
           <div className="grid gap-5 lg:grid-cols-[1.2fr_1fr]">
-            <MealDiary plan={plan} />
+            <MealDiary plan={plan} profile={profile} />
 
             <div className="relative flex flex-col gap-3 overflow-hidden rounded-2xl border border-emerald-400/20 bg-brl-card p-6 md:p-8">
               <div
