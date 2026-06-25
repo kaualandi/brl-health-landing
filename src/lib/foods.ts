@@ -83,6 +83,8 @@ const MEAL_ROLES: Record<string, FoodRole[]> = {
   "Lanche da manhã": ["fruit", "fat"],
   Almoço: ["protein", "carb", "veg"],
   "Lanche da tarde": ["dairy", "fruit"],
+  "Pré-treino": ["carb", "fruit"],
+  "Pós-treino": ["protein", "carb"],
   Jantar: ["protein", "carb", "veg"],
   Ceia: ["dairy", "fruit"],
 };

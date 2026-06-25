@@ -12,6 +12,7 @@ import { useState, useSyncExternalStore, type ReactNode } from "react";
 
 import { AnimatedSection } from "@/components/animations/animated-section";
 import { UserMenu } from "@/components/layout/user-menu";
+import { DayTimeline } from "@/components/nutri/day-timeline";
 import { MealDiary } from "@/components/nutri/meal-diary";
 import { PlanSummary } from "@/components/nutri/plan-summary";
 import { WaterCard } from "@/components/nutri/water-card";
@@ -198,6 +199,7 @@ function ReadyHome({ profile }: { profile: NutriProfile }) {
   const firstName = profile.name.split(" ")[0] || profile.name;
   const recipe = recipeForDiet(profile.diet);
   const articles = curatedArticles(profile.goal, 6);
+  const hasTimeline = plan.meals.filter((m) => m.time).length >= 2;
 
   return (
     <div className="min-h-dvh bg-brl-dark pb-20">
@@ -269,6 +271,14 @@ function ReadyHome({ profile }: { profile: NutriProfile }) {
             </div>
           </div>
         </section>
+
+        {/* Linha do tempo do dia */}
+        {hasTimeline ? (
+          <section className="pt-10 md:pt-14">
+            <SectionTitle eyebrow="Sua rotina" title="Como seu dia se distribui" />
+            <DayTimeline plan={plan} profile={profile} />
+          </section>
+        ) : null}
 
         {/* Acompanhe — água e peso */}
         <section className="pt-10 md:pt-14">

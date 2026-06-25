@@ -11,6 +11,7 @@ import {
   EyeOffIcon,
   Loader2Icon,
   SparklesIcon,
+  WandSparklesIcon,
 } from "lucide-react";
 import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { z } from "zod";
@@ -27,10 +28,16 @@ import {
   ACTIVITY_OPTIONS,
   DIET_OPTIONS,
   GOAL_OPTIONS,
-  MEALS_OPTIONS,
   RESTRICTION_OPTIONS,
   SEX_OPTIONS,
 } from "@/lib/nutri-options";
+import {
+  autoScheduleMeals,
+  defaultRoutine,
+  defaultSchedule,
+  MEAL_OPTIONS,
+  needsTrainTime,
+} from "@/lib/meals";
 import {
   completeOnboarding,
   getNutriProfileServerSnapshot,
@@ -44,6 +51,7 @@ import type {
   BiologicalSex,
   DietStyle,
   Goal,
+  MealEntry,
   NutriProfile,
   Restriction,
 } from "@/types";
@@ -61,7 +69,10 @@ type WizardData = {
   activity: ActivityLevel | null;
   diet: DietStyle | null;
   restrictions: Restriction[];
-  mealsPerDay: number | null;
+  meals: MealEntry[];
+  wakeTime: string;
+  sleepTime: string;
+  trainTime: string;
   waterGlasses: string;
 };
 
@@ -78,7 +89,10 @@ const INITIAL: WizardData = {
   activity: null,
   diet: null,
   restrictions: [],
-  mealsPerDay: null,
+  meals: defaultSchedule(),
+  wakeTime: defaultRoutine().wakeTime,
+  sleepTime: defaultRoutine().sleepTime,
+  trainTime: "",
   waterGlasses: "",
 };
 
@@ -185,6 +199,40 @@ function NumberField({
   );
 }
 
+function TimeField({
+  id,
+  label,
+  value,
+  optional,
+  onChange,
+}: {
+  id: string;
+  label: string;
+  value: string;
+  optional?: boolean;
+  onChange: (value: string) => void;
+}) {
+  return (
+    <div>
+      <Label htmlFor={id} className="text-xs text-muted-foreground">
+        {label}
+        {optional ? (
+          <span className="ml-1 font-normal text-muted-foreground/60">
+            (opcional)
+          </span>
+        ) : null}
+      </Label>
+      <input
+        id={id}
+        type="time"
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+        className="mt-2 h-12 w-full rounded-lg border border-input bg-transparent px-3 text-base text-foreground outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
+      />
+    </div>
+  );
+}
+
 export function OnboardingWizard() {
   const router = useRouter();
   const { user, isAuthenticated, status } = useAuth();
@@ -264,6 +312,44 @@ export function OnboardingWizard() {
     });
   }
 
+  function toggleMeal(name: string) {
+    setData((prev) => {
+      const exists = prev.meals.some((m) => m.name === name);
+      if (exists) {
+        return { ...prev, meals: prev.meals.filter((m) => m.name !== name) };
+      }
+      const option = MEAL_OPTIONS.find((o) => o.name === name);
+      return {
+        ...prev,
+        meals: [...prev.meals, { name, time: option?.defaultTime ?? "12:00" }],
+      };
+    });
+    setErrors((prev) => {
+      if (!prev.meals) return prev;
+      const next = { ...prev };
+      delete next.meals;
+      return next;
+    });
+  }
+
+  function setMealTime(name: string, time: string) {
+    setData((prev) => ({
+      ...prev,
+      meals: prev.meals.map((m) => (m.name === name ? { ...m, time } : m)),
+    }));
+  }
+
+  function applyAutoTiming() {
+    setData((prev) => ({
+      ...prev,
+      meals: autoScheduleMeals(prev.meals, {
+        wakeTime: prev.wakeTime,
+        sleepTime: prev.sleepTime,
+        trainTime: prev.trainTime,
+      }),
+    }));
+  }
+
   function validateStep(): boolean {
     const next: Record<string, string> = {};
 
@@ -306,7 +392,8 @@ export function OnboardingWizard() {
     if (current.id === "restrictions" && data.restrictions.length === 0)
       next.restrictions = "Marque ao menos uma opção (ou ‘Nenhuma’)";
     if (current.id === "routine") {
-      if (!data.mealsPerDay) next.mealsPerDay = "Escolha quantas refeições";
+      if (data.meals.length === 0)
+        next.meals = "Escolha pelo menos uma refeição";
       const glasses = Number(data.waterGlasses);
       if (!data.waterGlasses || glasses < 0 || glasses > 25)
         next.waterGlasses = "Entre 0 e 25 copos";
@@ -333,7 +420,7 @@ export function OnboardingWizard() {
       !data.goal ||
       !data.activity ||
       !data.diet ||
-      !data.mealsPerDay
+      data.meals.length === 0
     ) {
       return null;
     }
@@ -350,7 +437,11 @@ export function OnboardingWizard() {
       activity: data.activity,
       diet: data.diet,
       restrictions: data.restrictions,
-      mealsPerDay: data.mealsPerDay,
+      mealsPerDay: data.meals.length,
+      meals: data.meals,
+      wakeTime: data.wakeTime,
+      sleepTime: data.sleepTime,
+      trainTime: data.trainTime || undefined,
       waterGlasses: Number(data.waterGlasses),
       createdAt: "",
     };
@@ -386,6 +477,10 @@ export function OnboardingWizard() {
           diet: profile.diet,
           restrictions: profile.restrictions,
           mealsPerDay: profile.mealsPerDay,
+          meals: profile.meals,
+          wakeTime: profile.wakeTime,
+          sleepTime: profile.sleepTime,
+          trainTime: profile.trainTime,
           waterGlasses: profile.waterGlasses,
         });
       }
@@ -653,26 +748,105 @@ export function OnboardingWizard() {
           {current.id === "routine" ? (
             <div className="flex flex-col gap-6">
               <div>
-                <Label>Quantas refeições por dia?</Label>
-                <div className="mt-2 grid grid-cols-4 gap-3">
-                  {MEALS_OPTIONS.map((count) => (
-                    <button
-                      key={count}
-                      type="button"
-                      onClick={() => update("mealsPerDay", count)}
-                      aria-pressed={data.mealsPerDay === count}
-                      className={cn(
-                        "flex h-16 flex-col items-center justify-center rounded-2xl border bg-brl-card font-display text-2xl font-bold transition-all duration-200 outline-none focus-visible:ring-3 focus-visible:ring-ring/50 active:translate-y-px",
-                        data.mealsPerDay === count
-                          ? "border-brl-purple/60 bg-brl-purple/10 text-foreground shadow-[0_0_0_1px_rgba(150,86,161,0.5)]"
-                          : "border-white/8 text-muted-foreground hover:border-brl-purple/50",
-                      )}
-                    >
-                      {count}
-                    </button>
-                  ))}
+                <Label>Seus horários do dia</Label>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  A gente usa pra encaixar as refeições na sua rotina.
+                </p>
+                <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3">
+                  <TimeField
+                    id="wakeTime"
+                    label="Acordo às"
+                    value={data.wakeTime}
+                    onChange={(value) => update("wakeTime", value)}
+                  />
+                  <TimeField
+                    id="sleepTime"
+                    label="Durmo às"
+                    value={data.sleepTime}
+                    onChange={(value) => update("sleepTime", value)}
+                  />
+                  <TimeField
+                    id="trainTime"
+                    label="Treino às"
+                    optional
+                    value={data.trainTime}
+                    onChange={(value) => update("trainTime", value)}
+                  />
                 </div>
-                <FieldError>{errors.mealsPerDay}</FieldError>
+              </div>
+              <div>
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <Label>Quais refeições você faz? E a que horas?</Label>
+                  <button
+                    type="button"
+                    onClick={applyAutoTiming}
+                    className="inline-flex items-center gap-1.5 rounded-lg border border-brl-purple/40 bg-brl-purple/10 px-2.5 py-1.5 text-xs font-semibold text-brl-purple transition-colors outline-none hover:bg-brl-purple/20 focus-visible:ring-3 focus-visible:ring-ring/50"
+                  >
+                    <WandSparklesIcon className="size-3.5" />
+                    Sugerir horários
+                  </button>
+                </div>
+                <div className="mt-2 flex flex-col gap-2.5">
+                  {MEAL_OPTIONS.map((option) => {
+                    const selected = data.meals.find(
+                      (m) => m.name === option.name,
+                    );
+                    return (
+                      <div
+                        key={option.name}
+                        className={cn(
+                          "flex items-center gap-3 rounded-xl border p-3 transition-colors",
+                          selected
+                            ? "border-brl-purple/50 bg-brl-purple/10"
+                            : "border-white/8",
+                        )}
+                      >
+                        <button
+                          type="button"
+                          onClick={() => toggleMeal(option.name)}
+                          aria-pressed={Boolean(selected)}
+                          className="flex flex-1 items-center gap-3 text-left outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
+                        >
+                          <span
+                            aria-hidden
+                            className={cn(
+                              "flex size-5 shrink-0 items-center justify-center rounded-md border transition-colors",
+                              selected
+                                ? "border-brl-purple bg-brl-purple text-white"
+                                : "border-white/20",
+                            )}
+                          >
+                            {selected ? "✓" : ""}
+                          </span>
+                          <span className="text-lg" aria-hidden>
+                            {option.emoji}
+                          </span>
+                          <span className="text-sm font-medium text-foreground md:text-base">
+                            {option.name}
+                          </span>
+                        </button>
+                        {selected ? (
+                          <input
+                            type="time"
+                            value={selected.time}
+                            onChange={(event) =>
+                              setMealTime(option.name, event.target.value)
+                            }
+                            aria-label={`Horário de ${option.name}`}
+                            className="h-9 rounded-lg border border-input bg-transparent px-2.5 text-sm text-foreground outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
+                          />
+                        ) : null}
+                      </div>
+                    );
+                  })}
+                </div>
+                {needsTrainTime(data.meals) && !data.trainTime ? (
+                  <p className="mt-2 text-xs text-muted-foreground">
+                    💡 Informe o horário do treino acima pra encaixar o pré e o
+                    pós-treino.
+                  </p>
+                ) : null}
+                <FieldError>{errors.meals}</FieldError>
               </div>
               <div className="max-w-xs">
                 <NumberField

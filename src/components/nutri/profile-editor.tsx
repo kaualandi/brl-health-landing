@@ -2,7 +2,12 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowLeftIcon, Loader2Icon, SaveIcon } from "lucide-react";
+import {
+  ArrowLeftIcon,
+  Loader2Icon,
+  SaveIcon,
+  WandSparklesIcon,
+} from "lucide-react";
 import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
 
 import { PlanSummary } from "@/components/nutri/plan-summary";
@@ -13,10 +18,16 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/components/ui/toast";
 import { computeNutriPlan } from "@/lib/nutri-plan";
 import {
+  autoScheduleMeals,
+  defaultRoutine,
+  defaultSchedule,
+  MEAL_OPTIONS,
+  needsTrainTime,
+} from "@/lib/meals";
+import {
   ACTIVITY_OPTIONS,
   DIET_OPTIONS,
   GOAL_OPTIONS,
-  MEALS_OPTIONS,
   RESTRICTION_OPTIONS,
   SEX_OPTIONS,
 } from "@/lib/nutri-options";
@@ -32,6 +43,7 @@ import type {
   BiologicalSex,
   DietStyle,
   Goal,
+  MealEntry,
   NutriProfile,
   Restriction,
 } from "@/types";
@@ -46,7 +58,10 @@ type FormState = {
   activity: ActivityLevel;
   diet: DietStyle;
   restrictions: Restriction[];
-  mealsPerDay: number;
+  meals: MealEntry[];
+  wakeTime: string;
+  sleepTime: string;
+  trainTime: string;
   waterGlasses: string;
 };
 
@@ -83,6 +98,40 @@ function NumberField({
   );
 }
 
+function TimeField({
+  id,
+  label,
+  value,
+  optional,
+  onChange,
+}: {
+  id: string;
+  label: string;
+  value: string;
+  optional?: boolean;
+  onChange: (value: string) => void;
+}) {
+  return (
+    <div>
+      <Label htmlFor={id} className="text-xs text-muted-foreground">
+        {label}
+        {optional ? (
+          <span className="ml-1 font-normal text-muted-foreground/60">
+            (opcional)
+          </span>
+        ) : null}
+      </Label>
+      <input
+        id={id}
+        type="time"
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+        className="mt-2 h-12 w-full rounded-lg border border-input bg-transparent px-3 text-base text-foreground outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
+      />
+    </div>
+  );
+}
+
 function FieldGroup({
   label,
   children,
@@ -112,7 +161,10 @@ function EditorForm({ initial }: { initial: NutriProfile }) {
     activity: initial.activity,
     diet: initial.diet,
     restrictions: initial.restrictions,
-    mealsPerDay: initial.mealsPerDay,
+    meals: initial.meals ?? defaultSchedule(),
+    wakeTime: initial.wakeTime ?? defaultRoutine().wakeTime,
+    sleepTime: initial.sleepTime ?? defaultRoutine().sleepTime,
+    trainTime: initial.trainTime ?? "",
     waterGlasses: String(initial.waterGlasses),
   });
 
@@ -131,6 +183,38 @@ function EditorForm({ initial }: { initial: NutriProfile }) {
     });
   }
 
+  function toggleMeal(name: string) {
+    setState((prev) => {
+      const exists = prev.meals.some((m) => m.name === name);
+      if (exists) {
+        return { ...prev, meals: prev.meals.filter((m) => m.name !== name) };
+      }
+      const option = MEAL_OPTIONS.find((o) => o.name === name);
+      return {
+        ...prev,
+        meals: [...prev.meals, { name, time: option?.defaultTime ?? "12:00" }],
+      };
+    });
+  }
+
+  function setMealTime(name: string, time: string) {
+    setState((prev) => ({
+      ...prev,
+      meals: prev.meals.map((m) => (m.name === name ? { ...m, time } : m)),
+    }));
+  }
+
+  function applyAutoTiming() {
+    setState((prev) => ({
+      ...prev,
+      meals: autoScheduleMeals(prev.meals, {
+        wakeTime: prev.wakeTime,
+        sleepTime: prev.sleepTime,
+        trainTime: prev.trainTime,
+      }),
+    }));
+  }
+
   function build(): NutriProfile {
     return {
       ...initial,
@@ -143,7 +227,11 @@ function EditorForm({ initial }: { initial: NutriProfile }) {
       activity: state.activity,
       diet: state.diet,
       restrictions: state.restrictions,
-      mealsPerDay: state.mealsPerDay,
+      mealsPerDay: state.meals.length,
+      meals: state.meals,
+      wakeTime: state.wakeTime,
+      sleepTime: state.sleepTime,
+      trainTime: state.trainTime || undefined,
       waterGlasses: Number(state.waterGlasses),
     };
   }
@@ -163,7 +251,8 @@ function EditorForm({ initial }: { initial: NutriProfile }) {
       activity: state.activity,
       diet: state.diet,
       restrictions: state.restrictions,
-      mealsPerDay: state.mealsPerDay,
+      mealsPerDay: state.meals.length,
+      meals: state.meals,
       waterGlasses: Number(state.waterGlasses),
     });
   }, [state, initial]);
@@ -190,6 +279,14 @@ function EditorForm({ initial }: { initial: NutriProfile }) {
         variant: "error",
         title: "Confere os campos",
         description: "Tem algum valor fora do intervalo esperado.",
+      });
+      return;
+    }
+    if (state.meals.length === 0) {
+      toast({
+        variant: "error",
+        title: "Escolha as refeições",
+        description: "Selecione pelo menos uma refeição.",
       });
       return;
     }
@@ -341,26 +438,106 @@ function EditorForm({ initial }: { initial: NutriProfile }) {
             </div>
           </FieldGroup>
 
-          <FieldGroup label="Refeições por dia">
-            <div className="grid grid-cols-4 gap-3">
-              {MEALS_OPTIONS.map((count) => (
-                <button
-                  key={count}
-                  type="button"
-                  onClick={() => update("mealsPerDay", count)}
-                  aria-pressed={state.mealsPerDay === count}
-                  className={cn(
-                    "flex h-16 items-center justify-center rounded-2xl border bg-brl-card font-display text-2xl font-bold transition-all outline-none focus-visible:ring-3 focus-visible:ring-ring/50",
-                    state.mealsPerDay === count
-                      ? "border-brl-purple/60 bg-brl-purple/10 text-foreground"
-                      : "border-white/8 text-muted-foreground hover:border-brl-purple/50",
-                  )}
-                >
-                  {count}
-                </button>
-              ))}
+          <FieldGroup label="Rotina do dia">
+            <p className="-mt-1 mb-3 text-xs text-muted-foreground">
+              A gente usa pra distribuir as refeições nos melhores horários.
+            </p>
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+              <TimeField
+                id="wakeTime"
+                label="Acordo às"
+                value={state.wakeTime}
+                onChange={(v) => update("wakeTime", v)}
+              />
+              <TimeField
+                id="sleepTime"
+                label="Durmo às"
+                value={state.sleepTime}
+                onChange={(v) => update("sleepTime", v)}
+              />
+              <TimeField
+                id="trainTime"
+                label="Treino às"
+                optional
+                value={state.trainTime}
+                onChange={(v) => update("trainTime", v)}
+              />
             </div>
           </FieldGroup>
+
+          <div>
+            <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+              <Label className="mb-0">Refeições e horários</Label>
+              <button
+                type="button"
+                onClick={applyAutoTiming}
+                className="inline-flex items-center gap-1.5 rounded-lg border border-brl-purple/40 bg-brl-purple/10 px-2.5 py-1.5 text-xs font-semibold text-brl-purple transition-colors outline-none hover:bg-brl-purple/20 focus-visible:ring-3 focus-visible:ring-ring/50"
+              >
+                <WandSparklesIcon className="size-3.5" />
+                Sugerir horários
+              </button>
+            </div>
+            <div className="flex flex-col gap-2.5">
+              {MEAL_OPTIONS.map((option) => {
+                const selected = state.meals.find(
+                  (m) => m.name === option.name,
+                );
+                return (
+                  <div
+                    key={option.name}
+                    className={cn(
+                      "flex items-center gap-3 rounded-xl border p-3 transition-colors",
+                      selected
+                        ? "border-brl-purple/50 bg-brl-purple/10"
+                        : "border-white/8",
+                    )}
+                  >
+                    <button
+                      type="button"
+                      onClick={() => toggleMeal(option.name)}
+                      aria-pressed={Boolean(selected)}
+                      className="flex flex-1 items-center gap-3 text-left outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
+                    >
+                      <span
+                        aria-hidden
+                        className={cn(
+                          "flex size-5 shrink-0 items-center justify-center rounded-md border text-xs transition-colors",
+                          selected
+                            ? "border-brl-purple bg-brl-purple text-white"
+                            : "border-white/20",
+                        )}
+                      >
+                        {selected ? "✓" : ""}
+                      </span>
+                      <span className="text-lg" aria-hidden>
+                        {option.emoji}
+                      </span>
+                      <span className="text-sm font-medium text-foreground">
+                        {option.name}
+                      </span>
+                    </button>
+                    {selected ? (
+                      <input
+                        type="time"
+                        value={selected.time}
+                        onChange={(event) =>
+                          setMealTime(option.name, event.target.value)
+                        }
+                        aria-label={`Horário de ${option.name}`}
+                        className="h-9 rounded-lg border border-input bg-transparent px-2.5 text-sm text-foreground outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
+                      />
+                    ) : null}
+                  </div>
+                );
+              })}
+            </div>
+            {needsTrainTime(state.meals) && !state.trainTime ? (
+              <p className="mt-2 text-xs text-muted-foreground">
+                💡 Informe o horário do treino acima pra encaixar o pré e o
+                pós-treino.
+              </p>
+            ) : null}
+          </div>
 
           <div className="max-w-xs">
             <NumberField

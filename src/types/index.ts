@@ -78,12 +78,36 @@ export interface NutriProfile {
   waterGlasses: number;
   /** Peso alvo (kg). Opcional — perfis antigos podem não ter. */
   goalWeightKg?: number;
+  /** Refeições escolhidas com horário. Opcional — perfis antigos não têm. */
+  meals?: MealEntry[];
+  /** Hora habitual de acordar (HH:MM). Usada pro auto-timing das refeições. */
+  wakeTime?: string;
+  /** Hora habitual de dormir (HH:MM). */
+  sleepTime?: string;
+  /** Hora do treino (HH:MM), quando há horário fixo. Encaixa pré/pós-treino. */
+  trainTime?: string;
   createdAt: string;
+}
+
+/** Rotina do dia — base pra distribuir os horários das refeições. */
+export interface DailyRoutine {
+  wakeTime: string;
+  sleepTime: string;
+  /** Vazio/ausente quando não há treino em horário fixo. */
+  trainTime?: string;
+}
+
+/** Uma refeição selecionada pelo usuário, com horário. */
+export interface MealEntry {
+  name: string;
+  time: string;
 }
 
 export interface MealSlice {
   name: string;
   kcal: number;
+  /** Horário da refeição (HH:MM), quando definido. */
+  time?: string;
 }
 
 /** Plano calculado a partir do perfil (TDEE, macros, água, etc). */

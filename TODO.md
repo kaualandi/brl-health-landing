@@ -63,10 +63,10 @@ Hoje o BRL Nutri mostra só "Café da manhã — 600 kcal". O Smart Fit monta a 
 - [ ] 🎨 **Tempo pro objetivo** como entrada do usuário ("sem pressa" / data alvo) — ajustaria o déficit sugerido.
 
 ### C. Refeições: tipos, horários e timing inteligente
-- [ ] 🎨 **Selecionar quais** refeições você faz (não só a quantidade): Café, Almoço, Jantar, **Ceia, Pré-treino, Pós-treino, Lanche da madrugada**.
-- [ ] 🎨 **Horário por refeição** (time picker). Hoje o plano divide por ratio, sem horário.
-- [ ] 🎨 **Hora de acordar / dormir / treinar** no perfil → distribui refeições de forma inteligente (pré/pós-treino perto do treino; ceia antes de dormir).
-- [ ] 🎨 **Timeline do dia** (refeições por horário) no /nutri.
+- [x] 🎨 **Selecionar quais** refeições você faz (Café, Lanche manhã, Almoço, Lanche tarde, **Pré-treino, Pós-treino**, Jantar, Ceia) — `lib/meals.ts`.
+- [x] 🎨 **Horário por refeição** (time picker) no onboarding + editor; plano distribui kcal por peso e ordena por horário; diário + detalhe mostram o horário.
+- [x] 🎨 **Hora de acordar / dormir / treinar** no perfil → distribui refeições de forma inteligente (auto-timing) — onboarding + editor, botão "Sugerir horários" (`autoScheduleMeals`).
+- [x] 🎨 **Timeline do dia** (refeições por horário) no /nutri — régua vertical proporcional (`DayTimeline`) com âncoras acordar/treino/dormir, marcador "agora" e destaque da próxima refeição.
 
 ### D. Fluxo guiado / conversacional + estado de geração
 - [ ] 🎨 Variante **conversacional** do onboarding (estilo chat, uma pergunta por vez) — ou enriquecer o wizard com esse tom.
