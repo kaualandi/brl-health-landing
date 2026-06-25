@@ -70,9 +70,9 @@ Hoje o BRL Nutri mostra só "Café da manhã — 600 kcal". O Smart Fit monta a 
 
 ### D. Fluxo guiado / conversacional + estado de geração
 - [ ] 🎨 Variante **conversacional** do onboarding (estilo chat, uma pergunta por vez) — ou enriquecer o wizard com esse tom.
-- [ ] 🎨 **Revisão de dados** antes de gerar ("Hora de personalizar seu cardápio"): resumo editável por campo + "Meus dados estão certos / Editar".
-- [ ] ✨ **Estado de "gerando cardápio"** com avatar/bot + animação ("Estamos combinando suas escolhas..."). Casa com o item de animação de "gerando plano" já no TODO.
-- [ ] 🎨 Opções com **descrição de percepção de esforço** (ex.: "Moderada — coração acelerado, fala com um pouco de esforço"). Já temos descrições; dá pra enriquecer.
+- [x] 🎨 **Revisão de dados** antes de gerar ("Hora de personalizar seu cardápio"): resumo editável por campo + "Editar" que pula pro passo certo.
+- [x] ✨ **Estado de "gerando cardápio"** com bot 🤖 + animação e mensagens rotativas; segura ~2,4s antes de cair no /nutri (respeita reduced-motion).
+- [x] 🎨 Opções de atividade com **descrição de percepção de esforço** ("Moderado — coração acelera, falar já exige um esforço").
 
 ### E. Caminho humano: nutricionista 🔌
 - [ ] 🎨 Card "Acompanhamento com um nutri" no /nutri — dois caminhos (IA + profissional), como o Smart Fit.
@@ -178,7 +178,7 @@ Hoje o BRL Nutri mostra só "Café da manhã — 600 kcal". O Smart Fit monta a 
 - [~] **Gamificação** — confete ao completar os hábitos do dia ✅; faltam badges/conquistas e streaks.
 - [ ] **Compartilhar plano** — gerar card/imagem ou link de resumo.
 - [ ] **Tema claro/escuro** — toggle (hoje é dark-only; tokens já existem em `:root`/`.dark`).
-- [~] **Onboarding melhorado** — logado pula o passo de conta ✅; faltam salvar rascunho, revisar/editar a partir do review e animação de "gerando plano".
+- [~] **Onboarding melhorado** — logado pula o passo de conta ✅, revisão editável a partir do review ✅, animação de "gerando plano" ✅; falta salvar rascunho.
 - [ ] **Estados vazios** ilustrados e consistentes em todas as listas.
 - [ ] **PWA** — manifest + ícones + offline básico (instalável no celular).
 - [ ] **(opcional) i18n** pt-BR / en — estrutura de mensagens.
