@@ -1,3 +1,4 @@
+import { buildScheduledMeals } from "@/lib/meals";
 import type {
   ActivityLevel,
   Goal,
@@ -118,7 +119,10 @@ export function computeNutriPlan(profile: NutriProfile): NutriPlan {
     waterMl,
     bmi,
     bmiLabel: classifyBmi(bmi),
-    meals: buildMeals(targetCalories, mealsPerDay),
+    meals:
+      profile.meals && profile.meals.length > 0
+        ? buildScheduledMeals(profile.meals, targetCalories)
+        : buildMeals(targetCalories, mealsPerDay),
   };
 }
 

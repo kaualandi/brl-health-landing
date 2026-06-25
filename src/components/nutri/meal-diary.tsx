@@ -60,7 +60,8 @@ function MealDetail({
           {meal.name}
         </SheetTitle>
         <SheetDescription>
-          Sugestão pra ~{meal.kcal} kcal · {foods.length} itens
+          {meal.time ? `${meal.time} · ` : ""}Sugestão pra ~{meal.kcal} kcal ·{" "}
+          {foods.length} itens
         </SheetDescription>
       </SheetHeader>
 
@@ -262,15 +263,22 @@ export function MealDiary({
                   aria-label={`Ver detalhe de ${meal.name}`}
                   className="flex flex-1 items-center justify-between gap-2 rounded-md text-left outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
                 >
-                  <span
-                    className={cn(
-                      "text-sm font-medium md:text-base",
-                      checked
-                        ? "text-muted-foreground line-through"
-                        : "text-foreground",
-                    )}
-                  >
-                    {meal.name}
+                  <span className="flex items-baseline gap-2">
+                    <span
+                      className={cn(
+                        "text-sm font-medium md:text-base",
+                        checked
+                          ? "text-muted-foreground line-through"
+                          : "text-foreground",
+                      )}
+                    >
+                      {meal.name}
+                    </span>
+                    {meal.time ? (
+                      <span className="text-xs tabular-nums text-muted-foreground">
+                        {meal.time}
+                      </span>
+                    ) : null}
                   </span>
                   <span className="flex items-center gap-1.5">
                     <span className="font-display text-base font-bold tabular-nums text-foreground">
