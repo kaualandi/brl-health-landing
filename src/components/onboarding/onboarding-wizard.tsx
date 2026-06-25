@@ -13,22 +13,31 @@ import {
   SparklesIcon,
   WandSparklesIcon,
 } from "lucide-react";
-import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
+import {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  useSyncExternalStore,
+  type ReactNode,
+} from "react";
 import { z } from "zod";
 
 import { PasswordStrength } from "@/components/forms/password-strength";
-import { PlanSummary } from "@/components/nutri/plan-summary";
 import { OptionCard } from "@/components/onboarding/option-card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/hooks/use-auth";
-import { computeNutriPlan } from "@/lib/nutri-plan";
 import {
   ACTIVITY_OPTIONS,
+  activityLabel,
   DIET_OPTIONS,
+  dietLabel,
   GOAL_OPTIONS,
+  goalLabel,
   RESTRICTION_OPTIONS,
+  restrictionLabel,
   SEX_OPTIONS,
 } from "@/lib/nutri-options";
 import {
@@ -134,10 +143,18 @@ const ALL_STEPS = [
   },
   {
     id: "review",
-    title: "Seu plano está pronto 🎉",
-    subtitle: "Olha só o que montamos a partir das suas respostas.",
+    title: "Hora de personalizar seu cardápio",
+    subtitle: "Confere se está tudo certo — pode editar qualquer coisa antes de gerar.",
   },
 ] as const;
+
+const GEN_MESSAGES = [
+  "Analisando seu perfil...",
+  "Calculando calorias e macros...",
+  "Montando suas refeições...",
+  "Encaixando os horários na sua rotina...",
+  "Finalizando seu cardápio ✨",
+];
 
 const accountSchema = z.object({
   name: z.string().min(2, "Conta seu nome pra gente"),
@@ -233,13 +250,91 @@ function TimeField({
   );
 }
 
+function GeneratingScreen({ message }: { message: string }) {
+  return (
+    <div className="flex min-h-dvh flex-col items-center justify-center bg-brl-dark px-6 text-center">
+      <div className="relative mb-8">
+        <span
+          aria-hidden
+          className="absolute inset-0 -z-10 animate-ping rounded-full bg-brl-purple/20 motion-reduce:hidden"
+        />
+        <span
+          aria-hidden
+          className="flex size-24 items-center justify-center rounded-full bg-brl-purple/15 text-5xl ring-1 ring-brl-purple/30"
+        >
+          🤖
+        </span>
+      </div>
+      <h1 className="font-display text-2xl font-extrabold tracking-tight md:text-3xl">
+        Gerando seu cardápio
+      </h1>
+      <p
+        aria-live="polite"
+        className="mt-3 h-5 text-sm text-muted-foreground md:text-base"
+      >
+        {message}
+      </p>
+      <div aria-hidden className="mt-8 flex gap-1.5">
+        {[0, 1, 2].map((i) => (
+          <span
+            key={i}
+            className="size-2 animate-bounce rounded-full bg-brl-purple motion-reduce:animate-none"
+            style={{ animationDelay: `${i * 0.15}s` }}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function SummaryCard({
+  emoji,
+  title,
+  onEdit,
+  children,
+}: {
+  emoji: string;
+  title: string;
+  onEdit: () => void;
+  children: ReactNode;
+}) {
+  return (
+    <div className="rounded-2xl border border-white/8 bg-brl-card p-4">
+      <div className="mb-2 flex items-center justify-between gap-3">
+        <h3 className="flex items-center gap-2 text-sm font-bold text-foreground">
+          <span aria-hidden>{emoji}</span>
+          {title}
+        </h3>
+        <button
+          type="button"
+          onClick={onEdit}
+          className="rounded text-xs font-semibold text-brl-purple outline-none hover:underline focus-visible:ring-3 focus-visible:ring-ring/50"
+        >
+          Editar
+        </button>
+      </div>
+      <dl className="flex flex-col gap-1">{children}</dl>
+    </div>
+  );
+}
+
+function SummaryRow({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex items-baseline justify-between gap-3 text-sm">
+      <dt className="shrink-0 text-muted-foreground">{label}</dt>
+      <dd className="text-right font-medium text-foreground">{value}</dd>
+    </div>
+  );
+}
+
 export function OnboardingWizard() {
   const router = useRouter();
   const { user, isAuthenticated, status } = useAuth();
   const [step, setStep] = useState(0);
   const [data, setData] = useState<WizardData>(INITIAL);
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [submitting, setSubmitting] = useState(false);
+  const [generating, setGenerating] = useState(false);
+  const [genMsg, setGenMsg] = useState(0);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
 
@@ -255,11 +350,13 @@ export function OnboardingWizard() {
 
   // Já tem plano? Não refaz o onboarding à toa — vai direto pro /nutri.
   // (O "refazer" limpa o plano antes, então cai no wizard normalmente.)
+  // Durante a geração o perfil é salvo, mas a navegação fica por conta do
+  // handleSubmit (depois da animação) — por isso ignoramos enquanto generating.
   useEffect(() => {
-    if (isAuthenticated && existingProfile) {
+    if (isAuthenticated && existingProfile && !generating) {
       router.replace("/nutri");
     }
-  }, [isAuthenticated, existingProfile, router]);
+  }, [isAuthenticated, existingProfile, router, generating]);
 
   // Já logado? Pula a etapa de criar conta — não pede credencial de novo.
   const steps = useMemo(
@@ -284,6 +381,15 @@ export function OnboardingWizard() {
       anim.cancel();
     };
   }, [step]);
+
+  // Mensagens rotativas enquanto "gera" o cardápio (parado se reduced-motion).
+  useEffect(() => {
+    if (!generating || prefersReducedMotion()) return;
+    const id = setInterval(() => {
+      setGenMsg((i) => Math.min(i + 1, GEN_MESSAGES.length - 1));
+    }, 520);
+    return () => clearInterval(id);
+  }, [generating]);
 
   function update<K extends keyof WizardData>(key: K, value: WizardData[K]) {
     setData((prev) => ({ ...prev, [key]: value }));
@@ -414,6 +520,13 @@ export function OnboardingWizard() {
     setStep((s) => Math.max(s - 1, 0));
   }
 
+  function goToStep(id: string) {
+    const idx = steps.findIndex((s) => s.id === id);
+    if (idx < 0) return;
+    directionRef.current = idx < step ? -1 : 1;
+    setStep(idx);
+  }
+
   const profile = useMemo<NutriProfile | null>(() => {
     if (
       !data.sex ||
@@ -447,54 +560,66 @@ export function OnboardingWizard() {
     };
   }, [data, user]);
 
-  const plan = useMemo(
-    () => (profile ? computeNutriPlan(profile) : null),
-    [profile],
-  );
-
   async function handleSubmit() {
     if (!profile) return;
-    setSubmitting(true);
     setSubmitError(null);
+    setGenMsg(0);
+    setGenerating(true);
+    // Segura a tela de "gerando" por um tempo mínimo pra a animação respirar.
+    const minDelay = new Promise((resolve) =>
+      setTimeout(resolve, prefersReducedMotion() ? 500 : 2400),
+    );
     try {
-      if (isAuthenticated) {
-        // Já tem conta — só salva o plano, sem registrar de novo.
-        const { createdAt: _omit, ...profileInput } = profile;
-        void _omit;
-        saveNutriProfileForCurrentUser(profileInput);
-      } else {
-        await completeOnboarding({
-          name: profile.name,
-          email: profile.email,
-          password: data.password,
-          sex: profile.sex,
-          age: profile.age,
-          heightCm: profile.heightCm,
-          weightKg: profile.weightKg,
-          goalWeightKg: profile.goalWeightKg,
-          goal: profile.goal,
-          activity: profile.activity,
-          diet: profile.diet,
-          restrictions: profile.restrictions,
-          mealsPerDay: profile.mealsPerDay,
-          meals: profile.meals,
-          wakeTime: profile.wakeTime,
-          sleepTime: profile.sleepTime,
-          trainTime: profile.trainTime,
-          waterGlasses: profile.waterGlasses,
-        });
-      }
+      const work = (async () => {
+        if (isAuthenticated) {
+          // Já tem conta — só salva o plano, sem registrar de novo.
+          const { createdAt: _omit, ...profileInput } = profile;
+          void _omit;
+          saveNutriProfileForCurrentUser(profileInput);
+        } else {
+          await completeOnboarding({
+            name: profile.name,
+            email: profile.email,
+            password: data.password,
+            sex: profile.sex,
+            age: profile.age,
+            heightCm: profile.heightCm,
+            weightKg: profile.weightKg,
+            goalWeightKg: profile.goalWeightKg,
+            goal: profile.goal,
+            activity: profile.activity,
+            diet: profile.diet,
+            restrictions: profile.restrictions,
+            mealsPerDay: profile.mealsPerDay,
+            meals: profile.meals,
+            wakeTime: profile.wakeTime,
+            sleepTime: profile.sleepTime,
+            trainTime: profile.trainTime,
+            waterGlasses: profile.waterGlasses,
+          });
+        }
+      })();
+      await Promise.all([work, minDelay]);
       router.push("/nutri");
     } catch (error) {
+      setGenerating(false);
       setSubmitError(
         error instanceof Error ? error.message : "Algo deu errado.",
       );
-      setSubmitting(false);
     }
   }
 
   // Espera a sessão resolver, e segura a tela se for redirecionar quem já tem
   // plano (existingProfile undefined = lendo, truthy = tem plano → vai pro /nutri).
+  // A tela de geração tem precedência: durante ela o perfil já foi salvo, então
+  // os guards abaixo (que seguram quem já tem plano) não devem assumir.
+  if (generating) {
+    const message = prefersReducedMotion()
+      ? GEN_MESSAGES[GEN_MESSAGES.length - 1]
+      : GEN_MESSAGES[genMsg];
+    return <GeneratingScreen message={message} />;
+  }
+
   if (status === "loading" || (isAuthenticated && existingProfile !== null)) {
     return (
       <div className="flex min-h-dvh items-center justify-center bg-brl-dark">
@@ -862,9 +987,114 @@ export function OnboardingWizard() {
             </div>
           ) : null}
 
-          {current.id === "review" && plan ? (
-            <div className="flex flex-col gap-5">
-              <PlanSummary plan={plan} />
+          {current.id === "review" ? (
+            <div className="flex flex-col gap-3">
+              {!isAuthenticated ? (
+                <SummaryCard
+                  emoji="👤"
+                  title="Conta"
+                  onEdit={() => goToStep("account")}
+                >
+                  <SummaryRow label="Nome" value={data.name || "—"} />
+                  <SummaryRow label="E-mail" value={data.email || "—"} />
+                </SummaryCard>
+              ) : null}
+
+              <SummaryCard
+                emoji="📏"
+                title="Sobre você"
+                onEdit={() => goToStep("body")}
+              >
+                <SummaryRow
+                  label="Sexo"
+                  value={data.sex === "male" ? "Masculino" : "Feminino"}
+                />
+                <SummaryRow label="Idade" value={`${data.age} anos`} />
+                <SummaryRow label="Altura" value={`${data.heightCm} cm`} />
+                <SummaryRow label="Peso atual" value={`${data.weightKg} kg`} />
+                <SummaryRow
+                  label="Meta de peso"
+                  value={`${data.goalWeightKg} kg`}
+                />
+              </SummaryCard>
+
+              <SummaryCard
+                emoji="🎯"
+                title="Objetivo"
+                onEdit={() => goToStep("goal")}
+              >
+                <SummaryRow
+                  label="Meta"
+                  value={data.goal ? goalLabel(data.goal) : "—"}
+                />
+              </SummaryCard>
+
+              <SummaryCard
+                emoji="🏃"
+                title="Atividade"
+                onEdit={() => goToStep("activity")}
+              >
+                <SummaryRow
+                  label="Nível"
+                  value={data.activity ? activityLabel(data.activity) : "—"}
+                />
+              </SummaryCard>
+
+              <SummaryCard
+                emoji="🍽️"
+                title="Alimentação"
+                onEdit={() => goToStep("diet")}
+              >
+                <SummaryRow
+                  label="Estilo"
+                  value={data.diet ? dietLabel(data.diet) : "—"}
+                />
+              </SummaryCard>
+
+              <SummaryCard
+                emoji="🚫"
+                title="Restrições"
+                onEdit={() => goToStep("restrictions")}
+              >
+                <SummaryRow
+                  label="Evitar"
+                  value={
+                    data.restrictions.length === 0 ||
+                    data.restrictions.includes("none")
+                      ? "Nenhuma"
+                      : data.restrictions.map(restrictionLabel).join(", ")
+                  }
+                />
+              </SummaryCard>
+
+              <SummaryCard
+                emoji="🍴"
+                title="Refeições e rotina"
+                onEdit={() => goToStep("routine")}
+              >
+                <SummaryRow label="Acordar" value={data.wakeTime} />
+                <SummaryRow label="Dormir" value={data.sleepTime} />
+                <SummaryRow
+                  label="Treino"
+                  value={data.trainTime || "Sem horário fixo"}
+                />
+                <SummaryRow
+                  label="Água"
+                  value={`${data.waterGlasses} copos`}
+                />
+                <div className="mt-1 flex flex-col gap-1 border-t border-white/5 pt-2">
+                  {[...data.meals]
+                    .sort((a, b) => a.time.localeCompare(b.time))
+                    .map((meal) => (
+                      <SummaryRow
+                        key={meal.name}
+                        label={meal.name}
+                        value={meal.time}
+                      />
+                    ))}
+                </div>
+              </SummaryCard>
+
               {submitError ? (
                 <div
                   role="alert"
@@ -887,7 +1117,7 @@ export function OnboardingWizard() {
             size="lg"
             nativeButton={false}
             className="h-12 px-3 text-muted-foreground hover:text-foreground"
-            disabled={submitting}
+            disabled={generating}
             render={
               step === 0 ? (
                 <Link href="/" aria-label="Voltar para a tela inicial">
@@ -907,22 +1137,11 @@ export function OnboardingWizard() {
             <Button
               size="lg"
               onClick={handleSubmit}
-              disabled={submitting}
+              disabled={generating}
               className="ml-auto h-12 bg-brl-purple px-6 text-base text-white hover:bg-brl-purple/90"
             >
-              {submitting ? (
-                <>
-                  <Loader2Icon className="animate-spin" />
-                  Criando seu plano...
-                </>
-              ) : (
-                <>
-                  <SparklesIcon />
-                  {isAuthenticated
-                    ? "Ver meu BRL Nutri"
-                    : "Criar conta e ver meu BRL Nutri"}
-                </>
-              )}
+              <SparklesIcon />
+              {isAuthenticated ? "Gerar meu cardápio" : "Criar conta e gerar"}
             </Button>
           ) : (
             <Button

@@ -65,31 +65,32 @@ export const ACTIVITY_OPTIONS: Option<ActivityLevel>[] = [
   {
     value: "sedentary",
     label: "Sedentário",
-    description: "Pouco ou nenhum exercício.",
+    description: "Pouco ou nenhum exercício — dia mais parado, sem ofegar.",
     emoji: "🛋️",
   },
   {
     value: "light",
     label: "Leve",
-    description: "Treino 1–2x na semana.",
+    description: "Treino 1–2x na semana — esforço leve, dá pra conversar à vontade.",
     emoji: "🚶",
   },
   {
     value: "moderate",
     label: "Moderado",
-    description: "Treino 3–4x na semana.",
+    description:
+      "Treino 3–4x na semana — coração acelera, falar já exige um esforço.",
     emoji: "🏃",
   },
   {
     value: "active",
     label: "Ativo",
-    description: "Treino 5–6x na semana.",
+    description: "Treino 5–6x na semana — respiração pesada, só frases curtas.",
     emoji: "🏋️",
   },
   {
     value: "athlete",
     label: "Atleta",
-    description: "Treino pesado, quase todo dia.",
+    description: "Quase todo dia, no talo — alta intensidade, fôlego no limite.",
     emoji: "🥇",
   },
 ];
