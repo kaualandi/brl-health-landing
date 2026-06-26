@@ -3,6 +3,7 @@ import { Inter, Syne } from "next/font/google";
 
 import { ToastProvider } from "@/components/ui/toast";
 import { QueryProvider } from "@/providers/query-provider";
+import { SITE_DESCRIPTION, SITE_NAME, SITE_URL } from "@/lib/site";
 
 import "./globals.css";
 
@@ -20,10 +21,47 @@ const inter = Inter({
   display: "swap",
 });
 
+const TITLE = "BRL Health — do objetivo à conquista";
+
 export const metadata: Metadata = {
-  title: "BRL Health — do objetivo à conquista",
-  description:
-    "Ecossistema BRL: treinos adaptativos com o BRL Fit e nutrição contextualizada ao treino com o BRL Nutri. Comece grátis.",
+  metadataBase: new URL(SITE_URL),
+  // Sem `template`: as páginas internas já definem o título completo com sufixo.
+  title: TITLE,
+  description: SITE_DESCRIPTION,
+  applicationName: SITE_NAME,
+  keywords: [
+    "nutrição",
+    "plano alimentar",
+    "dieta",
+    "treino",
+    "BRL Nutri",
+    "BRL Fit",
+    "calorias",
+    "macros",
+    "emagrecimento",
+    "ganho de massa",
+  ],
+  authors: [{ name: SITE_NAME }],
+  creator: SITE_NAME,
+  alternates: { canonical: "/" },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: { index: true, follow: true },
+  },
+  openGraph: {
+    type: "website",
+    locale: "pt_BR",
+    url: SITE_URL,
+    siteName: SITE_NAME,
+    title: TITLE,
+    description: SITE_DESCRIPTION,
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: TITLE,
+    description: SITE_DESCRIPTION,
+  },
 };
 
 export default function RootLayout({

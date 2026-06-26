@@ -218,7 +218,7 @@ Hoje o BRL Nutri mostra só "Café da manhã — 600 kcal". O Smart Fit monta a 
 - [x] **Sucesso/erro** — tela de sucesso inline + toast de erro (cartão `...0000` recusa).
 - [x] CTAs dos planos abrem `/precos` → checkout (em vez de `/cadastro`).
 - [x] Estado de **assinatura** no `/conta` (mostra o tier atual). _Falta próxima cobrança/fatura._
-- [ ] **Cancelar/trocar** assinatura pelo `/conta` (hoje só faz upgrade pelo checkout).
+- [ ] **Ajustes de plano no `/conta`** — gerenciar a assinatura na própria conta: **trocar de plano** e **fazer downgrade** (ex.: Família→Pro→Free) e **cancelar**, sem precisar passar pelo checkout (hoje o `/conta` só mostra o tier e o upgrade vive no checkout). Avisar efeitos do downgrade (perda de consultas/recursos do tier atual) e confirmar antes de aplicar.
 
 ### Autenticação
 - [ ] Provider/store de auth (ver Fase 1) — já no formato pronto pra trocar mock por API real.
@@ -229,7 +229,7 @@ Hoje o BRL Nutri mostra só "Café da manhã — 600 kcal". O Smart Fit monta a 
 
 ## 5. Qualidade & Produção 🚀
 
-- [ ] **SEO** — `metadata` por rota, Open Graph/Twitter cards, imagem OG, `sitemap.ts`, `robots.ts`, favicon set, `manifest`.
+- [~] **SEO** — base pronta: `metadata` rico no layout raiz (metadataBase, Open Graph, Twitter card, keywords, robots, canonical), **imagem OG gerada** (`opengraph-image.tsx` via `next/og`), `sitemap.ts` (rotas públicas + artigos), `robots.ts` (bloqueia /nutri, /conta, checkout, auth) e `manifest.ts`. URL canônica vem de `NEXT_PUBLIC_SITE_URL` (`lib/site.ts`). Falta: `metadata`/OG por rota e favicon set completo (apple-icon etc.).
 - [ ] **Performance** — Lighthouse/Core Web Vitals, lazy-load de animações pesadas, `next/image` onde couber.
 - [ ] **Analytics** (mock/placeholder de eventos — page views, cliques de CTA, conclusão de onboarding).
 - [ ] **Tratamento de erro** consistente (boundaries + mensagens amigáveis em PT-BR).
