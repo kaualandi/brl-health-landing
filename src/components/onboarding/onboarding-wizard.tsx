@@ -40,6 +40,7 @@ import {
   restrictionLabel,
   SEX_OPTIONS,
 } from "@/lib/nutri-options";
+import { readCalcDraft } from "@/lib/calc-draft";
 import {
   autoScheduleMeals,
   defaultRoutine,
@@ -331,7 +332,21 @@ export function OnboardingWizard() {
   const router = useRouter();
   const { user, isAuthenticated, status } = useAuth();
   const [step, setStep] = useState(0);
-  const [data, setData] = useState<WizardData>(INITIAL);
+  // Pré-preenche com o que veio da calculadora pública (se houver), pra não
+  // redigitar sexo/idade/altura/peso/atividade/objetivo.
+  const [data, setData] = useState<WizardData>(() => {
+    const draft = readCalcDraft();
+    if (!draft) return INITIAL;
+    return {
+      ...INITIAL,
+      sex: draft.sex ?? INITIAL.sex,
+      age: draft.age ?? INITIAL.age,
+      heightCm: draft.heightCm ?? INITIAL.heightCm,
+      weightKg: draft.weightKg ?? INITIAL.weightKg,
+      activity: draft.activity ?? INITIAL.activity,
+      goal: draft.goal ?? INITIAL.goal,
+    };
+  });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [generating, setGenerating] = useState(false);
   const [genMsg, setGenMsg] = useState(0);

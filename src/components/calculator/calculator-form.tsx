@@ -8,6 +8,7 @@ import { OptionCard } from "@/components/onboarding/option-card";
 import { PlanSummary } from "@/components/nutri/plan-summary";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { saveCalcDraft } from "@/lib/calc-draft";
 import { computeNutriPlan } from "@/lib/nutri-plan";
 import {
   ACTIVITY_OPTIONS,
@@ -234,7 +235,19 @@ export function CalculatorForm() {
                 nativeButton={false}
                 className="mt-5 h-12 bg-brl-purple px-6 text-base text-white hover:bg-brl-purple/90"
                 render={
-                  <Link href="/cadastro">
+                  <Link
+                    href="/cadastro"
+                    onClick={() =>
+                      saveCalcDraft({
+                        sex,
+                        age,
+                        heightCm,
+                        weightKg,
+                        activity,
+                        goal,
+                      })
+                    }
+                  >
                     <SparklesIcon />
                     Montar meu plano grátis
                     <ArrowRightIcon />
