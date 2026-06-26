@@ -182,7 +182,7 @@ Hoje o BRL Nutri mostra só "Café da manhã — 600 kcal". O Smart Fit monta a 
 ### Conta & comercial
 - [x] **`/conta`** — dados pessoais, plano/assinatura (Free), refazer plano, sair, excluir conta. Guardado por auth.
 - [x] **`/precos`** — página dedicada de planos, tier-aware (plano atual destacado/disabled). _Falta tabela comparativa detalhada + FAQ de cobrança._
-- [ ] **`/faq`** — perguntas frequentes (accordion).
+- [x] **`/faq`** — perguntas frequentes em accordion (Geral, BRL Nutri, Planos & cobrança, Conta & privacidade), com dados estruturados `FAQPage` (JSON-LD) pra rich results e link no footer. Conteúdo em `lib/faq.ts`.
 - [x] **`/termos`** e **`/privacidade`** — páginas legais (conteúdo-base PT-BR com isenção de saúde nos Termos e seção LGPD na Privacidade; linkadas no footer numa coluna "Legal"). Texto ainda pede revisão jurídica antes do go-live.
 
 ---

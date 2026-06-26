@@ -12,6 +12,7 @@ const productLinks: FooterLink[] = [
 const companyLinks: FooterLink[] = [
   { href: "/sobre", label: "Sobre" },
   { href: "/contato", label: "Contato" },
+  { href: "/faq", label: "FAQ" },
 ];
 
 const legalLinks: FooterLink[] = [
