@@ -189,7 +189,7 @@ Hoje o BRL Nutri mostra só "Café da manhã — 600 kcal". O Smart Fit monta a 
 
 ## 3. Funcionalidades 🎨 (frontend, com mock)
 
-- [ ] **Calculadora pública de TDEE/IMC** (`/calculadora`) — lead magnet usando `nutri-plan.ts` sem precisar criar conta; CTA pra salvar criando conta.
+- [x] **Calculadora pública de TDEE/IMC** (`/calculadora`) — lead magnet sem login: reusa `computeNutriPlan` e exibe o resultado pelo `PlanSummary` (meta/TDEE/macros/IMC/água/BMR), atualizando ao vivo conforme preenche; CTA pra salvar criando conta. No sitemap e no footer.
 - [ ] **Busca + filtros** nos conteúdos (categoria, objetivo, tempo de leitura).
 - [ ] **Favoritar** artigos/receitas (localStorage) + aba "Salvos" no `/nutri`.
 - [ ] **Comparador de planos** interativo (toggle mensal/anual com desconto).
