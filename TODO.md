@@ -41,6 +41,12 @@
 - **Hábitos persistidos** + **streak** de dias completos (🔥), mantendo o confete.
 - **`/nutri/perfil`** editável — recalcula o plano ao vivo (prévia) e salva.
 
+**5ª leva — caminho humano (nutricionista):**
+- **Card "Acompanhamento"** no `/nutri` com dois caminhos: cardápio por IA (já ativo) + consulta com nutricionista de verdade.
+- **Agendar consulta** num sheet guiado (escolher profissional → dia → horário), com profissional **recomendado** pelo objetivo + dieta, agenda derivada da data atual (pula domingo) e horários por profissional.
+- **Saldo de consultas por tier** (Free 1, Pro 4, Família 8): agendar consome crédito, cancelar devolve; sem saldo, o card vira upsell pro `/precos`.
+- Stores/serviços novos: `consultations-store` (persistido), `consultations.service` (mock com `// TODO`), `lib/nutritionists.ts` (seed + agenda).
+
 ---
 
 ## 💡 Brainstorm — inspirado no Smart Fit Nutri (screenshots)
@@ -75,8 +81,8 @@ Hoje o BRL Nutri mostra só "Café da manhã — 600 kcal". O Smart Fit monta a 
 - [x] 🎨 Opções de atividade com **descrição de percepção de esforço** ("Moderado — coração acelera, falar já exige um esforço").
 
 ### E. Caminho humano: nutricionista 🔌
-- [ ] 🎨 Card "Acompanhamento com um nutri" no /nutri — dois caminhos (IA + profissional), como o Smart Fit.
-- [ ] 🎨 **Agendar consulta** (UI de agenda/horários) + estado de **saldo de consultas**.
+- [x] 🎨 Card "Acompanhamento com um nutri" no /nutri — dois caminhos (IA já ativo + profissional), como o Smart Fit.
+- [x] 🎨 **Agendar consulta** (sheet: escolher profissional → dia → horário) + estado de **saldo de consultas** por tier (Free 1, Pro 4, Família 8); cancelar devolve o crédito. Profissional recomendado pelo objetivo + dieta (`lib/nutritionists.ts`, `consultations-store`, `consultations.service` mock).
 - [ ] 🔌 Agendamento real (Calendly-like) / chat com profissional — backend depois.
 
 ### F. Estrutura do app: seções e navegação
@@ -249,6 +255,7 @@ Hoje o BRL Nutri mostra só "Café da manhã — 600 kcal". O Smart Fit monta a 
 | `lib/axios.ts` | `baseURL` | apontar `NEXT_PUBLIC_API_URL` p/ API real |
 | _(novo)_ | checkout | `POST /billing/checkout` + webhooks |
 | _(novo)_ | waitlist BRL Fit | `POST /waitlist` |
+| `services/consultations.service.ts` | `scheduleConsultation` | `POST /consultations` (+ agenda real) |
 | _(novo)_ | recuperar senha | `POST /auth/forgot` · `POST /auth/reset` |
 
 ---

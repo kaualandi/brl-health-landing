@@ -14,6 +14,7 @@ import { AnimatedSection } from "@/components/animations/animated-section";
 import { UserMenu } from "@/components/layout/user-menu";
 import { DayTimeline } from "@/components/nutri/day-timeline";
 import { MealDiary } from "@/components/nutri/meal-diary";
+import { NutriCoach } from "@/components/nutri/nutri-coach";
 import { PlanSummary } from "@/components/nutri/plan-summary";
 import { WaterCard } from "@/components/nutri/water-card";
 import { WeightCard } from "@/components/nutri/weight-card";
@@ -292,6 +293,15 @@ function ReadyHome({ profile }: { profile: NutriProfile }) {
         {/* Hábitos */}
         <section className="pt-10 md:pt-14">
           <HabitsCard />
+        </section>
+
+        {/* Acompanhamento — IA + nutricionista humano */}
+        <section className="pt-10 md:pt-14">
+          <SectionTitle
+            eyebrow="Acompanhamento"
+            title="Vá além do app"
+          />
+          <NutriCoach profile={profile} />
         </section>
 
         {/* Conteúdos úteis */}
