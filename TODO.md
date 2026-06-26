@@ -47,6 +47,10 @@
 - **Saldo de consultas por tier** (Free 1, Pro 4, Família 8): agendar consome crédito, cancelar devolve; sem saldo, o card vira upsell pro `/precos`.
 - Stores/serviços novos: `consultations-store` (persistido), `consultations.service` (mock com `// TODO`), `lib/nutritionists.ts` (seed + agenda).
 
+**6ª leva — navegação por abas:**
+- **`/nutri` virou abas** (Início · Meu Corpo · Nutrição · Saúde) com barra sticky e `aria-current` — antes era um scroll único.
+- Seções redistribuídas por aba; **Meu Corpo** e **Saúde** ganharam casa própria (peso/meta e água/hábitos), com placeholders "em breve" pra medidas/fotos e sono/passos.
+
 ---
 
 ## 💡 Brainstorm — inspirado no Smart Fit Nutri (screenshots)
@@ -86,9 +90,9 @@ Hoje o BRL Nutri mostra só "Café da manhã — 600 kcal". O Smart Fit monta a 
 - [ ] 🔌 Agendamento real (Calendly-like) / chat com profissional — backend depois.
 
 ### F. Estrutura do app: seções e navegação
-- [ ] 🎨 **Navegação por abas** no app logado (Início · Meu Corpo · Nutrição · Saúde). Hoje /nutri é um scroll só.
-- [ ] 🎨 **"Meu Corpo"** — medidas (cintura etc.), fotos de progresso, evolução além do peso.
-- [ ] 🎨 **"Saúde"** — painel consolidado (sono, passos, hidratação) num lugar só.
+- [x] 🎨 **Navegação por abas** no app logado (Início · Meu Corpo · Nutrição · Saúde) — barra sticky abaixo do header, troca o conteúdo sem recarregar, `aria-current` na aba ativa (`NutriTabs` em `nutri-home`). Seções existentes redistribuídas: Início (resumo + acompanhamento + conteúdos/dicas + upsell/Fit), Nutrição (diário + receita + timeline + lista de compras), Meu Corpo (peso/meta), Saúde (água + hábitos).
+- [~] 🎨 **"Meu Corpo"** — aba criada com peso/meta/gráfico; medidas (cintura etc.) e fotos de progresso ficaram como placeholder "em breve".
+- [~] 🎨 **"Saúde"** — aba criada com água + hábitos; sono e passos como placeholder "em breve".
 
 ### G. Preferências e detalhe da atividade
 - [ ] 🎨 **Preferências culinárias** (cozinhas favoritas, alimentos que não curte) além do estilo de dieta — afina as sugestões.

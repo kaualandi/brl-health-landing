@@ -5,8 +5,15 @@ import {
   ArrowRightIcon,
   ClockIcon,
   DumbbellIcon,
+  FootprintsIcon,
+  HeartPulseIcon,
+  HomeIcon,
   Loader2Icon,
+  MoonIcon,
+  RulerIcon,
+  ScaleIcon,
   ShoppingCartIcon,
+  UtensilsIcon,
 } from "lucide-react";
 import { useState, useSyncExternalStore, type ReactNode } from "react";
 
@@ -108,6 +115,97 @@ function SectionTitle({
   );
 }
 
+/* ------------------------------------------------------------------ */
+/* Navegação por abas — Início · Meu Corpo · Nutrição · Saúde          */
+/* ------------------------------------------------------------------ */
+
+type NutriTab = "inicio" | "corpo" | "nutricao" | "saude";
+
+const TABS: { id: NutriTab; label: string; icon: typeof HomeIcon }[] = [
+  { id: "inicio", label: "Início", icon: HomeIcon },
+  { id: "corpo", label: "Meu Corpo", icon: ScaleIcon },
+  { id: "nutricao", label: "Nutrição", icon: UtensilsIcon },
+  { id: "saude", label: "Saúde", icon: HeartPulseIcon },
+];
+
+function NutriTabs({
+  active,
+  onChange,
+}: {
+  active: NutriTab;
+  onChange: (tab: NutriTab) => void;
+}) {
+  return (
+    <nav
+      aria-label="Seções do BRL Nutri"
+      className="sticky top-16 z-30 border-b border-white/5 bg-background/70 backdrop-blur-xl"
+    >
+      <div className="mx-auto flex w-full max-w-5xl px-2 md:px-6">
+        {TABS.map((tab) => {
+          const Icon = tab.icon;
+          const isActive = active === tab.id;
+          return (
+            <button
+              key={tab.id}
+              type="button"
+              onClick={() => onChange(tab.id)}
+              aria-current={isActive ? "page" : undefined}
+              className={cn(
+                "relative flex flex-1 items-center justify-center gap-2 px-2 py-3.5 text-sm font-medium transition-colors outline-none focus-visible:ring-3 focus-visible:ring-ring/50 md:flex-none md:px-5",
+                isActive
+                  ? "text-brl-purple"
+                  : "text-muted-foreground hover:text-foreground",
+              )}
+            >
+              <Icon className="size-4" />
+              <span>{tab.label}</span>
+              {isActive ? (
+                <span
+                  aria-hidden
+                  className="absolute inset-x-2 bottom-0 h-0.5 rounded-full bg-brl-purple"
+                />
+              ) : null}
+            </button>
+          );
+        })}
+      </div>
+    </nav>
+  );
+}
+
+/** Placeholder enxuto pra recursos que ainda vão chegar (medidas, sono...). */
+function ComingSoon({
+  icon: Icon,
+  title,
+  description,
+}: {
+  icon: typeof HomeIcon;
+  title: string;
+  description: string;
+}) {
+  return (
+    <div className="flex items-start gap-4 rounded-2xl border border-dashed border-white/10 bg-white/[0.02] p-6">
+      <span
+        className="grid size-11 shrink-0 place-items-center rounded-xl bg-white/5 text-muted-foreground"
+        aria-hidden
+      >
+        <Icon className="size-5" />
+      </span>
+      <div>
+        <div className="flex flex-wrap items-center gap-2">
+          <h3 className="font-display text-base font-bold text-foreground">
+            {title}
+          </h3>
+          <span className="rounded-full bg-white/5 px-2 py-0.5 text-[0.65rem] font-semibold tracking-wide text-muted-foreground uppercase">
+            Em breve
+          </span>
+        </div>
+        <p className="mt-1 text-sm text-muted-foreground">{description}</p>
+      </div>
+    </div>
+  );
+}
+
 function HabitsCard() {
   const { done, streak, setHabits, markDayComplete } = useHabits();
   const [fireKey, setFireKey] = useState(0);
@@ -195,216 +293,290 @@ function HabitsCard() {
   );
 }
 
-function ReadyHome({ profile }: { profile: NutriProfile }) {
+/* --- conteúdo de cada aba --------------------------------------------- */
+
+function InicioTab({ profile }: { profile: NutriProfile }) {
   const plan = computeNutriPlan(profile);
   const firstName = profile.name.split(" ")[0] || profile.name;
-  const recipe = recipeForDiet(profile.diet);
   const articles = curatedArticles(profile.goal, 6);
+
+  return (
+    <>
+      {/* Greeting */}
+      <section className="pt-8 md:pt-12">
+        <p className="text-sm text-muted-foreground">Bom te ver de novo 👋</p>
+        <h1 className="mt-1 font-display text-3xl font-extrabold tracking-tight text-balance md:text-5xl">
+          Olá, <span className="text-brl-purple">{firstName}</span>.
+        </h1>
+        <p className="mt-3 max-w-xl text-base text-muted-foreground md:text-lg">
+          {GOAL_HEADLINE[profile.goal]}
+        </p>
+        <div className="mt-5 flex flex-wrap gap-2">
+          <Chip>🎯 {goalLabel(profile.goal)}</Chip>
+          <Chip>🏃 {activityLabel(profile.activity)}</Chip>
+          <Chip>🍽️ {dietLabel(profile.diet)}</Chip>
+          <Chip>🍴 {profile.mealsPerDay} refeições/dia</Chip>
+        </div>
+      </section>
+
+      {/* Resumo do plano */}
+      <section className="pt-10 md:pt-14">
+        <SectionTitle eyebrow="Seu resumo" title="O plano da sua semana" />
+        <PlanSummary plan={plan} />
+      </section>
+
+      {/* Acompanhamento — IA + nutricionista humano */}
+      <section className="pt-10 md:pt-14">
+        <SectionTitle eyebrow="Acompanhamento" title="Vá além do app" />
+        <NutriCoach profile={profile} />
+      </section>
+
+      {/* Conteúdos úteis */}
+      <section className="pt-10 md:pt-14">
+        <SectionTitle eyebrow="Pra você" title="Conteúdos úteis pra essa fase" />
+        <AnimatedSection
+          className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3"
+          translateY={28}
+          duration={500}
+          delay={70}
+        >
+          {articles.map((article) => (
+            <Link
+              key={article.id}
+              href={`/conteudos/${article.id}`}
+              className="group flex h-full flex-col gap-3 rounded-2xl border border-white/5 bg-brl-card p-6 transition-colors hover:border-brl-purple/40"
+            >
+              <div className="flex items-center justify-between">
+                <span className="text-3xl" aria-hidden>
+                  {article.emoji}
+                </span>
+                <span className="rounded-full bg-white/5 px-2.5 py-1 text-xs font-medium text-brl-muted">
+                  {article.category}
+                </span>
+              </div>
+              <h3 className="font-display text-base font-bold leading-snug text-foreground">
+                {article.title}
+              </h3>
+              <p className="text-sm text-muted-foreground">{article.excerpt}</p>
+              <span className="mt-auto inline-flex items-center gap-1 pt-2 text-xs font-medium text-brl-purple">
+                Ler · {article.readTime}
+                <ArrowRightIcon className="size-3 transition-transform group-hover:translate-x-0.5" />
+              </span>
+            </Link>
+          ))}
+        </AnimatedSection>
+      </section>
+
+      {/* Dicas rápidas */}
+      <section className="pt-10 md:pt-14">
+        <SectionTitle eyebrow="Atalhos" title="Dicas rápidas do dia" />
+        <ul className="grid gap-3 sm:grid-cols-2">
+          {QUICK_TIPS.map((tip) => (
+            <li
+              key={tip.text}
+              className="flex items-start gap-3 rounded-xl border border-white/5 bg-white/[0.02] p-4 text-sm text-foreground/90"
+            >
+              <span className="text-lg" aria-hidden>
+                {tip.emoji}
+              </span>
+              <span>{tip.text}</span>
+            </li>
+          ))}
+        </ul>
+      </section>
+
+      {/* Upgrade — discreto e dispensável; some no Family */}
+      <section className="pt-10 md:pt-14">
+        <UpgradeNudge />
+      </section>
+
+      {/* Integração BRL Fit */}
+      <section className="pt-10 md:pt-14">
+        <div
+          className="relative overflow-hidden rounded-3xl border border-white/5 p-8 md:p-10"
+          style={{
+            background:
+              "linear-gradient(135deg, #13131f 0%, rgba(150,86,161,0.25) 100%)",
+          }}
+        >
+          <div
+            aria-hidden
+            className="pointer-events-none absolute -top-20 right-0 size-72 rounded-full bg-brl-orange/15 blur-3xl"
+          />
+          <div className="relative flex flex-col items-start gap-4 md:flex-row md:items-center md:justify-between">
+            <div className="max-w-xl">
+              <h2 className="font-display text-2xl font-extrabold tracking-tight md:text-3xl">
+                Conecte com o BRL Fit
+              </h2>
+              <p className="mt-2 text-sm text-muted-foreground md:text-base">
+                Quando você treina, suas metas do dia se ajustam sozinhas. Treino
+                e nutrição, finalmente no mesmo time.
+              </p>
+            </div>
+            <Button
+              size="lg"
+              nativeButton={false}
+              className="h-12 shrink-0 bg-brl-orange px-6 text-base text-brl-dark hover:bg-brl-orange/90"
+              render={
+                <Link href="/fit">
+                  <DumbbellIcon />
+                  Conhecer o BRL Fit
+                </Link>
+              }
+            />
+          </div>
+        </div>
+      </section>
+    </>
+  );
+}
+
+function CorpoTab({ profile }: { profile: NutriProfile }) {
+  const plan = computeNutriPlan(profile);
+
+  return (
+    <section className="pt-8 md:pt-12">
+      <SectionTitle eyebrow="Meu Corpo" title="Sua evolução física" />
+      <div className="grid gap-5">
+        <WeightCard profile={profile} plan={plan} />
+        <ComingSoon
+          icon={RulerIcon}
+          title="Medidas corporais"
+          description="Cintura, quadril, braço e mais — pra acompanhar a evolução além da balança."
+        />
+      </div>
+    </section>
+  );
+}
+
+function NutricaoTab({ profile }: { profile: NutriProfile }) {
+  const plan = computeNutriPlan(profile);
+  const recipe = recipeForDiet(profile.diet);
   const hasTimeline = plan.meals.filter((m) => m.time).length >= 2;
+
+  return (
+    <>
+      {/* Seu dia */}
+      <section className="pt-8 md:pt-12">
+        <SectionTitle eyebrow="Seu dia" title="Marque o que já comeu" />
+        <div className="grid gap-5 lg:grid-cols-[1.2fr_1fr]">
+          <MealDiary plan={plan} profile={profile} />
+
+          <div className="relative flex flex-col gap-3 overflow-hidden rounded-2xl border border-emerald-400/20 bg-brl-card p-6 md:p-8">
+            <div
+              aria-hidden
+              className="pointer-events-none absolute -top-16 -right-16 size-48 rounded-full bg-emerald-500/10 blur-3xl"
+            />
+            <p className="text-xs font-medium tracking-wide text-emerald-400 uppercase">
+              Receita do dia
+            </p>
+            <span className="text-4xl" aria-hidden>
+              {recipe.emoji}
+            </span>
+            <h3 className="font-display text-xl font-bold text-foreground">
+              {recipe.title}
+            </h3>
+            <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
+              <span className="inline-flex items-center gap-1.5">
+                <ClockIcon className="size-4" />
+                {recipe.time}
+              </span>
+              <span className="inline-flex items-center gap-1.5">
+                🔥 {recipe.kcal} kcal
+              </span>
+            </div>
+            <div className="mt-1 flex flex-wrap gap-2">
+              {recipe.tags.map((tag) => (
+                <span
+                  key={tag}
+                  className="rounded-full bg-emerald-400/10 px-2.5 py-1 text-xs font-medium text-emerald-300"
+                >
+                  {tag}
+                </span>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Linha do tempo do dia */}
+      {hasTimeline ? (
+        <section className="pt-10 md:pt-14">
+          <SectionTitle eyebrow="Sua rotina" title="Como seu dia se distribui" />
+          <DayTimeline plan={plan} profile={profile} />
+        </section>
+      ) : null}
+
+      {/* Lista de compras */}
+      <section className="pt-10 md:pt-14">
+        <Link
+          href="/nutri/compras"
+          className="group flex items-center gap-4 rounded-2xl border border-white/5 bg-brl-card p-6 transition-colors hover:border-brl-purple/40 md:p-8"
+        >
+          <span className="grid size-12 shrink-0 place-items-center rounded-xl bg-brl-purple/15 text-brl-purple">
+            <ShoppingCartIcon className="size-6" />
+          </span>
+          <div className="min-w-0 flex-1">
+            <h3 className="font-display text-lg font-bold text-foreground">
+              Lista de compras
+            </h3>
+            <p className="text-sm text-muted-foreground">
+              Tudo o que seu plano pede pra semana, organizado por categoria.
+            </p>
+          </div>
+          <ArrowRightIcon className="size-5 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
+        </Link>
+      </section>
+    </>
+  );
+}
+
+function SaudeTab({ profile }: { profile: NutriProfile }) {
+  const plan = computeNutriPlan(profile);
+
+  return (
+    <section className="pt-8 md:pt-12">
+      <SectionTitle eyebrow="Saúde" title="Seu bem-estar do dia" />
+      <div className="grid gap-5">
+        <WaterCard goalMl={plan.waterMl} />
+        <HabitsCard />
+        <div className="grid gap-5 sm:grid-cols-2">
+          <ComingSoon
+            icon={MoonIcon}
+            title="Sono"
+            description="Registre suas horas de sono e veja como elas afetam fome e energia."
+          />
+          <ComingSoon
+            icon={FootprintsIcon}
+            title="Passos"
+            description="Acompanhe seus passos do dia e o gasto calórico que eles somam."
+          />
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function ReadyHome({ profile }: { profile: NutriProfile }) {
+  const [tab, setTab] = useState<NutriTab>("inicio");
+
+  function changeTab(next: NutriTab) {
+    setTab(next);
+    if (typeof window !== "undefined") {
+      window.scrollTo({ top: 0 });
+    }
+  }
 
   return (
     <div className="min-h-dvh bg-brl-dark pb-20">
       <NutriBar showShopping />
+      <NutriTabs active={tab} onChange={changeTab} />
 
       <main className="mx-auto w-full max-w-5xl px-4 md:px-6">
-        {/* Greeting */}
-        <section className="pt-10 md:pt-14">
-          <p className="text-sm text-muted-foreground">Bom te ver de novo 👋</p>
-          <h1 className="mt-1 font-display text-3xl font-extrabold tracking-tight text-balance md:text-5xl">
-            Olá, <span className="text-brl-purple">{firstName}</span>.
-          </h1>
-          <p className="mt-3 max-w-xl text-base text-muted-foreground md:text-lg">
-            {GOAL_HEADLINE[profile.goal]}
-          </p>
-          <div className="mt-5 flex flex-wrap gap-2">
-            <Chip>🎯 {goalLabel(profile.goal)}</Chip>
-            <Chip>🏃 {activityLabel(profile.activity)}</Chip>
-            <Chip>🍽️ {dietLabel(profile.diet)}</Chip>
-            <Chip>🍴 {profile.mealsPerDay} refeições/dia</Chip>
-          </div>
-        </section>
-
-        {/* Resumo do plano */}
-        <section className="pt-10 md:pt-14">
-          <SectionTitle eyebrow="Seu resumo" title="O plano da sua semana" />
-          <PlanSummary plan={plan} />
-        </section>
-
-        {/* Seu dia */}
-        <section className="pt-10 md:pt-14">
-          <SectionTitle eyebrow="Seu dia" title="Marque o que já comeu" />
-          <div className="grid gap-5 lg:grid-cols-[1.2fr_1fr]">
-            <MealDiary plan={plan} profile={profile} />
-
-            <div className="relative flex flex-col gap-3 overflow-hidden rounded-2xl border border-emerald-400/20 bg-brl-card p-6 md:p-8">
-              <div
-                aria-hidden
-                className="pointer-events-none absolute -top-16 -right-16 size-48 rounded-full bg-emerald-500/10 blur-3xl"
-              />
-              <p className="text-xs font-medium tracking-wide text-emerald-400 uppercase">
-                Receita do dia
-              </p>
-              <span className="text-4xl" aria-hidden>
-                {recipe.emoji}
-              </span>
-              <h3 className="font-display text-xl font-bold text-foreground">
-                {recipe.title}
-              </h3>
-              <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
-                <span className="inline-flex items-center gap-1.5">
-                  <ClockIcon className="size-4" />
-                  {recipe.time}
-                </span>
-                <span className="inline-flex items-center gap-1.5">
-                  🔥 {recipe.kcal} kcal
-                </span>
-              </div>
-              <div className="mt-1 flex flex-wrap gap-2">
-                {recipe.tags.map((tag) => (
-                  <span
-                    key={tag}
-                    className="rounded-full bg-emerald-400/10 px-2.5 py-1 text-xs font-medium text-emerald-300"
-                  >
-                    {tag}
-                  </span>
-                ))}
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* Linha do tempo do dia */}
-        {hasTimeline ? (
-          <section className="pt-10 md:pt-14">
-            <SectionTitle eyebrow="Sua rotina" title="Como seu dia se distribui" />
-            <DayTimeline plan={plan} profile={profile} />
-          </section>
-        ) : null}
-
-        {/* Acompanhe — água e peso */}
-        <section className="pt-10 md:pt-14">
-          <SectionTitle eyebrow="Acompanhe" title="Seu progresso de hoje" />
-          <div className="grid gap-5 lg:grid-cols-2">
-            <WaterCard goalMl={plan.waterMl} />
-            <WeightCard profile={profile} plan={plan} />
-          </div>
-        </section>
-
-        {/* Hábitos */}
-        <section className="pt-10 md:pt-14">
-          <HabitsCard />
-        </section>
-
-        {/* Acompanhamento — IA + nutricionista humano */}
-        <section className="pt-10 md:pt-14">
-          <SectionTitle
-            eyebrow="Acompanhamento"
-            title="Vá além do app"
-          />
-          <NutriCoach profile={profile} />
-        </section>
-
-        {/* Conteúdos úteis */}
-        <section className="pt-10 md:pt-14">
-          <SectionTitle
-            eyebrow="Pra você"
-            title="Conteúdos úteis pra essa fase"
-          />
-          <AnimatedSection
-            className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3"
-            translateY={28}
-            duration={500}
-            delay={70}
-          >
-            {articles.map((article) => (
-              <Link
-                key={article.id}
-                href={`/conteudos/${article.id}`}
-                className="group flex h-full flex-col gap-3 rounded-2xl border border-white/5 bg-brl-card p-6 transition-colors hover:border-brl-purple/40"
-              >
-                <div className="flex items-center justify-between">
-                  <span className="text-3xl" aria-hidden>
-                    {article.emoji}
-                  </span>
-                  <span className="rounded-full bg-white/5 px-2.5 py-1 text-xs font-medium text-brl-muted">
-                    {article.category}
-                  </span>
-                </div>
-                <h3 className="font-display text-base font-bold leading-snug text-foreground">
-                  {article.title}
-                </h3>
-                <p className="text-sm text-muted-foreground">
-                  {article.excerpt}
-                </p>
-                <span className="mt-auto inline-flex items-center gap-1 pt-2 text-xs font-medium text-brl-purple">
-                  Ler · {article.readTime}
-                  <ArrowRightIcon className="size-3 transition-transform group-hover:translate-x-0.5" />
-                </span>
-              </Link>
-            ))}
-          </AnimatedSection>
-        </section>
-
-        {/* Dicas rápidas */}
-        <section className="pt-10 md:pt-14">
-          <SectionTitle eyebrow="Atalhos" title="Dicas rápidas do dia" />
-          <ul className="grid gap-3 sm:grid-cols-2">
-            {QUICK_TIPS.map((tip) => (
-              <li
-                key={tip.text}
-                className="flex items-start gap-3 rounded-xl border border-white/5 bg-white/[0.02] p-4 text-sm text-foreground/90"
-              >
-                <span className="text-lg" aria-hidden>
-                  {tip.emoji}
-                </span>
-                <span>{tip.text}</span>
-              </li>
-            ))}
-          </ul>
-        </section>
-
-        {/* Upgrade — discreto e dispensável; some no Family */}
-        <section className="pt-10 md:pt-14">
-          <UpgradeNudge />
-        </section>
-
-        {/* Integração BRL Fit */}
-        <section className="pt-10 md:pt-14">
-          <div
-            className="relative overflow-hidden rounded-3xl border border-white/5 p-8 md:p-10"
-            style={{
-              background:
-                "linear-gradient(135deg, #13131f 0%, rgba(150,86,161,0.25) 100%)",
-            }}
-          >
-            <div
-              aria-hidden
-              className="pointer-events-none absolute -top-20 right-0 size-72 rounded-full bg-brl-orange/15 blur-3xl"
-            />
-            <div className="relative flex flex-col items-start gap-4 md:flex-row md:items-center md:justify-between">
-              <div className="max-w-xl">
-                <h2 className="font-display text-2xl font-extrabold tracking-tight md:text-3xl">
-                  Conecte com o BRL Fit
-                </h2>
-                <p className="mt-2 text-sm text-muted-foreground md:text-base">
-                  Quando você treina, suas metas do dia se ajustam sozinhas.
-                  Treino e nutrição, finalmente no mesmo time.
-                </p>
-              </div>
-              <Button
-                size="lg"
-                nativeButton={false}
-                className="h-12 shrink-0 bg-brl-orange px-6 text-base text-brl-dark hover:bg-brl-orange/90"
-                render={
-                  <Link href="/fit">
-                    <DumbbellIcon />
-                    Conhecer o BRL Fit
-                  </Link>
-                }
-              />
-            </div>
-          </div>
-        </section>
+        {tab === "inicio" ? <InicioTab profile={profile} /> : null}
+        {tab === "corpo" ? <CorpoTab profile={profile} /> : null}
+        {tab === "nutricao" ? <NutricaoTab profile={profile} /> : null}
+        {tab === "saude" ? <SaudeTab profile={profile} /> : null}
       </main>
     </div>
   );
