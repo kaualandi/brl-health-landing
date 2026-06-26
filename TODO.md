@@ -51,6 +51,10 @@
 - **`/nutri` virou abas** (Início · Meu Corpo · Nutrição · Saúde) com barra sticky e `aria-current` — antes era um scroll único.
 - Seções redistribuídas por aba; **Meu Corpo** e **Saúde** ganharam casa própria (peso/meta e água/hábitos), com placeholders "em breve" pra medidas/fotos e sono/passos.
 
+**7ª leva — medidas corporais:**
+- **"Meu Corpo" deixou de ser placeholder:** card de **medidas** (cintura, quadril, peito, braço, coxa) com registro por sheet, tiles mostrando valor atual + variação vs. 1º registro + **sparkline** por medida.
+- Store novo `measurements-store` (persistido, upsert do dia) + `lib/measurements.ts` (defs/helpers) + `MeasurementsCard`. Falta fotos de progresso.
+
 ---
 
 ## 💡 Brainstorm — inspirado no Smart Fit Nutri (screenshots)
@@ -91,7 +95,7 @@ Hoje o BRL Nutri mostra só "Café da manhã — 600 kcal". O Smart Fit monta a 
 
 ### F. Estrutura do app: seções e navegação
 - [x] 🎨 **Navegação por abas** no app logado (Início · Meu Corpo · Nutrição · Saúde) — barra sticky abaixo do header, troca o conteúdo sem recarregar, `aria-current` na aba ativa (`NutriTabs` em `nutri-home`). Seções existentes redistribuídas: Início (resumo + acompanhamento + conteúdos/dicas + upsell/Fit), Nutrição (diário + receita + timeline + lista de compras), Meu Corpo (peso/meta), Saúde (água + hábitos).
-- [~] 🎨 **"Meu Corpo"** — aba criada com peso/meta/gráfico; medidas (cintura etc.) e fotos de progresso ficaram como placeholder "em breve".
+- [~] 🎨 **"Meu Corpo"** — aba com peso/meta/gráfico + **medidas corporais** (cintura, quadril, peito, braço, coxa): registro num sheet, tiles com valor + variação vs. 1º registro + sparkline por medida (`measurements-store`, `lib/measurements.ts`, `MeasurementsCard`). Falta só **fotos de progresso**.
 - [~] 🎨 **"Saúde"** — aba criada com água + hábitos; sono e passos como placeholder "em breve".
 
 ### G. Preferências e detalhe da atividade
@@ -260,6 +264,7 @@ Hoje o BRL Nutri mostra só "Café da manhã — 600 kcal". O Smart Fit monta a 
 | _(novo)_ | checkout | `POST /billing/checkout` + webhooks |
 | _(novo)_ | waitlist BRL Fit | `POST /waitlist` |
 | `services/consultations.service.ts` | `scheduleConsultation` | `POST /consultations` (+ agenda real) |
+| `lib/measurements-store.ts` | `recordMeasurements` | `GET/POST /nutri/measurements` |
 | _(novo)_ | recuperar senha | `POST /auth/forgot` · `POST /auth/reset` |
 
 ---
