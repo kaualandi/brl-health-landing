@@ -14,6 +14,11 @@ const companyLinks: FooterLink[] = [
   { href: "/contato", label: "Contato" },
 ];
 
+const legalLinks: FooterLink[] = [
+  { href: "/termos", label: "Termos de Uso" },
+  { href: "/privacidade", label: "Privacidade" },
+];
+
 function FooterColumn({
   title,
   links,
@@ -45,7 +50,7 @@ function FooterColumn({
 export function Footer() {
   return (
     <footer className="border-t border-white/5 bg-brl-dark py-12">
-      <div className="mx-auto grid w-full max-w-6xl gap-10 px-4 md:grid-cols-[2fr_1fr_1fr] md:px-6">
+      <div className="mx-auto grid w-full max-w-6xl gap-10 px-4 md:grid-cols-[2fr_1fr_1fr_1fr] md:px-6">
         <div>
           <Link
             href="/"
@@ -62,6 +67,7 @@ export function Footer() {
 
         <FooterColumn title="Produto" links={productLinks} />
         <FooterColumn title="Empresa" links={companyLinks} />
+        <FooterColumn title="Legal" links={legalLinks} />
       </div>
       <div className="mx-auto mt-10 w-full max-w-6xl px-4 md:px-6">
         <p className="text-xs text-muted-foreground">
