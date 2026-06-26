@@ -10,7 +10,6 @@ import {
   HomeIcon,
   Loader2Icon,
   MoonIcon,
-  RulerIcon,
   ScaleIcon,
   ShoppingCartIcon,
   UtensilsIcon,
@@ -21,6 +20,7 @@ import { AnimatedSection } from "@/components/animations/animated-section";
 import { UserMenu } from "@/components/layout/user-menu";
 import { DayTimeline } from "@/components/nutri/day-timeline";
 import { MealDiary } from "@/components/nutri/meal-diary";
+import { MeasurementsCard } from "@/components/nutri/measurements-card";
 import { NutriCoach } from "@/components/nutri/nutri-coach";
 import { PlanSummary } from "@/components/nutri/plan-summary";
 import { WaterCard } from "@/components/nutri/water-card";
@@ -439,11 +439,7 @@ function CorpoTab({ profile }: { profile: NutriProfile }) {
       <SectionTitle eyebrow="Meu Corpo" title="Sua evolução física" />
       <div className="grid gap-5">
         <WeightCard profile={profile} plan={plan} />
-        <ComingSoon
-          icon={RulerIcon}
-          title="Medidas corporais"
-          description="Cintura, quadril, braço e mais — pra acompanhar a evolução além da balança."
-        />
+        <MeasurementsCard />
       </div>
     </section>
   );
