@@ -19,6 +19,7 @@ import { cn } from "@/lib/utils";
 const navItems = [
   { href: "/#produtos", label: "Produtos" },
   { href: "/precos", label: "Planos" },
+  { href: "/calculadora", label: "Calculadora" },
   { href: "/conteudos", label: "Conteúdos" },
   { href: "/fit", label: "BRL Fit" },
   { href: "/sobre", label: "Sobre" },
