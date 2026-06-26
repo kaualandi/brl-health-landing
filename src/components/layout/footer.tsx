@@ -6,6 +6,7 @@ const productLinks: FooterLink[] = [
   { href: "/#produtos", label: "Produtos" },
   { href: "/fit", label: "BRL Fit" },
   { href: "/precos", label: "Planos" },
+  { href: "/calculadora", label: "Calculadora" },
   { href: "/conteudos", label: "Conteúdos" },
 ];
 
