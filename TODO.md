@@ -55,6 +55,10 @@
 - **"Meu Corpo" deixou de ser placeholder:** card de **medidas** (cintura, quadril, peito, braço, coxa) com registro por sheet, tiles mostrando valor atual + variação vs. 1º registro + **sparkline** por medida.
 - Store novo `measurements-store` (persistido, upsert do dia) + `lib/measurements.ts` (defs/helpers) + `MeasurementsCard`. Falta fotos de progresso.
 
+**8ª leva — Saúde (sono + passos):**
+- **A aba Saúde fechou:** cards de **sono** (registro de horas com presets, barras da semana, meta 8h) e **passos** (meta diária, progresso + kcal estimadas, barras da semana, +/- rápido). Acabaram os placeholders "em breve" do app.
+- Store novo `health-store` (sono + passos, persistidos, histórico por dia) + `use-health` + `HealthCards`.
+
 ---
 
 ## 💡 Brainstorm — inspirado no Smart Fit Nutri (screenshots)
@@ -96,7 +100,7 @@ Hoje o BRL Nutri mostra só "Café da manhã — 600 kcal". O Smart Fit monta a 
 ### F. Estrutura do app: seções e navegação
 - [x] 🎨 **Navegação por abas** no app logado (Início · Meu Corpo · Nutrição · Saúde) — barra sticky abaixo do header, troca o conteúdo sem recarregar, `aria-current` na aba ativa (`NutriTabs` em `nutri-home`). Seções existentes redistribuídas: Início (resumo + acompanhamento + conteúdos/dicas + upsell/Fit), Nutrição (diário + receita + timeline + lista de compras), Meu Corpo (peso/meta), Saúde (água + hábitos).
 - [~] 🎨 **"Meu Corpo"** — aba com peso/meta/gráfico + **medidas corporais** (cintura, quadril, peito, braço, coxa): registro num sheet, tiles com valor + variação vs. 1º registro + sparkline por medida (`measurements-store`, `lib/measurements.ts`, `MeasurementsCard`). Falta só **fotos de progresso**.
-- [~] 🎨 **"Saúde"** — aba criada com água + hábitos; sono e passos como placeholder "em breve".
+- [x] 🎨 **"Saúde"** — aba com água + hábitos + **sono** (registro de horas, barras da semana, meta 8h) e **passos** (meta diária, % + kcal estimadas, barras da semana, +/- rápido). Stores `health-store` + `use-health` + `HealthCards`.
 
 ### G. Preferências e detalhe da atividade
 - [ ] 🎨 **Preferências culinárias** (cozinhas favoritas, alimentos que não curte) além do estilo de dieta — afina as sugestões.
@@ -265,6 +269,7 @@ Hoje o BRL Nutri mostra só "Café da manhã — 600 kcal". O Smart Fit monta a 
 | _(novo)_ | waitlist BRL Fit | `POST /waitlist` |
 | `services/consultations.service.ts` | `scheduleConsultation` | `POST /consultations` (+ agenda real) |
 | `lib/measurements-store.ts` | `recordMeasurements` | `GET/POST /nutri/measurements` |
+| `lib/health-store.ts` | `recordSleep` / `setSteps` | `GET/POST /nutri/sleep` · `/nutri/steps` |
 | _(novo)_ | recuperar senha | `POST /auth/forgot` · `POST /auth/reset` |
 
 ---
