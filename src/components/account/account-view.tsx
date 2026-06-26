@@ -11,20 +11,12 @@ import {
 } from "lucide-react";
 import { useState, useSyncExternalStore } from "react";
 
-import { UpgradeNudge } from "@/components/plan/upgrade-nudge";
+import { PlanManager } from "@/components/plan/plan-manager";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/toast";
 import { useAuth } from "@/hooks/use-auth";
-import { usePlan } from "@/hooks/use-plan";
-import type { PlanTier } from "@/lib/plan-store";
 import { computeNutriPlan } from "@/lib/nutri-plan";
 import { goalLabel } from "@/lib/nutri-options";
-
-const TIER_INFO: Record<PlanTier, { name: string; detail: string }> = {
-  free: { name: "Plano Free", detail: "R$ 0 — recursos básicos do BRL Nutri." },
-  pro: { name: "BRL Pro", detail: "R$ 29,90/mês — Fit + Nutri integrados, IA e histórico ilimitado." },
-  family: { name: "BRL Family", detail: "R$ 49,90/mês — até 4 pessoas, dashboard familiar." },
-};
 import {
   clearNutriProfile,
   getNutriProfileServerSnapshot,
@@ -67,7 +59,6 @@ export function AccountView() {
   const router = useRouter();
   const toast = useToast();
   const { user, logout } = useAuth();
-  const { tier } = usePlan();
   const profile = useSyncExternalStore(
     subscribeNutriProfile,
     getNutriProfileSnapshot,
@@ -169,23 +160,11 @@ export function AccountView() {
           )}
         </Section>
 
-        <Section title="Assinatura">
-          <div className="flex items-center justify-between gap-4 rounded-xl border border-white/5 bg-white/[0.02] p-4">
-            <div>
-              <p className="font-display text-xl font-bold">
-                {TIER_INFO[tier].name}
-              </p>
-              <p className="text-sm text-muted-foreground">
-                {TIER_INFO[tier].detail}
-              </p>
-            </div>
-            {tier !== "free" ? (
-              <span className="shrink-0 rounded-full bg-emerald-400/10 px-3 py-1 text-xs font-semibold text-emerald-400">
-                Ativo
-              </span>
-            ) : null}
-          </div>
-          <UpgradeNudge className="mt-4" />
+        <Section
+          title="Assinatura"
+          description="Faça upgrade, mude de plano ou cancele quando quiser."
+        >
+          <PlanManager />
         </Section>
 
         <Section

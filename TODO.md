@@ -218,7 +218,7 @@ Hoje o BRL Nutri mostra só "Café da manhã — 600 kcal". O Smart Fit monta a 
 - [x] **Sucesso/erro** — tela de sucesso inline + toast de erro (cartão `...0000` recusa).
 - [x] CTAs dos planos abrem `/precos` → checkout (em vez de `/cadastro`).
 - [x] Estado de **assinatura** no `/conta` (mostra o tier atual). _Falta próxima cobrança/fatura._
-- [ ] **Ajustes de plano no `/conta`** — gerenciar a assinatura na própria conta: **trocar de plano** e **fazer downgrade** (ex.: Família→Pro→Free) e **cancelar**, sem precisar passar pelo checkout (hoje o `/conta` só mostra o tier e o upgrade vive no checkout). Avisar efeitos do downgrade (perda de consultas/recursos do tier atual) e confirmar antes de aplicar.
+- [x] **Ajustes de plano no `/conta`** — `PlanManager` lista os 3 planos com a ação certa por relação: upgrade vai pro checkout, **downgrade** e **cancelar** (ir pro Free) são imediatos, com painel de confirmação avisando os efeitos (queda das consultas por tier + perda dos recursos do plano atual). Substitui o `UpgradeNudge` que ficava ali. _Falta: próxima cobrança/fatura e agendar o downgrade pro fim do ciclo (hoje vale na hora, mock)._
 
 ### Autenticação
 - [ ] Provider/store de auth (ver Fase 1) — já no formato pronto pra trocar mock por API real.
