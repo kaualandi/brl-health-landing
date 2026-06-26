@@ -5,11 +5,9 @@ import {
   ArrowRightIcon,
   ClockIcon,
   DumbbellIcon,
-  FootprintsIcon,
   HeartPulseIcon,
   HomeIcon,
   Loader2Icon,
-  MoonIcon,
   ScaleIcon,
   ShoppingCartIcon,
   UtensilsIcon,
@@ -19,6 +17,7 @@ import { useState, useSyncExternalStore, type ReactNode } from "react";
 import { AnimatedSection } from "@/components/animations/animated-section";
 import { UserMenu } from "@/components/layout/user-menu";
 import { DayTimeline } from "@/components/nutri/day-timeline";
+import { SleepCard, StepsCard } from "@/components/nutri/health-cards";
 import { MealDiary } from "@/components/nutri/meal-diary";
 import { MeasurementsCard } from "@/components/nutri/measurements-card";
 import { NutriCoach } from "@/components/nutri/nutri-coach";
@@ -170,39 +169,6 @@ function NutriTabs({
         })}
       </div>
     </nav>
-  );
-}
-
-/** Placeholder enxuto pra recursos que ainda vão chegar (medidas, sono...). */
-function ComingSoon({
-  icon: Icon,
-  title,
-  description,
-}: {
-  icon: typeof HomeIcon;
-  title: string;
-  description: string;
-}) {
-  return (
-    <div className="flex items-start gap-4 rounded-2xl border border-dashed border-white/10 bg-white/[0.02] p-6">
-      <span
-        className="grid size-11 shrink-0 place-items-center rounded-xl bg-white/5 text-muted-foreground"
-        aria-hidden
-      >
-        <Icon className="size-5" />
-      </span>
-      <div>
-        <div className="flex flex-wrap items-center gap-2">
-          <h3 className="font-display text-base font-bold text-foreground">
-            {title}
-          </h3>
-          <span className="rounded-full bg-white/5 px-2 py-0.5 text-[0.65rem] font-semibold tracking-wide text-muted-foreground uppercase">
-            Em breve
-          </span>
-        </div>
-        <p className="mt-1 text-sm text-muted-foreground">{description}</p>
-      </div>
-    </div>
   );
 }
 
@@ -535,19 +501,11 @@ function SaudeTab({ profile }: { profile: NutriProfile }) {
       <SectionTitle eyebrow="Saúde" title="Seu bem-estar do dia" />
       <div className="grid gap-5">
         <WaterCard goalMl={plan.waterMl} />
-        <HabitsCard />
         <div className="grid gap-5 sm:grid-cols-2">
-          <ComingSoon
-            icon={MoonIcon}
-            title="Sono"
-            description="Registre suas horas de sono e veja como elas afetam fome e energia."
-          />
-          <ComingSoon
-            icon={FootprintsIcon}
-            title="Passos"
-            description="Acompanhe seus passos do dia e o gasto calórico que eles somam."
-          />
+          <SleepCard />
+          <StepsCard />
         </div>
+        <HabitsCard />
       </div>
     </section>
   );
