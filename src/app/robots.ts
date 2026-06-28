@@ -16,6 +16,7 @@ export default function robots(): MetadataRoute.Robots {
         "/cadastro",
         "/recuperar-senha",
         "/redefinir-senha",
+        "/verificar-email",
       ],
     },
     sitemap: `${SITE_URL}/sitemap.xml`,
