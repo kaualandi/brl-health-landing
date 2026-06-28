@@ -1,6 +1,6 @@
 import type { MetadataRoute } from "next";
 
-import { ARTICLES } from "@/lib/nutri-content";
+import { ARTICLES, RECIPES_CATALOG } from "@/lib/nutri-content";
 import { SITE_URL } from "@/lib/site";
 
 // Data fixa pra manter o sitemap determinístico entre builds.
@@ -18,6 +18,7 @@ const STATIC_ROUTES: StaticRoute[] = [
   { path: "/precos", priority: 0.8, changeFrequency: "monthly" },
   { path: "/calculadora", priority: 0.8, changeFrequency: "monthly" },
   { path: "/conteudos", priority: 0.7, changeFrequency: "weekly" },
+  { path: "/receitas", priority: 0.7, changeFrequency: "weekly" },
   { path: "/fit", priority: 0.6, changeFrequency: "monthly" },
   { path: "/sobre", priority: 0.6, changeFrequency: "monthly" },
   { path: "/faq", priority: 0.5, changeFrequency: "monthly" },
@@ -41,5 +42,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: 0.5,
   }));
 
-  return [...staticEntries, ...articleEntries];
+  const recipeEntries = RECIPES_CATALOG.map((recipe) => ({
+    url: `${SITE_URL}/receitas/${recipe.id}`,
+    lastModified: LAST_MODIFIED,
+    changeFrequency: "monthly" as const,
+    priority: 0.5,
+  }));
+
+  return [...staticEntries, ...articleEntries, ...recipeEntries];
 }

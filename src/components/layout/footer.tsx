@@ -8,6 +8,7 @@ const productLinks: FooterLink[] = [
   { href: "/precos", label: "Planos" },
   { href: "/calculadora", label: "Calculadora" },
   { href: "/conteudos", label: "Conteúdos" },
+  { href: "/receitas", label: "Receitas" },
 ];
 
 const companyLinks: FooterLink[] = [
