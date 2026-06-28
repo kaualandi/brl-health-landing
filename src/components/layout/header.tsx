@@ -21,6 +21,7 @@ const navItems = [
   { href: "/precos", label: "Planos" },
   { href: "/calculadora", label: "Calculadora" },
   { href: "/conteudos", label: "Conteúdos" },
+  { href: "/receitas", label: "Receitas" },
   { href: "/fit", label: "BRL Fit" },
   { href: "/sobre", label: "Sobre" },
   { href: "/contato", label: "Contato" },
