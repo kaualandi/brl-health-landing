@@ -1,23 +1,30 @@
 "use client";
 
 import Link from "next/link";
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { CheckIcon } from "lucide-react";
 
 import { AnimatedSection } from "@/components/animations/animated-section";
+import {
+  BillingToggle,
+  resolvePlanPrice,
+  type BillingCycle,
+} from "@/components/plan/billing-toggle";
 import { Button } from "@/components/ui/button";
 import { getPlans } from "@/services/plans.service";
 import type { Plan } from "@/types";
 import { cn } from "@/lib/utils";
 
-function PlanCard({ plan }: { plan: Plan }) {
+function PlanCard({ plan, cycle }: { plan: Plan; cycle: BillingCycle }) {
+  const price = resolvePlanPrice(plan, cycle);
   return (
     <article
       className={cn(
         "relative flex h-full flex-col gap-6 rounded-2xl border bg-brl-card p-8 transition-colors",
         plan.highlighted
           ? "border-brl-purple/40 shadow-[0_0_0_1px_rgba(150,86,161,0.6)] lg:-translate-y-4 lg:scale-[1.02]"
-          : "border-white/5",
+          : "border-foreground/5",
       )}
     >
       {plan.highlighted ? (
@@ -31,12 +38,24 @@ function PlanCard({ plan }: { plan: Plan }) {
           {plan.name}
         </h3>
         <p className="text-sm text-muted-foreground">{plan.tagline}</p>
-        <div className="mt-4 flex items-baseline gap-1">
-          <span className="font-display text-4xl font-extrabold tracking-tight md:text-5xl">
-            {plan.priceLabel}
-          </span>
-          {plan.monthlyPrice > 0 ? (
-            <span className="text-sm text-muted-foreground">/mês</span>
+        <div className="mt-4 flex flex-col gap-1">
+          <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
+            <span className="font-display text-4xl font-extrabold tracking-tight md:text-5xl">
+              {price.amount}
+            </span>
+            {price.perMonth ? (
+              <span className="text-sm text-muted-foreground">/mês</span>
+            ) : null}
+            {price.strikethrough ? (
+              <span className="text-sm text-muted-foreground line-through">
+                {price.strikethrough}
+              </span>
+            ) : null}
+          </div>
+          {price.annualNote ? (
+            <p className="text-xs font-medium text-brl-orange">
+              {price.annualNote}
+            </p>
           ) : null}
         </div>
       </header>
@@ -70,7 +89,7 @@ function PlanCard({ plan }: { plan: Plan }) {
           "mt-auto h-11 text-sm",
           plan.highlighted
             ? "bg-brl-purple text-white hover:bg-brl-purple/90"
-            : "border border-white/15 bg-white/5 text-foreground hover:bg-white/10",
+            : "border border-foreground/15 bg-foreground/5 text-foreground hover:bg-foreground/10",
         )}
         variant={plan.highlighted ? "default" : "outline"}
         render={<Link href="/precos">{plan.ctaLabel}</Link>}
@@ -83,20 +102,21 @@ function PlanSkeleton() {
   return (
     <div
       aria-hidden
-      className="flex h-full min-h-120 animate-pulse flex-col gap-4 rounded-2xl border border-white/5 bg-brl-card p-8"
+      className="flex h-full min-h-120 animate-pulse flex-col gap-4 rounded-2xl border border-foreground/5 bg-brl-card p-8"
     >
-      <div className="h-5 w-24 rounded bg-white/10" />
-      <div className="h-10 w-32 rounded bg-white/10" />
+      <div className="h-5 w-24 rounded bg-foreground/10" />
+      <div className="h-10 w-32 rounded bg-foreground/10" />
       <div className="mt-4 flex flex-col gap-3">
-        <div className="h-4 w-full rounded bg-white/5" />
-        <div className="h-4 w-5/6 rounded bg-white/5" />
-        <div className="h-4 w-4/6 rounded bg-white/5" />
+        <div className="h-4 w-full rounded bg-foreground/5" />
+        <div className="h-4 w-5/6 rounded bg-foreground/5" />
+        <div className="h-4 w-4/6 rounded bg-foreground/5" />
       </div>
     </div>
   );
 }
 
 export function Pricing() {
+  const [cycle, setCycle] = useState<BillingCycle>("monthly");
   const { data, isLoading, isError } = useQuery({
     queryKey: ["plans"],
     queryFn: getPlans,
@@ -123,6 +143,15 @@ export function Pricing() {
         </p>
       </div>
 
+      {data ? (
+        <BillingToggle
+          value={cycle}
+          onChange={setCycle}
+          savingsLabel="2 meses grátis no plano anual"
+          className="mt-10"
+        />
+      ) : null}
+
       {isLoading ? (
         <div className="mt-14 grid items-stretch gap-6 md:grid-cols-2 lg:grid-cols-3">
           {Array.from({ length: 3 }).map((_, i) => (
@@ -142,7 +171,7 @@ export function Pricing() {
 
       {data ? (
         <AnimatedSection
-          className="mt-14 grid items-stretch gap-6 md:grid-cols-2 lg:grid-cols-3"
+          className="mt-10 grid items-stretch gap-6 md:grid-cols-2 lg:grid-cols-3"
           translateY={0}
           scale={0.8}
           duration={500}
@@ -150,7 +179,7 @@ export function Pricing() {
           ease="outBack"
         >
           {data.map((plan) => (
-            <PlanCard key={plan.id} plan={plan} />
+            <PlanCard key={plan.id} plan={plan} cycle={cycle} />
           ))}
         </AnimatedSection>
       ) : null}

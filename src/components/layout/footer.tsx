@@ -1,5 +1,7 @@
 import Link from "next/link";
 
+import { NewsletterForm } from "@/components/layout/newsletter-form";
+
 type FooterLink = { href: string; label: string };
 
 const productLinks: FooterLink[] = [
@@ -52,7 +54,7 @@ function FooterColumn({
 
 export function Footer() {
   return (
-    <footer className="border-t border-white/5 bg-brl-dark py-12">
+    <footer className="border-t border-foreground/5 bg-brl-dark py-12">
       <div className="mx-auto grid w-full max-w-6xl gap-10 px-4 md:grid-cols-[2fr_1fr_1fr_1fr] md:px-6">
         <div>
           <Link
@@ -66,6 +68,16 @@ export function Footer() {
           <p className="mt-2 max-w-sm text-sm text-muted-foreground">
             Treino e nutrição que se falam. Do objetivo à conquista.
           </p>
+
+          <div className="mt-6 max-w-xs">
+            <p className="text-xs font-medium tracking-wide text-brl-muted uppercase">
+              Receba dicas no seu e-mail
+            </p>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Nutrição e treino sem enrolação, direto na sua caixa.
+            </p>
+            <NewsletterForm className="mt-4" />
+          </div>
         </div>
 
         <FooterColumn title="Produto" links={productLinks} />

@@ -16,6 +16,10 @@ export type Plan = {
   name: string;
   priceLabel: string;
   monthlyPrice: number;
+  /** Preço total cobrado no plano anual (mensal × 10 → 2 meses grátis). Ausente no Free. */
+  annualPrice?: number;
+  /** Rótulo curto do benefício anual, ex.: "2 meses grátis". */
+  annualDiscountLabel?: string;
   tagline: string;
   features: string[];
   note?: string;

@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { useState, useSyncExternalStore } from "react";
 
+import { SharePlan } from "@/components/account/share-plan";
 import { PlanManager } from "@/components/plan/plan-manager";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/toast";
@@ -34,7 +35,7 @@ function Section({
   children: React.ReactNode;
 }) {
   return (
-    <section className="rounded-2xl border border-white/5 bg-brl-card p-6 md:p-8">
+    <section className="rounded-2xl border border-foreground/5 bg-brl-card p-6 md:p-8">
       <h2 className="font-display text-lg font-bold text-foreground">
         {title}
       </h2>
@@ -48,7 +49,7 @@ function Section({
 
 function Row({ label, value }: { label: string; value: string }) {
   return (
-    <div className="flex flex-col gap-1 border-b border-white/5 py-3 first:pt-0 last:border-0 last:pb-0 sm:flex-row sm:items-center sm:justify-between">
+    <div className="flex flex-col gap-1 border-b border-foreground/5 py-3 first:pt-0 last:border-0 last:pb-0 sm:flex-row sm:items-center sm:justify-between">
       <span className="text-sm text-muted-foreground">{label}</span>
       <span className="text-sm font-medium text-foreground">{value}</span>
     </div>
@@ -125,26 +126,29 @@ export function AccountView() {
           {profile && plan ? (
             <div className="flex flex-col gap-4">
               <div className="flex flex-wrap gap-2">
-                <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs font-medium">
+                <span className="rounded-full border border-foreground/10 bg-foreground/5 px-3 py-1 text-xs font-medium">
                   🎯 {goalLabel(profile.goal)}
                 </span>
-                <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs font-medium">
+                <span className="rounded-full border border-foreground/10 bg-foreground/5 px-3 py-1 text-xs font-medium">
                   🔥 {plan.targetCalories} kcal/dia
                 </span>
-                <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs font-medium">
+                <span className="rounded-full border border-foreground/10 bg-foreground/5 px-3 py-1 text-xs font-medium">
                   💧 {plan.waterMl} ml de água
                 </span>
               </div>
-              <Button
-                nativeButton={false}
-                className="w-fit bg-brl-purple text-white hover:bg-brl-purple/90"
-                render={
-                  <Link href="/nutri">
-                    <SaladIcon />
-                    Abrir meu Nutri
-                  </Link>
-                }
-              />
+              <div className="flex flex-wrap gap-3">
+                <Button
+                  nativeButton={false}
+                  className="w-fit bg-brl-purple text-white hover:bg-brl-purple/90"
+                  render={
+                    <Link href="/nutri">
+                      <SaladIcon />
+                      Abrir meu Nutri
+                    </Link>
+                  }
+                />
+                <SharePlan />
+              </div>
             </div>
           ) : (
             <Button
@@ -175,7 +179,7 @@ export function AccountView() {
             <div className="flex flex-col gap-3 sm:flex-row">
               <Button
                 variant="outline"
-                className="border-white/15 bg-white/5 hover:bg-white/10"
+                className="border-foreground/15 bg-foreground/5 hover:bg-foreground/10"
                 onClick={handleResetPlan}
               >
                 <RotateCcwIcon />
@@ -183,7 +187,7 @@ export function AccountView() {
               </Button>
               <Button
                 variant="outline"
-                className="border-white/15 bg-white/5 hover:bg-white/10"
+                className="border-foreground/15 bg-foreground/5 hover:bg-foreground/10"
                 onClick={handleLogout}
               >
                 <LogOutIcon />
