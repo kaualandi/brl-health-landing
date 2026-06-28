@@ -2,6 +2,7 @@
 
 import { useForm } from "@tanstack/react-form";
 import { useMutation } from "@tanstack/react-query";
+import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { AlertCircleIcon, EyeIcon, EyeOffIcon, Loader2Icon } from "lucide-react";
 import { useState, type ReactNode } from "react";
@@ -159,6 +160,15 @@ export function LoginForm() {
           );
         }}
       </form.Field>
+
+      <div className="-mt-2 text-right">
+        <Link
+          href="/recuperar-senha"
+          className="text-sm font-medium text-brl-purple hover:underline"
+        >
+          Esqueci minha senha
+        </Link>
+      </div>
 
       <Button
         type="submit"
