@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { LogOutIcon, MenuIcon, SaladIcon } from "lucide-react";
 
 import { UserMenu } from "@/components/layout/user-menu";
+import { ThemeToggle } from "@/components/theme/theme-toggle";
 import { Button } from "@/components/ui/button";
 import {
   Sheet,
@@ -82,6 +83,7 @@ export function Header() {
         </nav>
 
         <div className="hidden items-center gap-2 md:flex">
+          <ThemeToggle />
           {isAuthenticated && user ? (
             <UserMenu user={user} />
           ) : (
@@ -136,7 +138,13 @@ export function Header() {
                   </Link>
                 ))}
               </nav>
-              <div className="mt-8 flex flex-col gap-3">
+              <div className="mt-6 flex items-center justify-between rounded-xl border border-border bg-muted/40 px-4 py-2">
+                <span className="text-sm font-medium text-muted-foreground">
+                  Tema
+                </span>
+                <ThemeToggle />
+              </div>
+              <div className="mt-4 flex flex-col gap-3">
                 {isAuthenticated && user ? (
                   <>
                     <div className="rounded-xl border border-white/10 bg-white/5 px-4 py-3">
