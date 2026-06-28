@@ -5,11 +5,25 @@ import { MetricsSection } from "@/components/sections/about/metrics-section";
 import { OriginSection } from "@/components/sections/about/origin-section";
 import { ProductsSection } from "@/components/sections/about/products-section";
 import { StackSection } from "@/components/sections/about/stack-section";
+import { SITE_NAME } from "@/lib/site";
+
+const TITLE = "Sobre — BRL Health";
+const DESCRIPTION =
+  "A história por trás do shape: como a BRL nasceu de uma conversa entre amigos que cansaram de treinar sem sistema.";
 
 export const metadata: Metadata = {
-  title: "Sobre — BRL Health",
-  description:
-    "A história por trás do shape: como a BRL nasceu de uma conversa entre amigos que cansaram de treinar sem sistema.",
+  title: TITLE,
+  description: DESCRIPTION,
+  alternates: { canonical: "/sobre" },
+  openGraph: {
+    type: "website",
+    locale: "pt_BR",
+    siteName: SITE_NAME,
+    url: "/sobre",
+    title: TITLE,
+    description: DESCRIPTION,
+    images: ["/opengraph-image"],
+  },
 };
 
 function AboutHero() {

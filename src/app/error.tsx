@@ -19,8 +19,14 @@ export default function Error({
   }, [error]);
 
   return (
-    <main className="flex min-h-dvh flex-col items-center justify-center bg-brl-dark px-4 py-16 text-center">
-      <span className="text-6xl" aria-hidden>
+    <main
+      role="alert"
+      className="flex min-h-dvh flex-col items-center justify-center bg-background px-4 py-16 text-center"
+    >
+      <span className="text-xs font-semibold tracking-[0.18em] text-brl-purple uppercase">
+        BRL Health
+      </span>
+      <span className="mt-4 text-6xl" aria-hidden>
         🛠️
       </span>
       <h1 className="mt-6 font-display text-2xl font-extrabold tracking-tight text-balance md:text-3xl">
@@ -44,7 +50,7 @@ export default function Error({
           size="lg"
           variant="outline"
           nativeButton={false}
-          className="h-12 border-white/15 bg-white/5 px-6 text-base hover:bg-white/10"
+          className="h-12 border-foreground/15 bg-foreground/5 px-6 text-base hover:bg-foreground/10"
           render={
             <Link href="/">
               <HomeIcon />
