@@ -60,24 +60,27 @@
   --radius-4xl: calc(var(--radius) * 2.6);
 }
 
+/* Tema claro (padrão do :root). O tema escuro vive em `.dark` e é o default
+   aplicado no primeiro paint pelo script inline + store, preservando o visual
+   atual. Mantemos as cores de marca (roxo/laranja) idênticas nos dois temas. */
 :root {
-  --background: #0d0d1a;
-  --foreground: #f5f2ff;
-  --card: #13131f;
-  --card-foreground: #f5f2ff;
-  --popover: #13131f;
-  --popover-foreground: #f5f2ff;
+  --background: #f8f7fc;
+  --foreground: #1b1726;
+  --card: #ffffff;
+  --card-foreground: #1b1726;
+  --popover: #ffffff;
+  --popover-foreground: #1b1726;
   --primary: #9656a1;
   --primary-foreground: #ffffff;
-  --secondary: #1b1b2a;
-  --secondary-foreground: #f5f2ff;
-  --muted: #1b1b2a;
-  --muted-foreground: #9988aa;
+  --secondary: #efeaf5;
+  --secondary-foreground: #1b1726;
+  --muted: #efeaf5;
+  --muted-foreground: #6f6780;
   --accent: #ff8906;
-  --accent-foreground: #0d0d1a;
+  --accent-foreground: #2b1500;
   --destructive: oklch(0.636 0.237 25.331);
-  --border: rgba(255, 255, 255, 0.08);
-  --input: rgba(255, 255, 255, 0.1);
+  --border: rgba(20, 16, 33, 0.1);
+  --input: rgba(20, 16, 33, 0.14);
   --ring: #9656a1;
   --chart-1: #9656a1;
   --chart-2: #ff8906;
@@ -85,13 +88,13 @@
   --chart-4: #f25f4c;
   --chart-5: #7f5af0;
   --radius: 0.75rem;
-  --sidebar: #13131f;
-  --sidebar-foreground: #f5f2ff;
+  --sidebar: #ffffff;
+  --sidebar-foreground: #1b1726;
   --sidebar-primary: #9656a1;
   --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #1b1b2a;
-  --sidebar-accent-foreground: #f5f2ff;
-  --sidebar-border: rgba(255, 255, 255, 0.08);
+  --sidebar-accent: #efeaf5;
+  --sidebar-accent-foreground: #1b1726;
+  --sidebar-border: rgba(20, 16, 33, 0.1);
   --sidebar-ring: #9656a1;
 }
 
