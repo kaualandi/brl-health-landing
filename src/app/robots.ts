@@ -8,7 +8,15 @@ export default function robots(): MetadataRoute.Robots {
       userAgent: "*",
       allow: "/",
       // Áreas privadas / de conversão não precisam ser indexadas.
-      disallow: ["/nutri", "/conta", "/checkout", "/login", "/cadastro"],
+      disallow: [
+        "/nutri",
+        "/conta",
+        "/checkout",
+        "/login",
+        "/cadastro",
+        "/recuperar-senha",
+        "/redefinir-senha",
+      ],
     },
     sitemap: `${SITE_URL}/sitemap.xml`,
     host: SITE_URL,

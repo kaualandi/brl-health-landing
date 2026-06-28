@@ -45,3 +45,31 @@ export async function registerUser(
   };
   // TODO: substituir por api.post('/auth/register')
 }
+
+export async function requestPasswordReset(
+  email: string,
+): Promise<{ message: string }> {
+  await wait(800);
+
+  void email;
+
+  // Resolve sempre — não revelamos se o e-mail existe (privacidade).
+  return { message: "Se houver uma conta, enviamos um link de redefinição." };
+  // TODO: substituir por api.post('/auth/forgot')
+}
+
+export async function resetPassword(
+  token: string,
+  password: string,
+): Promise<{ message: string }> {
+  await wait(800);
+
+  void password;
+
+  if (!token) {
+    throw new Error("Link inválido ou expirado");
+  }
+
+  return { message: "Senha redefinida" };
+  // TODO: substituir por api.post('/auth/reset')
+}
