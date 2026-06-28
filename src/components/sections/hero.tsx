@@ -44,7 +44,7 @@ export function Hero() {
       <div className="mx-auto flex w-full max-w-6xl flex-col items-center gap-8 px-4 text-center md:px-6">
         <span
           ref={badgeRef}
-          className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs font-medium text-muted-foreground"
+          className="inline-flex items-center gap-2 rounded-full border border-foreground/10 bg-foreground/5 px-3 py-1 text-xs font-medium text-muted-foreground"
         >
           <span className="size-1.5 rounded-full bg-brl-orange" />
           BRL Fit + BRL Nutri — agora conversando
@@ -86,7 +86,7 @@ export function Hero() {
             variant="outline"
             size="lg"
             nativeButton={false}
-            className="h-12 border-white/15 bg-white/5 px-6 text-base text-foreground hover:bg-white/10"
+            className="h-12 border-foreground/15 bg-foreground/5 px-6 text-base text-foreground hover:bg-foreground/10"
             render={<a href="#como-funciona">Ver como funciona</a>}
           />
         </div>

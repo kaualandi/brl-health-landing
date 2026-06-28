@@ -21,7 +21,7 @@ export function MetricsSection() {
       <h2 id="metrics-title" className="sr-only">
         Números da BRL
       </h2>
-      <dl className="grid gap-10 rounded-2xl border border-white/5 bg-brl-card/60 p-10 md:grid-cols-3 md:gap-6 md:p-12">
+      <dl className="grid gap-10 rounded-2xl border border-foreground/5 bg-brl-card/60 p-10 md:grid-cols-3 md:gap-6 md:p-12">
         {metrics.map((metric) => (
           <div
             key={metric.label}

@@ -32,7 +32,7 @@ export function HowItWorks() {
     <section
       id="como-funciona"
       aria-labelledby="how-it-works-title"
-      className="relative border-y border-white/5 bg-black/20 py-20 md:py-28"
+      className="relative border-y border-foreground/5 bg-foreground/5 py-20 md:py-28"
     >
       <div className="mx-auto w-full max-w-6xl px-4 md:px-6">
         <div className="mx-auto max-w-2xl text-center">
@@ -57,7 +57,7 @@ export function HowItWorks() {
         >
           {steps.map((step, index) => (
             <Fragment key={step.title}>
-              <li className="flex flex-1 flex-col gap-3 rounded-2xl border border-white/5 bg-brl-card p-6">
+              <li className="flex flex-1 flex-col gap-3 rounded-2xl border border-foreground/5 bg-brl-card p-6">
                   <span
                     aria-hidden
                     className="font-display text-5xl font-extrabold text-brl-purple/20 md:text-6xl"

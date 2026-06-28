@@ -38,7 +38,7 @@ export function StackSection() {
         {stack.map((tech) => (
           <li
             key={tech}
-            className="rounded-xl border border-white/5 bg-brl-card px-4 py-3 text-center text-sm font-medium text-brl-muted transition-colors hover:border-brl-purple hover:text-foreground"
+            className="rounded-xl border border-foreground/5 bg-brl-card px-4 py-3 text-center text-sm font-medium text-brl-muted transition-colors hover:border-brl-purple hover:text-foreground"
           >
             {tech}
           </li>
