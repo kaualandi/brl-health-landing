@@ -59,6 +59,13 @@
 - **A aba Saúde fechou:** cards de **sono** (registro de horas com presets, barras da semana, meta 8h) e **passos** (meta diária, progresso + kcal estimadas, barras da semana, +/- rápido). Acabaram os placeholders "em breve" do app.
 - Store novo `health-store` (sono + passos, persistidos, histórico por dia) + `use-health` + `HealthCards`.
 
+**9ª leva — receitas, tema, recuperar senha e base de produção:**
+- **Receitas públicas:** `/receitas` (lista com busca por ingrediente + filtro por categoria) e `/receitas/[slug]` (SSG) — catálogo `RECIPES_CATALOG` com 10 receitas por dieta/categoria, cada uma com ingredientes, modo de preparo, kcal e macros. O `RECIPES`/`recipeForDiet` do app logado ficou intacto. Links no header/footer + sitemap.
+- **Tema claro/escuro:** toggle persistido, sem flash e respeitando o sistema (dark continua padrão). `:root` passou a guardar a paleta clara e `.dark` a escura; store SSR-safe (`theme-store` + `use-theme`) espelhando o `auth-store`, script inline anti-flash e `ThemeWatcher` global.
+- **Recuperar senha (UI + mock):** `/recuperar-senha` e `/redefinir-senha` espelhando o login (TanStack Form + Zod), com `requestPasswordReset`/`resetPassword` mock (`// TODO` p/ `POST /auth/forgot` · `/auth/reset`), link no login e bloqueio no `robots`.
+- **Base de produção:** README real, `.env.example`, **Vitest** com 23 testes no `nutri-plan`, **CI** (GitHub Actions: lint · typecheck · test · build no Node 22) e `vercel.json`.
+- Entregue em **4 PRs separados** (#18 recuperar-senha · #19 receitas · #20 produção · #21 tema), cada um com typecheck + lint + build verdes.
+
 ---
 
 ## 💡 Brainstorm — inspirado no Smart Fit Nutri (screenshots)
@@ -164,7 +171,7 @@ Hoje o BRL Nutri mostra só "Café da manhã — 600 kcal". O Smart Fit monta a 
 ### Conteúdo / Blog (dados já existem em `nutri-content.ts`)
 - [x] **`/conteudos`** — listagem com busca e filtro por categoria (`ContentExplorer`).
 - [x] **`/conteudos/[slug]`** — página de artigo (corpo em seções, tempo de leitura, autor, relacionados, CTA pro Nutri). Estática via `generateStaticParams`.
-- [ ] **Receitas** — `/receitas` e `/receitas/[slug]` (expandir o seed de receitas por dieta).
+- [x] **Receitas** — `/receitas` (busca/filtro) e `/receitas/[slug]` (SSG), catálogo `RECIPES_CATALOG` com ingredientes/macros por dieta. _PR #19._
 
 ### BRL Fit (deixar "em breve")
 - [x] **`/fit`** — landing "em breve" com proposta de valor, features e **lista de espera** (`WaitlistForm` → `waitlist.service` mock).
@@ -195,7 +202,7 @@ Hoje o BRL Nutri mostra só "Café da manhã — 600 kcal". O Smart Fit monta a 
 - [ ] **Comparador de planos** interativo (toggle mensal/anual com desconto).
 - [~] **Gamificação** — confete ao completar os hábitos do dia ✅; faltam badges/conquistas e streaks.
 - [ ] **Compartilhar plano** — gerar card/imagem ou link de resumo.
-- [ ] **Tema claro/escuro** — toggle (hoje é dark-only; tokens já existem em `:root`/`.dark`).
+- [x] **Tema claro/escuro** — toggle persistido, sem flash, respeita o sistema (dark padrão); `:root` claro / `.dark` escuro, store SSR-safe + script anti-flash. _PR #21._ _Falta: passar utilitárias dark-only (`white/5`) pra tokens no claro._
 - [~] **Onboarding melhorado** — logado pula o passo de conta ✅, revisão editável a partir do review ✅, animação de "gerando plano" ✅; falta salvar rascunho.
 - [ ] **Estados vazios** ilustrados e consistentes em todas as listas.
 - [ ] **PWA** — manifest + ícones + offline básico (instalável no celular).
@@ -211,7 +218,7 @@ Hoje o BRL Nutri mostra só "Café da manhã — 600 kcal". O Smart Fit monta a 
 - [x] **Formulário de contato** com estado de sucesso (SuccessCard) e toast de erro.
 - [x] **Lista de espera do BRL Fit** (`WaitlistForm` + `waitlist.service` mock).
 - [ ] **Newsletter** (rodapé / fim de artigo) — reusar o `WaitlistForm` com `source="newsletter"`.
-- [ ] Telas/estados que dependem de e-mail: **verificar e-mail**, **recuperar senha** (`/recuperar-senha`, `/redefinir-senha`).
+- [~] Telas/estados que dependem de e-mail: **recuperar senha** ✅ (`/recuperar-senha`, `/redefinir-senha` — UI + mock, _PR #18_); **verificar e-mail** ainda pendente.
 
 ### Pagamento
 - [x] **Fluxo de checkout** (`/checkout?plano=pro`) — resumo + form de cartão (mock `billing.service`), seta o tier no sucesso.
@@ -222,7 +229,7 @@ Hoje o BRL Nutri mostra só "Café da manhã — 600 kcal". O Smart Fit monta a 
 
 ### Autenticação
 - [ ] Provider/store de auth (ver Fase 1) — já no formato pronto pra trocar mock por API real.
-- [ ] **Recuperação de senha** (UI completa, service mock).
+- [x] **Recuperação de senha** (UI completa + service mock: `requestPasswordReset`/`resetPassword` com `// TODO` p/ `/auth/forgot`·`/auth/reset`). _PR #18._
 - [ ] **Login social** (botões Google/Apple — só UI por enquanto).
 
 ---
@@ -233,11 +240,11 @@ Hoje o BRL Nutri mostra só "Café da manhã — 600 kcal". O Smart Fit monta a 
 - [ ] **Performance** — Lighthouse/Core Web Vitals, lazy-load de animações pesadas, `next/image` onde couber.
 - [ ] **Analytics** (mock/placeholder de eventos — page views, cliques de CTA, conclusão de onboarding).
 - [ ] **Tratamento de erro** consistente (boundaries + mensagens amigáveis em PT-BR).
-- [ ] **Variáveis de ambiente** documentadas (`.env.example`) — `NEXT_PUBLIC_API_URL` etc.
-- [ ] **Testes** — unit em `nutri-plan.ts` (cálculos) e e2e de smoke nos fluxos críticos (onboarding → nutri, login).
-- [ ] **CI** — lint + typecheck + build no pipeline.
-- [ ] **README** real do projeto (substituir o boilerplate do create-next-app).
-- [ ] **Deploy** — configurar Vercel/host, preview por PR.
+- [x] **Variáveis de ambiente** documentadas (`.env.example`) — `NEXT_PUBLIC_SITE_URL` + `NEXT_PUBLIC_API_URL`. _PR #20._
+- [~] **Testes** — unit em `nutri-plan.ts` (cálculos) com **Vitest** (23 testes) ✅ _PR #20_; falta e2e de smoke nos fluxos críticos (onboarding → nutri, login).
+- [x] **CI** — GitHub Actions: lint + typecheck + test + build (Node 22). _PR #20._
+- [x] **README** real do projeto (substituiu o boilerplate do create-next-app). _PR #20._
+- [~] **Deploy** — `vercel.json` + passos de deploy no README ✅ _PR #20_; falta conectar o projeto no Vercel (preview por PR).
 
 ---
 
