@@ -10,6 +10,7 @@ import {
   UsersIcon,
 } from "lucide-react";
 
+import { FavoriteButton } from "@/components/content/favorite-button";
 import { Button } from "@/components/ui/button";
 import {
   RECIPES_CATALOG,
@@ -60,10 +61,11 @@ export default async function RecipePage({ params }: Params) {
         </Link>
 
         <header className="mt-6">
-          <div className="flex items-center gap-3">
+          <div className="flex items-center justify-between gap-3">
             <span className="rounded-full bg-brl-purple/15 px-3 py-1 text-xs font-semibold tracking-wide text-brl-purple uppercase">
               {recipe.category}
             </span>
+            <FavoriteButton type="recipe" id={recipe.id} />
           </div>
           <h1 className="mt-4 flex items-start gap-3 font-display text-3xl leading-[1.1] font-extrabold tracking-tight text-balance md:text-5xl">
             <span aria-hidden>{recipe.emoji}</span>
@@ -92,7 +94,7 @@ export default async function RecipePage({ params }: Params) {
           {macros.map((macro) => (
             <div
               key={macro.label}
-              className="rounded-2xl border border-white/5 bg-brl-card p-4 text-center"
+              className="rounded-2xl border border-foreground/5 bg-brl-card p-4 text-center"
             >
               <p className="font-display text-2xl font-extrabold text-foreground">
                 {macro.value}
@@ -152,7 +154,7 @@ export default async function RecipePage({ params }: Params) {
 
         {/* CTA */}
         <div
-          className="mt-12 overflow-hidden rounded-2xl border border-white/5 p-7 md:p-8"
+          className="mt-12 overflow-hidden rounded-2xl border border-foreground/5 p-7 md:p-8"
           style={{
             background:
               "linear-gradient(135deg, #13131f 0%, rgba(150,86,161,0.22) 100%)",
@@ -190,13 +192,13 @@ export default async function RecipePage({ params }: Params) {
               <Link
                 key={item.id}
                 href={`/receitas/${item.id}`}
-                className="group flex h-full flex-col gap-3 rounded-2xl border border-white/5 bg-brl-card p-6 transition-colors hover:border-brl-purple/40"
+                className="group flex h-full flex-col gap-3 rounded-2xl border border-foreground/5 bg-brl-card p-6 transition-colors hover:border-brl-purple/40"
               >
                 <div className="flex items-center justify-between">
                   <span className="text-3xl" aria-hidden>
                     {item.emoji}
                   </span>
-                  <span className="rounded-full bg-white/5 px-2.5 py-1 text-xs font-medium text-brl-muted">
+                  <span className="rounded-full bg-foreground/5 px-2.5 py-1 text-xs font-medium text-brl-muted">
                     {item.category}
                   </span>
                 </div>

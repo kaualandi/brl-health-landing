@@ -3,6 +3,7 @@
 import Link from "next/link";
 import {
   ArrowRightIcon,
+  BookmarkIcon,
   ClockIcon,
   DumbbellIcon,
   HeartPulseIcon,
@@ -16,6 +17,7 @@ import { useState, useSyncExternalStore, type ReactNode } from "react";
 
 import { AnimatedSection } from "@/components/animations/animated-section";
 import { UserMenu } from "@/components/layout/user-menu";
+import { AchievementsCard } from "@/components/nutri/achievements-card";
 import { DayTimeline } from "@/components/nutri/day-timeline";
 import { SleepCard, StepsCard } from "@/components/nutri/health-cards";
 import { MealDiary } from "@/components/nutri/meal-diary";
@@ -27,10 +29,19 @@ import { WeightCard } from "@/components/nutri/weight-card";
 import { UpgradeNudge } from "@/components/plan/upgrade-nudge";
 import { Button } from "@/components/ui/button";
 import { Confetti } from "@/components/ui/confetti";
+import { EmptyState } from "@/components/ui/empty-state";
 import { useAuth } from "@/hooks/use-auth";
+import { useFavorites } from "@/hooks/use-favorites";
 import { useHabits } from "@/hooks/use-nutri-tracking";
 import { computeNutriPlan } from "@/lib/nutri-plan";
-import { curatedArticles, DAILY_HABITS, QUICK_TIPS, recipeForDiet } from "@/lib/nutri-content";
+import {
+  curatedArticles,
+  DAILY_HABITS,
+  getArticle,
+  getRecipe,
+  QUICK_TIPS,
+  recipeForDiet,
+} from "@/lib/nutri-content";
 import {
   activityLabel,
   dietLabel,
@@ -55,7 +66,7 @@ const GOAL_HEADLINE: Record<Goal, string> = {
 function NutriBar({ showShopping = false }: { showShopping?: boolean }) {
   const { user } = useAuth();
   return (
-    <header className="sticky top-0 z-40 border-b border-white/5 bg-background/70 backdrop-blur-xl">
+    <header className="sticky top-0 z-40 border-b border-foreground/5 bg-background/70 backdrop-blur-xl">
       <div className="mx-auto flex h-16 w-full max-w-5xl items-center justify-between px-4 md:px-6">
         <Link
           href="/"
@@ -89,7 +100,7 @@ function NutriBar({ showShopping = false }: { showShopping?: boolean }) {
 
 function Chip({ children }: { children: ReactNode }) {
   return (
-    <span className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs font-medium text-foreground/90">
+    <span className="inline-flex items-center gap-1.5 rounded-full border border-foreground/10 bg-foreground/5 px-3 py-1 text-xs font-medium text-foreground/90">
       {children}
     </span>
   );
@@ -115,16 +126,17 @@ function SectionTitle({
 }
 
 /* ------------------------------------------------------------------ */
-/* Navegação por abas — Início · Meu Corpo · Nutrição · Saúde          */
+/* Navegação por abas — Início · Meu Corpo · Nutrição · Saúde · Salvos  */
 /* ------------------------------------------------------------------ */
 
-type NutriTab = "inicio" | "corpo" | "nutricao" | "saude";
+type NutriTab = "inicio" | "corpo" | "nutricao" | "saude" | "salvos";
 
 const TABS: { id: NutriTab; label: string; icon: typeof HomeIcon }[] = [
   { id: "inicio", label: "Início", icon: HomeIcon },
   { id: "corpo", label: "Meu Corpo", icon: ScaleIcon },
   { id: "nutricao", label: "Nutrição", icon: UtensilsIcon },
   { id: "saude", label: "Saúde", icon: HeartPulseIcon },
+  { id: "salvos", label: "Salvos", icon: BookmarkIcon },
 ];
 
 function NutriTabs({
@@ -137,9 +149,9 @@ function NutriTabs({
   return (
     <nav
       aria-label="Seções do BRL Nutri"
-      className="sticky top-16 z-30 border-b border-white/5 bg-background/70 backdrop-blur-xl"
+      className="sticky top-16 z-30 border-b border-foreground/5 bg-background/70 backdrop-blur-xl"
     >
-      <div className="mx-auto flex w-full max-w-5xl px-2 md:px-6">
+      <div className="mx-auto flex w-full max-w-5xl overflow-x-auto px-2 md:px-6 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         {TABS.map((tab) => {
           const Icon = tab.icon;
           const isActive = active === tab.id;
@@ -150,7 +162,7 @@ function NutriTabs({
               onClick={() => onChange(tab.id)}
               aria-current={isActive ? "page" : undefined}
               className={cn(
-                "relative flex flex-1 items-center justify-center gap-2 px-2 py-3.5 text-sm font-medium transition-colors outline-none focus-visible:ring-3 focus-visible:ring-ring/50 md:flex-none md:px-5",
+                "relative flex shrink-0 items-center justify-center gap-2 px-3 py-3.5 text-sm font-medium whitespace-nowrap transition-colors outline-none focus-visible:ring-3 focus-visible:ring-ring/50 md:px-5",
                 isActive
                   ? "text-brl-purple"
                   : "text-muted-foreground hover:text-foreground",
@@ -192,7 +204,7 @@ function HabitsCard() {
   }
 
   return (
-    <div className="rounded-2xl border border-white/5 bg-brl-card p-6 md:p-8">
+    <div className="rounded-2xl border border-foreground/5 bg-brl-card p-6 md:p-8">
       <Confetti fireKey={fireKey} />
       <div className="mb-5 flex items-center justify-between gap-3">
         <div className="flex items-center gap-2.5">
@@ -225,7 +237,7 @@ function HabitsCard() {
                   "flex w-full items-center gap-3 rounded-xl border p-3 text-left transition-all outline-none focus-visible:ring-3 focus-visible:ring-ring/50",
                   checked
                     ? "border-emerald-400/40 bg-emerald-400/10"
-                    : "border-white/8 hover:border-white/15",
+                    : "border-foreground/8 hover:border-foreground/15",
                 )}
               >
                 <span className="text-xl" aria-hidden>
@@ -247,7 +259,7 @@ function HabitsCard() {
                     "size-5 shrink-0 rounded-md border transition-colors",
                     checked
                       ? "border-emerald-400 bg-emerald-400"
-                      : "border-white/20",
+                      : "border-foreground/20",
                   )}
                 />
               </button>
@@ -310,13 +322,13 @@ function InicioTab({ profile }: { profile: NutriProfile }) {
             <Link
               key={article.id}
               href={`/conteudos/${article.id}`}
-              className="group flex h-full flex-col gap-3 rounded-2xl border border-white/5 bg-brl-card p-6 transition-colors hover:border-brl-purple/40"
+              className="group flex h-full flex-col gap-3 rounded-2xl border border-foreground/5 bg-brl-card p-6 transition-colors hover:border-brl-purple/40"
             >
               <div className="flex items-center justify-between">
                 <span className="text-3xl" aria-hidden>
                   {article.emoji}
                 </span>
-                <span className="rounded-full bg-white/5 px-2.5 py-1 text-xs font-medium text-brl-muted">
+                <span className="rounded-full bg-foreground/5 px-2.5 py-1 text-xs font-medium text-brl-muted">
                   {article.category}
                 </span>
               </div>
@@ -340,7 +352,7 @@ function InicioTab({ profile }: { profile: NutriProfile }) {
           {QUICK_TIPS.map((tip) => (
             <li
               key={tip.text}
-              className="flex items-start gap-3 rounded-xl border border-white/5 bg-white/[0.02] p-4 text-sm text-foreground/90"
+              className="flex items-start gap-3 rounded-xl border border-foreground/5 bg-foreground/[0.02] p-4 text-sm text-foreground/90"
             >
               <span className="text-lg" aria-hidden>
                 {tip.emoji}
@@ -359,7 +371,7 @@ function InicioTab({ profile }: { profile: NutriProfile }) {
       {/* Integração BRL Fit */}
       <section className="pt-10 md:pt-14">
         <div
-          className="relative overflow-hidden rounded-3xl border border-white/5 p-8 md:p-10"
+          className="relative overflow-hidden rounded-3xl border border-foreground/5 p-8 md:p-10"
           style={{
             background:
               "linear-gradient(135deg, #13131f 0%, rgba(150,86,161,0.25) 100%)",
@@ -473,7 +485,7 @@ function NutricaoTab({ profile }: { profile: NutriProfile }) {
       <section className="pt-10 md:pt-14">
         <Link
           href="/nutri/compras"
-          className="group flex items-center gap-4 rounded-2xl border border-white/5 bg-brl-card p-6 transition-colors hover:border-brl-purple/40 md:p-8"
+          className="group flex items-center gap-4 rounded-2xl border border-foreground/5 bg-brl-card p-6 transition-colors hover:border-brl-purple/40 md:p-8"
         >
           <span className="grid size-12 shrink-0 place-items-center rounded-xl bg-brl-purple/15 text-brl-purple">
             <ShoppingCartIcon className="size-6" />
@@ -506,7 +518,122 @@ function SaudeTab({ profile }: { profile: NutriProfile }) {
           <StepsCard />
         </div>
         <HabitsCard />
+        <AchievementsCard waterGoalMl={plan.waterMl} />
       </div>
+    </section>
+  );
+}
+
+function SalvosTab() {
+  const { favorites } = useFavorites();
+  // Mais recentes primeiro; descarta ids que não existem mais no catálogo.
+  const articles = [...favorites]
+    .reverse()
+    .filter((f) => f.type === "article")
+    .map((f) => getArticle(f.id))
+    .filter((a): a is NonNullable<typeof a> => a !== undefined);
+  const recipes = [...favorites]
+    .reverse()
+    .filter((f) => f.type === "recipe")
+    .map((f) => getRecipe(f.id))
+    .filter((r): r is NonNullable<typeof r> => r !== undefined);
+
+  const isEmpty = articles.length === 0 && recipes.length === 0;
+
+  return (
+    <section className="pt-8 md:pt-12">
+      <SectionTitle eyebrow="Salvos" title="Seus favoritos" />
+      {isEmpty ? (
+        <EmptyState
+          icon="🔖"
+          title="Nada salvo ainda"
+          description="Toque em Salvar num conteúdo ou receita pra guardar aqui e voltar quando quiser."
+          action={
+            <Button
+              size="lg"
+              nativeButton={false}
+              className="bg-brl-purple text-white hover:bg-brl-purple/90"
+              render={
+                <Link href="/conteudos">
+                  Explorar conteúdos
+                  <ArrowRightIcon />
+                </Link>
+              }
+            />
+          }
+        />
+      ) : (
+        <div className="flex flex-col gap-10">
+          {articles.length > 0 ? (
+            <div>
+              <h3 className="mb-4 font-display text-lg font-bold">
+                Conteúdos salvos
+              </h3>
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                {articles.map((article) => (
+                  <Link
+                    key={article.id}
+                    href={`/conteudos/${article.id}`}
+                    className="group flex h-full flex-col gap-3 rounded-2xl border border-foreground/5 bg-brl-card p-6 transition-colors hover:border-brl-purple/40"
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="text-3xl" aria-hidden>
+                        {article.emoji}
+                      </span>
+                      <span className="rounded-full bg-foreground/5 px-2.5 py-1 text-xs font-medium text-brl-muted">
+                        {article.category}
+                      </span>
+                    </div>
+                    <h3 className="font-display text-base font-bold leading-snug text-foreground">
+                      {article.title}
+                    </h3>
+                    <p className="text-sm text-muted-foreground">
+                      {article.excerpt}
+                    </p>
+                    <span className="mt-auto inline-flex items-center gap-1 pt-2 text-xs font-medium text-brl-purple">
+                      Ler · {article.readTime}
+                      <ArrowRightIcon className="size-3 transition-transform group-hover:translate-x-0.5" />
+                    </span>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          ) : null}
+
+          {recipes.length > 0 ? (
+            <div>
+              <h3 className="mb-4 font-display text-lg font-bold">
+                Receitas salvas
+              </h3>
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                {recipes.map((recipe) => (
+                  <Link
+                    key={recipe.id}
+                    href={`/receitas/${recipe.id}`}
+                    className="group flex h-full flex-col gap-3 rounded-2xl border border-foreground/5 bg-brl-card p-6 transition-colors hover:border-brl-purple/40"
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="text-3xl" aria-hidden>
+                        {recipe.emoji}
+                      </span>
+                      <span className="rounded-full bg-foreground/5 px-2.5 py-1 text-xs font-medium text-brl-muted">
+                        {recipe.category}
+                      </span>
+                    </div>
+                    <h3 className="font-display text-base font-bold leading-snug text-foreground">
+                      {recipe.title}
+                    </h3>
+                    <span className="mt-auto inline-flex items-center gap-1 pt-2 text-xs font-medium text-brl-purple">
+                      ⏱ {recipe.time} · {recipe.kcal} kcal
+                      <ArrowRightIcon className="size-3 transition-transform group-hover:translate-x-0.5" />
+                    </span>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          ) : null}
+        </div>
+      )}
     </section>
   );
 }
@@ -531,6 +658,7 @@ function ReadyHome({ profile }: { profile: NutriProfile }) {
         {tab === "corpo" ? <CorpoTab profile={profile} /> : null}
         {tab === "nutricao" ? <NutricaoTab profile={profile} /> : null}
         {tab === "saude" ? <SaudeTab profile={profile} /> : null}
+        {tab === "salvos" ? <SalvosTab /> : null}
       </main>
     </div>
   );
