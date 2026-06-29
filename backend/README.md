@@ -85,6 +85,7 @@ Trocam os _services_ mock do front por API real. Rotas com 🔒 exigem
 | `GET` 🔒 | `/nutri/plan` | plano calculado do perfil salvo |
 | `GET` | `/plans` | `plans.service.ts` |
 | `GET` | `/foods` · `/meals` | catálogo do cardápio (`lib/foods.ts` · `lib/meals.ts`) |
+| `GET` | `/articles` · `/articles/{id}` | conteúdo editorial (`lib/nutri-content.ts`) |
 | `POST` 🔒 | `/billing/checkout` | `billing.service.ts` |
 | `DELETE` 🔒 | `/consultations/{id}` | cancelar (devolve crédito) |
 | `POST` | `/contact` · `/waitlist` · `/analytics/events` | contato / waitlist / analytics |

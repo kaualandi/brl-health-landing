@@ -93,6 +93,19 @@ CREATE TABLE IF NOT EXISTS meals (
     roles        TEXT[] NOT NULL DEFAULT '{}'  -- papéis de alimento que compõem a refeição
 );
 
+-- Conteúdo editorial (espelha lib/nutri-content.ts). body = seções em JSONB.
+CREATE TABLE IF NOT EXISTS articles (
+    id        TEXT PRIMARY KEY,                -- slug
+    category  TEXT NOT NULL,
+    emoji     TEXT,
+    title     TEXT NOT NULL,
+    excerpt   TEXT NOT NULL,
+    read_time TEXT NOT NULL,
+    author    TEXT NOT NULL,
+    goals     TEXT[] NOT NULL DEFAULT '{}',    -- objetivos relevantes (vazio = todos)
+    body      JSONB NOT NULL DEFAULT '[]'      -- [{heading?, paragraphs?, bullets?}]
+);
+
 -- ------------------------------------------------------------------
 -- Tracking diário (um registro por user_id + date, upsert na escrita)
 -- ------------------------------------------------------------------

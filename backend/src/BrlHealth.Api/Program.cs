@@ -15,6 +15,7 @@ builder.Services.AddScoped<ProfilesRepository>();
 builder.Services.AddScoped<TrackingRepository>();
 builder.Services.AddScoped<EngagementRepository>();
 builder.Services.AddScoped<FoodsRepository>();
+builder.Services.AddScoped<ArticlesRepository>();
 
 // CORS para o front Next.js (NEXT_PUBLIC_API_URL aponta para cá).
 builder.Services.AddCors(options =>
@@ -39,6 +40,7 @@ app.MapAuth();             // /auth/login · register · forgot · reset · veri
 app.MapProfile();          // GET/PUT /nutri/profile · GET /nutri/plan
 app.MapPlans();            // GET /plans
 app.MapFoods();            // GET /foods · /meals (catálogo do cardápio)
+app.MapArticles();         // GET /articles · /articles/{id} (conteúdo editorial)
 app.MapBilling();          // POST /billing/checkout
 app.MapEngagement();       // POST /contact · /waitlist · /analytics/events
 app.MapTracking();         // /nutri/water · weight · sleep · steps · measurements · habits · diary
