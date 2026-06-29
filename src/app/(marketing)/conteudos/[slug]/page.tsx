@@ -8,6 +8,7 @@ import {
   SparklesIcon,
 } from "lucide-react";
 
+import { FavoriteButton } from "@/components/content/favorite-button";
 import { Button } from "@/components/ui/button";
 import {
   ARTICLES,
@@ -52,14 +53,17 @@ export default async function ArticlePage({ params }: Params) {
         </Link>
 
         <header className="mt-6">
-          <div className="flex items-center gap-3">
-            <span className="rounded-full bg-brl-purple/15 px-3 py-1 text-xs font-semibold tracking-wide text-brl-purple uppercase">
-              {article.category}
-            </span>
-            <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
-              <ClockIcon className="size-3.5" />
-              {article.readTime} de leitura
-            </span>
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <span className="rounded-full bg-brl-purple/15 px-3 py-1 text-xs font-semibold tracking-wide text-brl-purple uppercase">
+                {article.category}
+              </span>
+              <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
+                <ClockIcon className="size-3.5" />
+                {article.readTime} de leitura
+              </span>
+            </div>
+            <FavoriteButton type="article" id={article.id} />
           </div>
           <h1 className="mt-4 font-display text-3xl leading-[1.1] font-extrabold tracking-tight text-balance md:text-5xl">
             {article.title}
@@ -116,7 +120,7 @@ export default async function ArticlePage({ params }: Params) {
 
         {/* CTA */}
         <div
-          className="mt-12 overflow-hidden rounded-2xl border border-white/5 p-7 md:p-8"
+          className="mt-12 overflow-hidden rounded-2xl border border-foreground/5 p-7 md:p-8"
           style={{
             background:
               "linear-gradient(135deg, #13131f 0%, rgba(150,86,161,0.22) 100%)",
@@ -154,13 +158,13 @@ export default async function ArticlePage({ params }: Params) {
               <Link
                 key={item.id}
                 href={`/conteudos/${item.id}`}
-                className="group flex h-full flex-col gap-3 rounded-2xl border border-white/5 bg-brl-card p-6 transition-colors hover:border-brl-purple/40"
+                className="group flex h-full flex-col gap-3 rounded-2xl border border-foreground/5 bg-brl-card p-6 transition-colors hover:border-brl-purple/40"
               >
                 <div className="flex items-center justify-between">
                   <span className="text-3xl" aria-hidden>
                     {item.emoji}
                   </span>
-                  <span className="rounded-full bg-white/5 px-2.5 py-1 text-xs font-medium text-brl-muted">
+                  <span className="rounded-full bg-foreground/5 px-2.5 py-1 text-xs font-medium text-brl-muted">
                     {item.category}
                   </span>
                 </div>
