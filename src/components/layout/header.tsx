@@ -22,11 +22,7 @@ const navItems = [
   { href: "/#produtos", label: "Produtos" },
   { href: "/precos", label: "Planos" },
   { href: "/calculadora", label: "Calculadora" },
-  { href: "/conteudos", label: "Conteúdos" },
-  { href: "/receitas", label: "Receitas" },
   { href: "/fit", label: "BRL Fit" },
-  { href: "/sobre", label: "Sobre" },
-  { href: "/contato", label: "Contato" },
 ];
 
 // Altura do header fixo, descontada no scroll suave pra a seção não ficar atrás.
