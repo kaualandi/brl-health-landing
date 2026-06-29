@@ -19,14 +19,8 @@ export default function manifest(): MetadataRoute.Manifest {
     categories: ["health", "fitness", "lifestyle", "medical"],
     icons: [
       { src: "/favicon.ico", sizes: "any", type: "image/x-icon" },
-      { src: "/icon", sizes: "512x512", type: "image/png", purpose: "any" },
-      {
-        src: "/icon",
-        sizes: "512x512",
-        type: "image/png",
-        purpose: "maskable",
-      },
-      { src: "/apple-icon", sizes: "180x180", type: "image/png" },
+      { src: "/icon.png", sizes: "512x512", type: "image/png", purpose: "any" },
+      { src: "/apple-icon.png", sizes: "180x180", type: "image/png" },
     ],
     shortcuts: [
       {
