@@ -39,8 +39,9 @@ public static class ProfileEndpoints
                 return Results.Unauthorized();
 
             var row = new ProfileRow(
-                Sex: body.Sex, Age: body.Age, HeightCm: body.HeightCm, WeightKg: body.WeightKg,
-                TargetKg: body.GoalWeightKg, Goal: body.Goal, Activity: body.Activity, Diet: body.Diet,
+                Sex: body.Sex, Age: body.Age,
+                HeightCm: (decimal)body.HeightCm, WeightKg: (decimal)body.WeightKg,
+                TargetKg: (decimal?)body.GoalWeightKg, Goal: body.Goal, Activity: body.Activity, Diet: body.Diet,
                 MealsPerDay: body.MealsPerDay, WakeTime: body.WakeTime,
                 TrainTime: body.TrainTime, SleepTime: body.SleepTime);
 
@@ -62,8 +63,8 @@ public static class ProfileEndpoints
             {
                 Sex = NutriMapping.ParseSex(p.Sex),
                 Age = p.Age,
-                HeightCm = p.HeightCm,
-                WeightKg = p.WeightKg,
+                HeightCm = (double)p.HeightCm,
+                WeightKg = (double)p.WeightKg,
                 Activity = NutriMapping.ParseActivity(p.Activity),
                 Goal = NutriMapping.ParseGoal(p.Goal),
                 MealsPerDay = p.MealsPerDay,

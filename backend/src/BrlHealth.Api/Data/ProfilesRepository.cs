@@ -6,9 +6,9 @@ namespace BrlHealth.Api.Data;
 public sealed record ProfileRow(
     string Sex,
     int Age,
-    double HeightCm,
-    double WeightKg,
-    double? TargetKg,
+    decimal HeightCm,
+    decimal WeightKg,
+    decimal? TargetKg,
     string Goal,
     string Activity,
     string Diet,

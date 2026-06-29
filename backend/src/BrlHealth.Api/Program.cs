@@ -3,6 +3,9 @@ using BrlHealth.Api.Endpoints;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Dapper: trata DateOnly em colunas `date`.
+Dapper.SqlMapper.AddTypeHandler(new DateOnlyTypeHandler());
+
 // Acesso a dados (Dapper) — factory lê a connection string da configuração (sem segredo no código).
 builder.Services.AddSingleton<IDbConnectionFactory, NpgsqlConnectionFactory>();
 builder.Services.AddScoped<ConsultationsRepository>();
