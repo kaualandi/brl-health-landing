@@ -66,6 +66,15 @@
 - **Base de produção:** README real, `.env.example`, **Vitest** com 23 testes no `nutri-plan`, **CI** (GitHub Actions: lint · typecheck · test · build no Node 22) e `vercel.json`.
 - Entregue em **4 PRs separados** (#18 recuperar-senha · #19 receitas · #20 produção · #21 tema), cada um com typecheck + lint + build verdes.
 
+**10ª leva — frontend completo (a11y, favoritos/gamificação, comercial, SEO/PWA, auth) + fixes:**
+- **Acessibilidade & navegação:** skip-to-content, scroll-spy + scroll suave na navbar (`aria-current`, IntersectionObserver na home), botão "voltar ao topo", `Skeleton` reutilizável e polimento de foco/labels. **Navbar enxuta:** Sobre, Contato, Conteúdos e Receitas saíram do header (seguem no rodapé). Sweep de tema: utilitárias dark-only (`white/X`) viraram `foreground/X`, corrigindo o claro sem mexer no escuro.
+- **Favoritos & gamificação:** `favorites-store` SSR-safe + `use-favorites`, botão de salvar em conteúdos/receitas, aba **"Salvos"** no `/nutri`, **conquistas/badges** derivadas dos stores (peso, medidas, água, hábitos, streak, favoritos) com confete, e `EmptyState` reutilizável.
+- **Comercial:** toggle **mensal/anual** (o tipo `Plan` ganhou `annualPrice`) em `/precos` e na home, **newsletter** no footer (`joinWaitlist` source `newsletter`), **login social** Google/Apple (só UI) e **compartilhar plano** na conta (Web Share API + fallback pro clipboard).
+- **SEO/PWA/performance:** `metadata` + **OG por rota**, `viewport`/`themeColor`, ícones dinâmicos (`icon`/`apple-icon`), manifest enriquecido + **service worker offline** + `offline.html`, **analytics mock** (`track`/`pageView`), error boundary amigável e `next.config` avif/webp. **CLS:** `font-display: optional` na Syne eliminou o reflow do headline do hero (0,36 → 0 na 1ª visita, medido no Chrome).
+- **Auth flows:** **`/verificar-email`** (UI + mock `requestEmailVerification`/`verifyEmail`, `// TODO` p/ `POST /auth/verify` · `/auth/verify/resend`), **rascunho do onboarding** persistido (retoma após refresh) e `RedirectIfAuth` no `/login`.
+- **Fix de preços:** o valor do plano escala com a largura do card (container query `@container` + `clamp(…cqi…)`) — acaba o estouro da borda; **`/mês` sempre na linha de baixo**, padronizado (mensal e anual).
+- Entregue em **6 PRs** (#23 a11y/nav · #24 favoritos/gamificação · #25 comercial · #26 SEO/PWA · #27 auth · #28 fix preços), cada um com tsc + lint + build + 23 testes verdes; integração dos 5 primeiros validada no browser (Lighthouse + smoke) antes do merge.
+
 ---
 
 ## 💡 Brainstorm — inspirado no Smart Fit Nutri (screenshots)
@@ -157,12 +166,12 @@ Hoje o BRL Nutri mostra só "Café da manhã — 600 kcal". O Smart Fit monta a 
 - [x] ✨ **`not-found.tsx`** (404 com identidade BRL e CTAs).
 - [x] ✨ **`loading.tsx` + `error.tsx`** — marketing tem `loading`; `error.tsx` global na raiz.
 - [x] ✨ **Toggle de senha** (mostrar/ocultar) no login. _Falta replicar no onboarding/cadastro._
-- [ ] ✨ **Skeletons** consistentes onde há fetch (já existe no Pricing — padronizar num componente reutilizável).
-- [ ] 🎨 **Redirecionar logado** pra fora de `/login` e `/cadastro` (hoje só protege o caminho inverso).
-- [ ] ✨ **Scroll suave + scroll-spy** na navbar (destacar seção ativa em `/#...`).
-- [ ] ✨ **Botão "voltar ao topo"** nas páginas longas.
-- [ ] ♿ **Auditoria de acessibilidade** — foco visível, `aria-current` na nav, labels, contraste, navegação por teclado no wizard, `prefers-reduced-motion` (já parcialmente feito).
-- [ ] ♿ **Skip-to-content link** no layout.
+- [x] ✨ **Skeletons** — componente `Skeleton` reutilizável (respeita reduced-motion), com o `loading` do marketing usando-o. _PR #23._
+- [~] 🎨 **Redirecionar logado** — `RedirectIfAuth` tira o logado do `/login` ✅ (_PR #27_). No `/cadastro` quem decide é o próprio wizard (logado **com** plano → `/nutri`; logado **sem** plano precisa do onboarding), então a guarda cega ali ficou de fora de propósito.
+- [x] ✨ **Scroll suave + scroll-spy** na navbar — seção ativa via IntersectionObserver na home, `aria-current` + scroll suave (respeita reduced-motion). _PR #23._
+- [x] ✨ **Botão "voltar ao topo"** flutuante nas páginas longas (acima da camada de toasts). _PR #23._
+- [~] ♿ **Auditoria de acessibilidade** — foco visível, `aria-current` na nav e labels feitos nos arquivos tocados; falta varredura completa (contraste, teclado no wizard). _parcial, PR #23._
+- [x] ♿ **Skip-to-content link** no layout marketing (`#conteudo` focável). _PR #23._
 
 ---
 
@@ -198,14 +207,14 @@ Hoje o BRL Nutri mostra só "Café da manhã — 600 kcal". O Smart Fit monta a 
 
 - [x] **Calculadora pública de TDEE/IMC** (`/calculadora`) — lead magnet sem login: reusa `computeNutriPlan` e exibe o resultado pelo `PlanSummary` (meta/TDEE/macros/IMC/água/BMR), atualizando ao vivo conforme preenche; CTA pra salvar criando conta. No sitemap e no footer.
 - [ ] **Busca + filtros** nos conteúdos (categoria, objetivo, tempo de leitura).
-- [ ] **Favoritar** artigos/receitas (localStorage) + aba "Salvos" no `/nutri`.
-- [ ] **Comparador de planos** interativo (toggle mensal/anual com desconto).
-- [~] **Gamificação** — confete ao completar os hábitos do dia ✅; faltam badges/conquistas e streaks.
-- [ ] **Compartilhar plano** — gerar card/imagem ou link de resumo.
-- [x] **Tema claro/escuro** — toggle persistido, sem flash, respeita o sistema (dark padrão); `:root` claro / `.dark` escuro, store SSR-safe + script anti-flash. _PR #21._ _Falta: passar utilitárias dark-only (`white/5`) pra tokens no claro._
-- [~] **Onboarding melhorado** — logado pula o passo de conta ✅, revisão editável a partir do review ✅, animação de "gerando plano" ✅; falta salvar rascunho.
-- [ ] **Estados vazios** ilustrados e consistentes em todas as listas.
-- [ ] **PWA** — manifest + ícones + offline básico (instalável no celular).
+- [x] **Favoritar** artigos/receitas (`favorites-store` SSR-safe + `use-favorites`) + aba **"Salvos"** no `/nutri` (com `EmptyState`). _PR #24._
+- [x] **Comparador de planos** — toggle mensal/anual com desconto (2 meses grátis) em `/precos` e na home. _PR #25._
+- [x] **Gamificação** — confete ✅ + **conquistas/badges** derivadas dos stores (peso, medidas, água, hábitos, streak, favoritos) com progresso. _PR #24._
+- [x] **Compartilhar plano** — resumo do plano via Web Share API com fallback pro clipboard, na conta. _PR #25._
+- [x] **Tema claro/escuro** — toggle persistido, sem flash, respeita o sistema (dark padrão); `:root` claro / `.dark` escuro, store SSR-safe + script anti-flash. _PR #21._ Utilitárias dark-only (`white/X`) migradas pra `foreground/X` no sweep da 10ª leva. ✅
+- [x] **Onboarding melhorado** — logado pula o passo de conta ✅, revisão editável ✅, animação de "gerando plano" ✅, **rascunho** persistido (retoma após refresh) ✅. _PR #27._
+- [~] **Estados vazios** — componente `EmptyState` reutilizável criado e usado na aba "Salvos" (_PR #24_); falta aplicar em todas as listas.
+- [x] **PWA** — manifest enriquecido + ícones + **service worker** offline (`offline.html`), instalável. _PR #26._
 - [ ] **(opcional) i18n** pt-BR / en — estrutura de mensagens.
 
 ---
@@ -217,8 +226,8 @@ Hoje o BRL Nutri mostra só "Café da manhã — 600 kcal". O Smart Fit monta a 
 ### E-mail
 - [x] **Formulário de contato** com estado de sucesso (SuccessCard) e toast de erro.
 - [x] **Lista de espera do BRL Fit** (`WaitlistForm` + `waitlist.service` mock).
-- [ ] **Newsletter** (rodapé / fim de artigo) — reusar o `WaitlistForm` com `source="newsletter"`.
-- [~] Telas/estados que dependem de e-mail: **recuperar senha** ✅ (`/recuperar-senha`, `/redefinir-senha` — UI + mock, _PR #18_); **verificar e-mail** ainda pendente.
+- [x] **Newsletter** no rodapé — `NewsletterForm` reusando `joinWaitlist(email, "newsletter")`. _PR #25._ _Falta a variante de fim de artigo._
+- [x] Telas/estados que dependem de e-mail: **recuperar senha** ✅ (_PR #18_) e **verificar e-mail** ✅ (`/verificar-email` — UI + mock `requestEmailVerification`/`verifyEmail`, _PR #27_).
 
 ### Pagamento
 - [x] **Fluxo de checkout** (`/checkout?plano=pro`) — resumo + form de cartão (mock `billing.service`), seta o tier no sucesso.
@@ -230,21 +239,21 @@ Hoje o BRL Nutri mostra só "Café da manhã — 600 kcal". O Smart Fit monta a 
 ### Autenticação
 - [ ] Provider/store de auth (ver Fase 1) — já no formato pronto pra trocar mock por API real.
 - [x] **Recuperação de senha** (UI completa + service mock: `requestPasswordReset`/`resetPassword` com `// TODO` p/ `/auth/forgot`·`/auth/reset`). _PR #18._
-- [ ] **Login social** (botões Google/Apple — só UI por enquanto).
+- [x] **Login social** (botões Google/Apple — só UI, toast "chega em breve"). _PR #25._
 
 ---
 
 ## 5. Qualidade & Produção 🚀
 
-- [~] **SEO** — base pronta: `metadata` rico no layout raiz (metadataBase, Open Graph, Twitter card, keywords, robots, canonical), **imagem OG gerada** (`opengraph-image.tsx` via `next/og`), `sitemap.ts` (rotas públicas + artigos), `robots.ts` (bloqueia /nutri, /conta, checkout, auth) e `manifest.ts`. URL canônica vem de `NEXT_PUBLIC_SITE_URL` (`lib/site.ts`). Falta: `metadata`/OG por rota e favicon set completo (apple-icon etc.).
-- [ ] **Performance** — Lighthouse/Core Web Vitals, lazy-load de animações pesadas, `next/image` onde couber.
-- [ ] **Analytics** (mock/placeholder de eventos — page views, cliques de CTA, conclusão de onboarding).
-- [ ] **Tratamento de erro** consistente (boundaries + mensagens amigáveis em PT-BR).
+- [x] **SEO** — base no layout raiz (metadataBase, Open Graph, Twitter, keywords, robots, canonical, OG image), `sitemap.ts`, `robots.ts`, `manifest.ts`; **`metadata`/OG por rota** e **ícones dinâmicos** (`icon`/`apple-icon` via `ImageResponse`) entregues. _por rota/ícones: PR #26._
+- [~] **Performance** — `next.config` avif/webp + checagem de Core Web Vitals no Chrome; **CLS 0,36 → 0** (`font-display: optional` na Syne). Falta lazy-load de animações pesadas. _PR #26/#28._
+- [x] **Analytics** — service mock (`track`/`pageView`) + tracker de pageview por rota. _PR #26._ _Falta fiar cliques de CTA/conclusão de onboarding._
+- [~] **Tratamento de erro** — `error.tsx` global mais amigável e theme-aware. _PR #26._ Falta boundary por rota (ex.: `/nutri`).
 - [x] **Variáveis de ambiente** documentadas (`.env.example`) — `NEXT_PUBLIC_SITE_URL` + `NEXT_PUBLIC_API_URL`. _PR #20._
 - [~] **Testes** — unit em `nutri-plan.ts` (cálculos) com **Vitest** (23 testes) ✅ _PR #20_; falta e2e de smoke nos fluxos críticos (onboarding → nutri, login).
 - [x] **CI** — GitHub Actions: lint + typecheck + test + build (Node 22). _PR #20._
 - [x] **README** real do projeto (substituiu o boilerplate do create-next-app). _PR #20._
-- [~] **Deploy** — `vercel.json` + passos de deploy no README ✅ _PR #20_; falta conectar o projeto no Vercel (preview por PR).
+- [x] **Deploy** — `vercel.json` + passos no README ✅ _PR #20_; **Vercel conectado** (checks de preview por PR + deploy de produção a partir do `main`).
 
 ---
 
