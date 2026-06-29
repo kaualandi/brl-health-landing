@@ -23,6 +23,8 @@ const PLANS: Plan[] = [
     name: "BRL Pro",
     priceLabel: "R$ 29,90",
     monthlyPrice: 29.9,
+    annualPrice: 29.9 * 10,
+    annualDiscountLabel: "2 meses grátis",
     tagline: "Treino e nutrição jogando junto.",
     features: [
       "Integração completa Fit + Nutri",
@@ -39,6 +41,8 @@ const PLANS: Plan[] = [
     name: "BRL Family",
     priceLabel: "R$ 49,90",
     monthlyPrice: 49.9,
+    annualPrice: 49.9 * 10,
+    annualDiscountLabel: "2 meses grátis",
     tagline: "Toda a família no mesmo ritmo.",
     features: [
       "Tudo do Pro",
