@@ -196,6 +196,29 @@ CREATE TABLE IF NOT EXISTS analytics_events (
     created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
+-- ------------------------------------------------------------------
+-- Auth real (§7): refresh tokens rotativos e tokens enviados por e-mail.
+-- Guardamos apenas o hash do segredo — o valor em claro só existe no cliente.
+-- ------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS refresh_tokens (
+    id         BIGSERIAL PRIMARY KEY,
+    user_id    BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    token_hash TEXT NOT NULL UNIQUE,           -- SHA-256 do refresh token
+    expires_at TIMESTAMPTZ NOT NULL,
+    revoked_at TIMESTAMPTZ,                     -- preenchido na rotação/logout
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE TABLE IF NOT EXISTS email_tokens (
+    id          BIGSERIAL PRIMARY KEY,
+    user_id     BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    purpose     TEXT NOT NULL,                 -- 'reset' (link) | 'verify' (código 6 dígitos)
+    token_hash  TEXT NOT NULL,                 -- SHA-256 do token/código
+    expires_at  TIMESTAMPTZ NOT NULL,
+    consumed_at TIMESTAMPTZ,                    -- preenchido ao usar ou ao emitir um novo
+    created_at  TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
 -- Índices que previnem degradação das leituras de tracking/consulta (ver dívida DT-05).
 CREATE INDEX IF NOT EXISTS ix_consultations_user ON consultations(user_id, date, time);
 CREATE INDEX IF NOT EXISTS ix_weight_logs_user   ON weight_logs(user_id, date);
@@ -203,3 +226,5 @@ CREATE INDEX IF NOT EXISTS ix_water_logs_user    ON water_logs(user_id, date);
 CREATE INDEX IF NOT EXISTS ix_sleep_logs_user    ON sleep_logs(user_id, date);
 CREATE INDEX IF NOT EXISTS ix_step_logs_user     ON step_logs(user_id, date);
 CREATE INDEX IF NOT EXISTS ix_measurements_user  ON measurements(user_id, date);
+CREATE INDEX IF NOT EXISTS ix_refresh_tokens_hash ON refresh_tokens(token_hash);
+CREATE INDEX IF NOT EXISTS ix_email_tokens_lookup ON email_tokens(purpose, token_hash);

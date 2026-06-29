@@ -1,17 +1,20 @@
-using BrlHealth.Api.Services;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 
 namespace BrlHealth.Api.Endpoints;
 
-/// <summary>Lê o usuário autenticado do header <c>Authorization: Bearer &lt;token&gt;</c>.</summary>
+/// <summary>
+/// Lê o usuário autenticado a partir do principal já validado pelo middleware
+/// JwtBearer (claim <c>sub</c>). Token ausente/inválido ⇒ principal sem a claim ⇒
+/// o endpoint responde 401.
+/// </summary>
 public static class HttpAuth
 {
     public static bool TryGetUserId(this HttpContext ctx, out long userId)
     {
-        var header = ctx.Request.Headers.Authorization.ToString();
-        const string prefix = "Bearer ";
-        var token = header.StartsWith(prefix, StringComparison.OrdinalIgnoreCase)
-            ? header[prefix.Length..]
-            : header;
-        return AuthToken.TryGetUserId(token, out userId);
+        userId = 0;
+        var sub = ctx.User.FindFirst(JwtRegisteredClaimNames.Sub)?.Value
+                  ?? ctx.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        return long.TryParse(sub, out userId);
     }
 }

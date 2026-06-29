@@ -1,5 +1,9 @@
+using System.IdentityModel.Tokens.Jwt;
 using BrlHealth.Api.Data;
 using BrlHealth.Api.Endpoints;
+using BrlHealth.Api.Services;
+using BrlHealth.Api.Services.Email;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -16,6 +20,28 @@ builder.Services.AddScoped<TrackingRepository>();
 builder.Services.AddScoped<EngagementRepository>();
 builder.Services.AddScoped<FoodsRepository>();
 builder.Services.AddScoped<ArticlesRepository>();
+builder.Services.AddScoped<RefreshTokensRepository>();
+builder.Services.AddScoped<EmailTokensRepository>();
+
+// Autenticação JWT (auth real — §7). Segredo vem da config/ambiente (seção `Jwt`).
+var jwtOptions = builder.Configuration.GetSection("Jwt").Get<JwtOptions>() ?? new JwtOptions();
+var jwtTokenService = new JwtTokenService(jwtOptions);
+builder.Services.AddSingleton(jwtOptions);
+builder.Services.AddSingleton(jwtTokenService);
+
+// `sub` deve permanecer `sub` no principal (sem mapear para ClaimTypes.NameIdentifier).
+JwtSecurityTokenHandler.DefaultMapInboundClaims = false;
+
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(o =>
+    {
+        o.MapInboundClaims = false;
+        o.TokenValidationParameters = jwtTokenService.ValidationParameters;
+    });
+builder.Services.AddAuthorization();
+
+// E-mail transacional: em dev loga no console (provedor real entra atrás do mesmo contrato).
+builder.Services.AddSingleton<IEmailSender, ConsoleEmailSender>();
 
 // CORS para o front Next.js (NEXT_PUBLIC_API_URL aponta para cá).
 builder.Services.AddCors(options =>
@@ -27,6 +53,8 @@ builder.Services.AddCors(options =>
 var app = builder.Build();
 
 app.UseCors();
+app.UseAuthentication();
+app.UseAuthorization();
 
 app.MapGet("/health", () => Results.Ok(new { status = "ok" }));
 
@@ -36,7 +64,7 @@ app.MapConsultations();    // POST /consultations + GET /consultations/me (JOIN)
 app.MapPlanChange();       // PUT  /me/plan
 
 // Espelho dos mocks do front (§5)
-app.MapAuth();             // /auth/login · register · forgot · reset · verify
+app.MapAuth();             // /auth/login · register · refresh · logout · forgot · reset · verify
 app.MapProfile();          // GET/PUT /nutri/profile · GET /nutri/plan
 app.MapPlans();            // GET /plans
 app.MapFoods();            // GET /foods · /meals (catálogo do cardápio)

@@ -278,9 +278,12 @@
 > Itens do roadmap de produção, reescritos para o ecossistema .NET. Não contam pra
 > AV2, mas ficam registrados.
 
-- [ ] 🚀 **Auth real:** JWT (`Microsoft.AspNetCore.Authentication.JwtBearer`) +
-  refresh token, hash de senha (`PasswordHasher`/BCrypt), verificação e reset de
-  e-mail de verdade.
+- [x] 🚀 **Auth real:** JWT HS256 (`Microsoft.AspNetCore.Authentication.JwtBearer`,
+  claim `sub`) + **refresh token rotativo** single-use (`/auth/refresh`, `/auth/logout`,
+  hash no banco), hash de senha **BCrypt** (work factor 12, com migração transparente
+  dos hashes legados) e fluxos reais de **verificação e reset de e-mail** (tokens em
+  `email_tokens`, envio atrás de `IEmailSender`). _Resolve a dívida DT-03._ Falta só
+  o **provedor de e-mail de produção** — coberto pelo bullet "E-mail transacional".
 - [ ] 🚀 **Pagamento — manter Stripe:** `Stripe.net` (SDK oficial .NET) para
   checkout, webhooks, gestão/cancelamento de assinatura e faturas. _Avaliação: sem
   motivo pra trocar — é a opção mais confortável no .NET._

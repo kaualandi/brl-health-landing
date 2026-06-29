@@ -41,6 +41,21 @@ dotnet user-secrets set "ConnectionStrings:Default" "Host=localhost;Port=5432;Da
 
 Veja `appsettings.Example.json` para o formato.
 
+### JWT (auth real)
+
+A autenticação usa **JWT (HS256)** + refresh token. O segredo de assinatura vem
+da seção `Jwt` da configuração — em dev há um valor de exemplo em
+`appsettings.json`; **em produção sobrescreva via ambiente**:
+
+```bash
+export Jwt__Secret="<segredo-forte-de-pelo-menos-32-bytes>"
+# opcionais: Jwt__AccessTokenMinutes, Jwt__RefreshTokenDays, Jwt__Issuer, Jwt__Audience
+```
+
+E-mails (reset de senha / verificação) usam um `IEmailSender`; em dev o
+`ConsoleEmailSender` apenas **loga** a mensagem — o provedor real (SES/SendGrid)
+entra atrás do mesmo contrato na fase de produção.
+
 ## Subir o banco
 
 ```bash
@@ -56,7 +71,7 @@ nutricionistas, para bater com o front.
 
 ```bash
 dotnet build BrlHealth.slnx
-dotnet test  BrlHealth.slnx          # 16 testes AAA
+dotnet test  BrlHealth.slnx          # 35 testes AAA
 dotnet run --project src/BrlHealth.Api
 ```
 
@@ -81,7 +96,9 @@ Trocam os _services_ mock do front por API real. Rotas com 🔒 exigem
 | Método | Rota | Origem (front) |
 |---|---|---|
 | `POST` | `/auth/login` · `/auth/register` | `auth.service.ts` |
-| `POST` | `/auth/forgot` · `/auth/reset` · `/auth/verify/resend` · `/auth/verify` | `auth.service.ts` |
+| `POST` | `/auth/refresh` · `/auth/logout` | rotação/encerramento da sessão (refresh token) |
+| `POST` | `/auth/forgot` · `/auth/reset` | `auth.service.ts` (token de reset por e-mail) |
+| `POST` 🔒 | `/auth/verify/resend` · `/auth/verify` | `auth.service.ts` (código de 6 dígitos por e-mail) |
 | `GET`/`PUT` 🔒 | `/nutri/profile` | `nutri.service.ts` |
 | `GET` 🔒 | `/nutri/plan` | plano calculado do perfil salvo |
 | `GET` | `/plans` | `plans.service.ts` |
@@ -92,5 +109,9 @@ Trocam os _services_ mock do front por API real. Rotas com 🔒 exigem
 | `POST` | `/contact` · `/waitlist` · `/analytics/events` | contato / waitlist / analytics |
 | `GET`/`POST` 🔒 | `/nutri/water` · `/weight` · `/sleep` · `/steps` · `/measurements` · `/habits` · `/diary` | tracking diário |
 
-> A autenticação é um token opaco simples (mirror). JWT + refresh token, hash
-> BCrypt e validação server-side completa são da fase de produção (§7).
+> **Auth real (§7):** access token **JWT (HS256)** com claim `sub`, **refresh
+> token** rotativo (single-use, hash no banco) via `/auth/refresh`, senha em
+> **BCrypt** (work factor 12, com migração transparente dos hashes legados) e
+> fluxos reais de reset/verificação por e-mail. Falta apenas o **provedor de
+> e-mail de produção** (hoje `ConsoleEmailSender`) e a validação server-side
+> completa (FluentValidation), itens dos demais bullets da §7.
