@@ -1,5 +1,6 @@
 -- BRL Health — seed mínimo para bater com o front (conta demo, planos, nutricionistas).
--- A senha demo é '123456'; aqui guardamos um hash placeholder (troca por BCrypt na fase de auth real).
+-- A senha demo é '123456'; guardamos um hash placeholder de dev. No primeiro login
+-- bem-sucedido a credencial é re-hasheada em BCrypt automaticamente (PasswordHasher.NeedsUpgrade).
 
 INSERT INTO plans (id, name, monthly_price, rank, credits) VALUES
     ('free',   'Free',       0.00, 0, 1),

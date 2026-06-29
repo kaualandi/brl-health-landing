@@ -20,6 +20,16 @@ public sealed class UsersRepository
         return await conn.QuerySingleOrDefaultAsync<UserRow>(sql, new { Email = email });
     }
 
+    public async Task<UserRow?> FindByIdAsync(long id)
+    {
+        using var conn = _factory.Create();
+        const string sql =
+            @"SELECT id AS Id, name AS Name, email AS Email,
+                     password_hash AS PasswordHash, email_verified AS EmailVerified
+              FROM users WHERE id = @Id";
+        return await conn.QuerySingleOrDefaultAsync<UserRow>(sql, new { Id = id });
+    }
+
     public async Task<bool> EmailExistsAsync(string email)
     {
         using var conn = _factory.Create();
@@ -43,5 +53,12 @@ public sealed class UsersRepository
         using var conn = _factory.Create();
         const string sql = "UPDATE users SET email_verified = TRUE WHERE id = @UserId";
         await conn.ExecuteAsync(sql, new { UserId = userId });
+    }
+
+    public async Task UpdatePasswordHashAsync(long userId, string passwordHash)
+    {
+        using var conn = _factory.Create();
+        const string sql = "UPDATE users SET password_hash = @PasswordHash WHERE id = @UserId";
+        await conn.ExecuteAsync(sql, new { UserId = userId, PasswordHash = passwordHash });
     }
 }

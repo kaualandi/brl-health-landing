@@ -28,3 +28,11 @@
 - **Prioridade 3 (Aceitar/Ignorar):** DT-06 e DT-07 — convivemos por ora; a
   validação dupla é uma defesa em profundidade aceitável e o conteúdo em código
   funciona enquanto o volume editorial for baixo.
+
+## Atualização — quitação de dívidas (pós-AV2)
+
+- **DT-03 (quitada):** a sessão deixou de usar token opaco. A fase de auth real
+  (§7) introduziu **JWT HS256** (claim `sub`) com **refresh token rotativo
+  single-use** (`/auth/refresh`, `/auth/logout`; só o hash do token vive no banco)
+  e senha em **BCrypt** (work factor 12, migrando os hashes legados no login). A
+  rotação de credencial que faltava passou a existir.
