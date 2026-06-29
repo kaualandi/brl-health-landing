@@ -194,63 +194,63 @@
   `foreach`/`while` dentro de método de teste (zera o item).
 
 ### 📄 `/backend/docs/analise_arquitetura.md`
-- [ ] 📄 **03 — Padrões arquiteturais (parte 1):** para os **3 cenários do
+- [x] 📄 **03 — Padrões arquiteturais (parte 1):** para os **3 cenários do
   professor**, identificar o padrão provável e dar ≥1 trade-off usando os termos
   `Trade-off:` ou `Positivo:` / `Negativo:`.
-- [ ] 📄 **04 — Violações arquiteturais (parte 2):** no **trecho C# fornecido**,
+- [x] 📄 **04 — Violações arquiteturais (parte 2):** no **trecho C# fornecido**,
   listar **≥5 violações**, cada uma no formato exato: `**Problema:**`,
   `**Evidência:**`, `**Impacto:**`, `**Ação Recomendada:**`.
 
 ### 📄 `/backend/docs/adrs/`
-- [ ] 📄 **05 — ADR:** criar `001-escolha-do-micro-orm.md` com `# Contexto`,
+- [x] 📄 **05 — ADR:** criar `001-escolha-do-micro-orm.md` com `# Contexto`,
   `# Decisão`, `# Consequências`, campo `Status:` (`Aceito`) e, em Consequências,
   listas `Prós:` (ou `Positivas:`) e `Contras:` (ou `Negativas:`). Tema: **Dapper vs
   EF Core**. (Opcional: ADRs 002 Postgres vs SQLite, 003 cálculo no servidor.)
 
 ### 📄 `/backend/docs/registro_divida_tecnica.md`
-- [ ] 📄 **06 — Registro de dívida (tabela):** colunas `ID da Dívida`,
+- [x] 📄 **06 — Registro de dívida (tabela):** colunas `ID da Dívida`,
   `Descrição Técnica`, `Freq. Alteração`, `Risco`, `Esforço`, `Decisão`; **≥6
   dívidas reais** do próprio código; `Freq./Risco/Esforço` ∈ `Alto`/`Médio`/`Baixo`.
   Dívidas reais: seed hardcoded; cálculo nutricional duplicado (TS no front + C# no
   back); sem refresh token; sem paginação nas listas; validação duplicada front/back;
   sem rate-limit; conteúdo em código e não em DB/CMS.
-- [ ] 📄 **07 — Priorização:** coluna `Decisão` com `Prioridade 1 (Imediato)` /
+- [x] 📄 **07 — Priorização:** coluna `Decisão` com `Prioridade 1 (Imediato)` /
   `Prioridade 2 (Próxima Sprint)` / `Prioridade 3 (Aceitar/Ignorar)`; **≥1 P1** e
   **≥1 P3**.
 
 ### 📄 `/backend/docs/fluxo_manutencao.md`
-- [ ] 📄 **08 — Classificação de manutenção (parte 1):** classificar os **12 tickets
+- [x] 📄 **08 — Classificação de manutenção (parte 1):** classificar os **12 tickets
   fornecidos** (Swanson: `Corretiva`/`Adaptativa`/`Perfectiva`/`Preventiva`), com a
   anotação explícita `Ticket N → Tipo`.
-- [ ] 📄 **09 — Pipeline de liberação segura (parte 2):** descrever os 4 passos:
+- [x] 📄 **09 — Pipeline de liberação segura (parte 2):** descrever os 4 passos:
   `1. Análise de Impacto`, `2. Teste como Instrumento Cirúrgico`,
   `3. Feature Toggle`, `4. Estratégia de Release e Regressão`.
 
 ### 📄 `/backend/docs/plano_iteracao.md`
-- [ ] 📄 **10 — Plano de iteração:** campos `Objetivo da Iteração:`,
+- [x] 📄 **10 — Plano de iteração:** campos `Objetivo da Iteração:`,
   `Escopo (Backlog Selecionado):`, `Entregáveis (Evidências):`,
   `Risco Principal do Ciclo:` e `Definição de Pronto (DoD):` — todos preenchidos com
   conteúdo do projeto.
-- [ ] 📄 **11 — Quadro visual + WIP:** quadro com ≥4 colunas (ex.: `Backlog`,
+- [x] 📄 **11 — Quadro visual + WIP:** quadro com ≥4 colunas (ex.: `Backlog`,
   `Em Desenvolvimento`, `Code Review`, `Concluído`) e limite **`WIP máximo: N`**
   numérico, com **N ≤ nº de integrantes do grupo**.
 
 ### 📄 `/backend/docs/operacao.md`
-- [ ] 📄 **12 — Matriz de riscos:** colunas `Risco`, `Probabilidade`, `Impacto`,
+- [x] 📄 **12 — Matriz de riscos:** colunas `Risco`, `Probabilidade`, `Impacto`,
   `Estratégia`, `Ação Planejada`; **≥5 riscos**; `Probabilidade`/`Impacto` ∈
   `Alto`/`Médio`/`Baixo`; `Estratégia` ∈ `Mitigar`/`Transferir`/`Aceitar`/`Evitar`.
-- [ ] 📄 **13 — Gatilhos:** coluna `Gatilho` em todas as linhas, ≥20 caracteres,
+- [x] 📄 **13 — Gatilhos:** coluna `Gatilho` em todas as linhas, ≥20 caracteres,
   descrevendo o evento observável que dispara a ação.
-- [ ] 📄 **14 — Métrica de fluxo (DORA):** ficha com os 7 campos `Nome da Métrica:`,
+- [x] 📄 **14 — Métrica de fluxo (DORA):** ficha com os 7 campos `Nome da Métrica:`,
   `O que Mede:`, `Fórmula:`, `Fonte de Dados:`, `Frequência de Coleta:`,
   `Limites de Saúde:`, `Ação se Violado:`; deve citar `Deploy`/`Lead Time`/
   `Throughput`/`DORA`.
-- [ ] 📄 **15 — Métrica de qualidade:** mesma ficha de 7 campos; deve citar
+- [x] 📄 **15 — Métrica de qualidade:** mesma ficha de 7 campos; deve citar
   `Falha`/`Erro`/`Teste`/`Change Failure Rate`/`Cobertura`.
-- [ ] 📄 **16 — SLO:** para a rota mais crítica (`POST /consultations` ou
+- [x] 📄 **16 — SLO:** para a rota mais crítica (`POST /consultations` ou
   `POST /auth/login`): `SLI (Indicador):`, `Fórmula de Coleta:`, `Fonte do Dado:`,
   `Janela de Medição:` (nº + `dias`/`horas`) e `Alvo (SLO):` (% — ex.: `99.5%`).
-- [ ] 📄 **17 — Error Budget Policy:** `Error Budget Policy:` com `Nível 1`,
+- [x] 📄 **17 — Error Budget Policy:** `Error Budget Policy:` com `Nível 1`,
   `Nível 2`, `Nível 3`; o `Nível 3` deve conter `congelamento` / `Feature Freeze` /
   `Zero novas funcionalidades`.
 
@@ -258,11 +258,11 @@
 - [ ] 🔒 **18 — SSDF (código):** nenhum `.cs` em `/backend/src` com `Password=`,
   `Pwd=`, `User Id=` ou `ConnectionString=` seguidos de literal. Usar
   `builder.Configuration` / `Environment.GetEnvironmentVariable` / `secrets.json`.
-- [ ] 📄 **19 — Threat Model + Gates** (`/backend/docs/seguranca_ciclo.md`):
+- [x] 📄 **19 — Threat Model + Gates** (`/backend/docs/seguranca_ciclo.md`):
   (a) Threat Model da rota de maior risco com `Ativos Protegidos:`,
   `Vetor de Ataque Provável:`, `Falha Arquitetural Potencial:`,
   `Controle de Engenharia (Mitigação):`; (b) `Gate 1`, `Gate 2`, `Gate 3`.
-- [ ] 📄 **20 — Team Topologies + DoD final:** `/backend/docs/topologia_times.md`
+- [x] 📄 **20 — Team Topologies + DoD final:** `/backend/docs/topologia_times.md`
   mapeando `Stream-aligned`, `Platform`, `Enabling`, `Complicated-Subsystem` ao
   projeto; **e** `/backend/release_checklist_final.md` (na raiz de `/backend`) com as
   7 caixas marcadas `[x]`: Fundamentos, Produto Mínimo, Evidência de Qualidade,
