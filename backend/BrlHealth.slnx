@@ -1,0 +1,8 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/BrlHealth.Api/BrlHealth.Api.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/BrlHealth.Tests/BrlHealth.Tests.csproj" />
+  </Folder>
+</Solution>
