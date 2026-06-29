@@ -1,0 +1,11 @@
+# .NET build output
+bin/
+obj/
+
+# Configuração local com segredos (nunca versionar)
+appsettings.Development.json
+appsettings.Local.json
+*.user
+
+# user-secrets (ficam fora do repo por padrão, mas reforça)
+secrets.json

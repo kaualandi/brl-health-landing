@@ -44,20 +44,20 @@
 
 ## 🧱 1. Setup do projeto
 
-- [ ] 🧱 Criar solution `.NET` em `/backend` (`BrlHealth.sln`) + projeto
+- [x] 🧱 Criar solution `.NET` em `/backend` (`BrlHealth.sln`) + projeto
   `src/BrlHealth.Api` (Minimal API) e `tests/BrlHealth.Tests` (xUnit).
-- [ ] 🧱 Adicionar pacotes: `Dapper`, `Npgsql`, `Microsoft.Extensions.Configuration`
+- [x] 🧱 Adicionar pacotes: `Dapper`, `Npgsql`, `Microsoft.Extensions.Configuration`
   (sem ORM pesado — Dapper é o micro-ORM da AV2).
-- [ ] 🧱 **Connection string fora do código** (item 18): `builder.Configuration
+- [x] 🧱 **Connection string fora do código** (item 18): `builder.Configuration
   .GetConnectionString("Default")` + `dotnet user-secrets` (dev) / variável de
   ambiente (prod). Nada de `Password=...` literal em `.cs`.
-- [ ] 🧱 `appsettings.json` / `appsettings.Development.json` sem segredos; commitar
+- [x] 🧱 `appsettings.json` / `appsettings.Development.json` sem segredos; commitar
   `appsettings.Example.json`.
-- [ ] 🧱 Estrutura de pastas: `Endpoints/`, `Domain/`, `Data/` (repos Dapper +
+- [x] 🧱 Estrutura de pastas: `Endpoints/`, `Domain/`, `Data/` (repos Dapper +
   `DbConnectionFactory`), `Services/` (regras + cálculo), `Validation/`.
-- [ ] 🧱 `Program.cs`: `WebApplication`, DI (registrar factory + repos + services),
+- [x] 🧱 `Program.cs`: `WebApplication`, DI (registrar factory + repos + services),
   CORS pro front (`NEXT_PUBLIC_API_URL` aponta pra cá), Swagger.
-- [ ] 🧱 `README.md` em `/backend`: como subir o banco, rodar migrations, `dotnet run`.
+- [x] 🧱 `README.md` em `/backend`: como subir o banco, rodar migrations, `dotnet run`.
 
 ---
 
@@ -66,7 +66,7 @@
 > Tabelas derivadas do inventário dos mocks/tipos do front. Todas as queries via
 > Dapper **parametrizadas** (`@Parametro`) — nunca interpolação/concatenação.
 
-- [ ] 🗄️ Script de schema `Data/schema.sql` (ou migrations) com as tabelas:
+- [x] 🗄️ Script de schema `Data/schema.sql` (ou migrations) com as tabelas:
   - `users` (`id`, `name`, `email` único, `password_hash`, `email_verified`,
     `created_at`).
   - `nutri_profiles` (FK `user_id`, sexo, idade, altura, peso, peso-alvo, objetivo,
@@ -80,7 +80,7 @@
   - Tracking: `weight_logs`, `water_logs`, `sleep_logs`, `step_logs`,
     `measurements`, `habit_logs`, `meal_logs` (todos com `user_id` + `date`).
   - `articles`, `contact_messages`, `waitlist`, `analytics_events`.
-- [ ] 🗄️ `DbConnectionFactory` (abre `NpgsqlConnection` a partir da config).
+- [x] 🗄️ `DbConnectionFactory` (abre `NpgsqlConnection` a partir da config).
 - [ ] 🗄️ Seed: 34 alimentos (`lib/foods.ts`), 8 refeições (`lib/meals.ts`),
   4 nutricionistas (`lib/nutritionists.ts`), 3 planos, artigos (`lib/nutri-content.ts`).
 - [ ] 🗄️ Repositórios Dapper por agregado (`UsersRepository`,
@@ -96,7 +96,7 @@
 > com mensagem específica**, e **tudo parametrizado** (`@Parametro`).
 
 ### 🧮 Endpoint multi-validação (Regra 3) — `POST /consultations` (agendar)
-- [ ] 🧮 Antes do `INSERT`, validar **5 condições** (mais que as 3 exigidas) e
+- [x] 🧮 Antes do `INSERT`, validar **5 condições** (mais que as 3 exigidas) e
   retornar `400 Bad Request` com mensagem específica em cada falha:
   1. usuário tem **saldo de consultas** no tier (Free 1 / Pro 4 / Family 8) →
      consulta `COUNT` das consultas ativas vs. limite do plano.
@@ -105,11 +105,11 @@
   3. data **não é domingo**.
   4. `time` **dentro da agenda** do profissional.
   5. data **não está no passado**.
-- [ ] 🧮 Só após todas passarem, `INSERT` parametrizado. Espelha
+- [x] 🧮 Só após todas passarem, `INSERT` parametrizado. Espelha
   `services/consultations.service.ts` + `lib/nutritionists.ts`.
 
 ### 🔌 Endpoint com JOIN (Regra 2) — `GET /consultations/me`
-- [ ] 🔌 `SELECT ... FROM consultations c INNER JOIN nutritionists n ON
+- [x] 🔌 `SELECT ... FROM consultations c INNER JOIN nutritionists n ON
   n.id = c.nutritionist_id INNER JOIN users u ON u.id = c.user_id WHERE
   c.user_id = @UserId` — devolve a consulta já enriquecida (nome/foco/CRN do
   nutricionista). Espelha a tela de consultas agendadas.
@@ -117,13 +117,13 @@
     (subscriptions × plans × users), `GET /nutri/diary/{date}` (meal_logs × foods).
 
 ### 🧮 2º endpoint de regra de negócio — `PUT /me/plan` (mudar de plano)
-- [ ] 🧮 Validar antes de gravar (≥3): (1) plano-alvo existe e ≠ atual;
+- [x] 🧮 Validar antes de gravar (≥3): (1) plano-alvo existe e ≠ atual;
   (2) transição permitida (regras de upgrade/downgrade); (3) cartão válido em
   upgrade — regra do mock: número terminando em `0000` é recusado → `400`;
   (4) sem cobrança pendente. Espelha `services/billing.service.ts` + `PlanManager`.
 
 ### 🔒 Regra 4 — queries parametrizadas
-- [ ] 🔒 Auditar todos os repos: **zero** concatenação/interpolação de string em SQL;
+- [x] 🔒 Auditar todos os repos: **zero** concatenação/interpolação de string em SQL;
   exclusivamente `@Parametro` no Dapper.
 
 ---
@@ -133,10 +133,10 @@
 > Portar `src/lib/nutri-plan.ts` para C#. É "regra de negócio de verdade" (não-CRUD)
 > e o alvo natural dos testes AAA (item 01/02).
 
-- [ ] 🧮 `Services/NutriPlanCalculator`: BMR (**Mifflin-St Jeor**), TDEE por fator de
+- [x] 🧮 `Services/NutriPlanCalculator`: BMR (**Mifflin-St Jeor**), TDEE por fator de
   atividade (1.2 / 1.375 / 1.55 / 1.725 / 1.9), ajuste por objetivo
   (lose −18% / recomp −5% / gain +12% / performance +8% / health 0%).
-- [ ] 🧮 Macros: proteína por kg (2.0 / 1.9 / 1.8 / 1.8 / 1.6), gordura 27% das kcal,
+- [x] 🧮 Macros: proteína por kg (2.0 / 1.9 / 1.8 / 1.8 / 1.6), gordura 27% das kcal,
   carbo no resto. Água `35ml/kg`. IMC + classificação (Abaixo / Saudável /
   Sobrepeso / Obesidade).
 - [ ] 🧮 Distribuição de refeições por nº (3→30/40/30, 4, 5, 6) e `autoSchedule` por
@@ -183,10 +183,10 @@
 > deve ser específico do BRL Health (não genérico).
 
 ### 🧪 Testes (`/backend/tests`)
-- [ ] 📄 **01 — Padrão AAA:** ≥3 métodos de teste com os comentários `// Arrange`,
+- [x] 📄 **01 — Padrão AAA:** ≥3 métodos de teste com os comentários `// Arrange`,
   `// Act` e `// Assert`. Bons candidatos: `NutriPlanCalculator`, agendamento de
   consulta, validação de mudança de plano.
-- [ ] 📄 **02 — Nomenclatura + independência:** nomes
+- [x] 📄 **02 — Nomenclatura + independência:** nomes
   `Metodo_Cenario_ResultadoEsperado` (ex.:
   `AgendarConsulta_QuandoSemSaldoNoTier_DeveRetornar400`,
   `CalcularPlano_QuandoSexoMasculino_DeveAplicarMaisCinco`,
@@ -255,7 +255,7 @@
   `Zero novas funcionalidades`.
 
 ### 🔒 Segurança & fechamento
-- [ ] 🔒 **18 — SSDF (código):** nenhum `.cs` em `/backend/src` com `Password=`,
+- [x] 🔒 **18 — SSDF (código):** nenhum `.cs` em `/backend/src` com `Password=`,
   `Pwd=`, `User Id=` ou `ConnectionString=` seguidos de literal. Usar
   `builder.Configuration` / `Environment.GetEnvironmentVariable` / `secrets.json`.
 - [x] 📄 **19 — Threat Model + Gates** (`/backend/docs/seguranca_ciclo.md`):
