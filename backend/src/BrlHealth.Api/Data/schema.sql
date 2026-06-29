@@ -219,6 +219,15 @@ CREATE TABLE IF NOT EXISTS email_tokens (
     created_at  TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
+-- LGPD: registro de consentimento (versão do documento aceita pelo titular).
+CREATE TABLE IF NOT EXISTS consent_records (
+    id          BIGSERIAL PRIMARY KEY,
+    user_id     BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    document    TEXT NOT NULL,                 -- 'termos' | 'privacidade' | ...
+    version     TEXT NOT NULL,                 -- versão/data do documento aceito
+    accepted_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
 -- Índices que previnem degradação das leituras de tracking/consulta (ver dívida DT-05).
 CREATE INDEX IF NOT EXISTS ix_consultations_user ON consultations(user_id, date, time);
 CREATE INDEX IF NOT EXISTS ix_weight_logs_user   ON weight_logs(user_id, date);
@@ -228,3 +237,4 @@ CREATE INDEX IF NOT EXISTS ix_step_logs_user     ON step_logs(user_id, date);
 CREATE INDEX IF NOT EXISTS ix_measurements_user  ON measurements(user_id, date);
 CREATE INDEX IF NOT EXISTS ix_refresh_tokens_hash ON refresh_tokens(token_hash);
 CREATE INDEX IF NOT EXISTS ix_email_tokens_lookup ON email_tokens(purpose, token_hash);
+CREATE INDEX IF NOT EXISTS ix_consent_records_user ON consent_records(user_id);

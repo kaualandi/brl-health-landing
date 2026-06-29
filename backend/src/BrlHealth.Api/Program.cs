@@ -30,6 +30,7 @@ builder.Services.AddScoped<FoodsRepository>();
 builder.Services.AddScoped<ArticlesRepository>();
 builder.Services.AddScoped<RefreshTokensRepository>();
 builder.Services.AddScoped<EmailTokensRepository>();
+builder.Services.AddScoped<LgpdRepository>();
 
 // Autenticação JWT (auth real — §7). Segredo vem da config/ambiente (seção `Jwt`).
 var jwtOptions = builder.Configuration.GetSection("Jwt").Get<JwtOptions>() ?? new JwtOptions();
@@ -93,5 +94,6 @@ app.MapArticles();         // GET /articles · /articles/{id} (conteúdo editori
 app.MapBilling();          // POST /billing/checkout
 app.MapEngagement();       // POST /contact · /waitlist · /analytics/events
 app.MapTracking();         // /nutri/water · weight · sleep · steps · measurements · habits · diary
+app.MapLgpd();             // GET /me/data-export · DELETE /me/account · POST/GET /me/consent (LGPD)
 
 app.Run();

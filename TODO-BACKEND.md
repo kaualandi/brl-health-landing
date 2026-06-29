@@ -299,7 +299,9 @@
   - [x] **Logs/observabilidade:** **Serilog** (console + request logging estruturado)
     e **health checks** (`/health/live` liveness · `/health/ready` readiness do Postgres).
   - [ ] **Validação server-side** (FluentValidation) e **OpenTelemetry** (tracing/OTLP).
-- [ ] 🚀 **LGPD:** exportar/excluir dados, consentimento.
+- [x] 🚀 **LGPD:** `GET /me/data-export` (portabilidade — todos os dados do titular
+  em JSON), `DELETE /me/account` (eliminação — apaga a conta e tudo em cascata) e
+  `POST`/`GET /me/consent` (registro de consentimento). Tabela `consent_records`.
 - [ ] 🚀 **Jobs em background** (Hangfire/Quartz) para e-mails e geração de cardápio.
 - [ ] 🚀 **IA de cardápio:** geração por LLM atrás de `IMenuGenerator`
   (provider-agnostic, via HTTP), a partir do perfil + banco de alimentos (TACO/USDA).
