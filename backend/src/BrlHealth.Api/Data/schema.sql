@@ -69,6 +69,31 @@ CREATE TABLE IF NOT EXISTS consultations (
 );
 
 -- ------------------------------------------------------------------
+-- Cardápio: catálogo de alimentos e tipos de refeição (espelha lib/foods.ts e lib/meals.ts)
+-- ------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS foods (
+    id          TEXT PRIMARY KEY,
+    name        TEXT NOT NULL,
+    emoji       TEXT,
+    role        TEXT NOT NULL,                 -- protein|carb|veg|fruit|fat|dairy|drink
+    portion     TEXT NOT NULL,
+    kcal        INT NOT NULL,
+    protein     INT NOT NULL,
+    carb        INT NOT NULL,
+    fat         INT NOT NULL,
+    diets       TEXT[] NOT NULL DEFAULT '{}',  -- vazio = aceito em todas as dietas
+    excluded_by TEXT[] NOT NULL DEFAULT '{}'   -- restrições que excluem o alimento
+);
+
+CREATE TABLE IF NOT EXISTS meals (
+    name         TEXT PRIMARY KEY,
+    emoji        TEXT,
+    default_time TEXT NOT NULL,
+    weight       NUMERIC(3,1) NOT NULL,        -- peso relativo na distribuição de kcal
+    roles        TEXT[] NOT NULL DEFAULT '{}'  -- papéis de alimento que compõem a refeição
+);
+
+-- ------------------------------------------------------------------
 -- Tracking diário (um registro por user_id + date, upsert na escrita)
 -- ------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS water_logs (
