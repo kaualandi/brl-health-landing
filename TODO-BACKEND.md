@@ -82,9 +82,9 @@
   - `articles`, `contact_messages`, `waitlist`, `analytics_events`.
 - [x] 🗄️ `DbConnectionFactory` (abre `NpgsqlConnection` a partir da config).
 - [x] 🗄️ Seed: 32 alimentos (`lib/foods.ts`), 8 refeições (`lib/meals.ts`),
-  4 nutricionistas (`lib/nutritionists.ts`), 3 planos, 8 artigos
-  (`lib/nutri-content.ts`). _(o `foods.ts` real tem 32, não 34; receitas de
-  `RECIPES_CATALOG` ficam pra quando a página `/receitas` sair do roadmap.)_
+  4 nutricionistas (`lib/nutritionists.ts`), 3 planos, 8 artigos e **10 receitas**
+  (`lib/nutri-content.ts`). _(o `foods.ts` real tem 32, não 34; as receitas de
+  `RECIPES_CATALOG` agora estão na tabela `recipes` — §2 completa.)_
 - [x] 🗄️ Repositórios Dapper por agregado (`UsersRepository`,
   `ConsultationsRepository`, `SubscriptionsRepository`, `TrackingRepository`…),
   todos com `@Parametro`.
@@ -292,7 +292,9 @@
   (SDK Twilio); `FluentEmail` como camada opcional. _Resend segue viável via
   HTTP/SDK, mas não é o caminho mais confortável no .NET._ Boas-vindas, verificação,
   reset, recibo, waitlist.
-- [ ] 🚀 **Conteúdo:** mover artigos/receitas pra DB ou CMS.
+- [x] 🚀 **Conteúdo:** artigos e **receitas** no banco. Tabela `recipes` + seed das
+  10 receitas (`RECIPES_CATALOG`) com `GET /recipes` e `GET /recipes/{id}` (espelha a
+  página `/receitas`). _Fecha a ponta solta da §2._ (CMS de verdade fica pós-isto.)
 - [~] 🚀 **Rate limiting / observabilidade:**
   - [x] **Rate limiting** (`Microsoft.AspNetCore.RateLimiting`): teto global por IP
     + política estrita em `/auth/*` (`429` + `Retry-After`). _Resolve a dívida DT-02._
