@@ -82,8 +82,9 @@
   - `articles`, `contact_messages`, `waitlist`, `analytics_events`.
 - [x] 🗄️ `DbConnectionFactory` (abre `NpgsqlConnection` a partir da config).
 - [x] 🗄️ Seed: 32 alimentos (`lib/foods.ts`), 8 refeições (`lib/meals.ts`),
-  4 nutricionistas (`lib/nutritionists.ts`), 3 planos. _(o `foods.ts` real tem 32,
-  não 34; artigos de `lib/nutri-content.ts` ainda pendentes.)_
+  4 nutricionistas (`lib/nutritionists.ts`), 3 planos, 8 artigos
+  (`lib/nutri-content.ts`). _(o `foods.ts` real tem 32, não 34; receitas de
+  `RECIPES_CATALOG` ficam pra quando a página `/receitas` sair do roadmap.)_
 - [x] 🗄️ Repositórios Dapper por agregado (`UsersRepository`,
   `ConsultationsRepository`, `SubscriptionsRepository`, `TrackingRepository`…),
   todos com `@Parametro`.
