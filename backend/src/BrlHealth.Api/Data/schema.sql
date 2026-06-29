@@ -68,22 +68,100 @@ CREATE TABLE IF NOT EXISTS consultations (
     created_at      TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
--- Tracking (representativo): demais logs seguem o mesmo padrão (user_id + date).
-CREATE TABLE IF NOT EXISTS weight_logs (
-    id      BIGSERIAL PRIMARY KEY,
-    user_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    date    DATE NOT NULL,
-    weight_kg NUMERIC(5,1) NOT NULL
-);
-
+-- ------------------------------------------------------------------
+-- Tracking diário (um registro por user_id + date, upsert na escrita)
+-- ------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS water_logs (
     id      BIGSERIAL PRIMARY KEY,
     user_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     date    DATE NOT NULL,
-    cups    INT NOT NULL DEFAULT 0
+    ml      INT NOT NULL DEFAULT 0,
+    UNIQUE (user_id, date)
+);
+
+CREATE TABLE IF NOT EXISTS weight_logs (
+    id        BIGSERIAL PRIMARY KEY,
+    user_id   BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    date      DATE NOT NULL,
+    weight_kg NUMERIC(5,1) NOT NULL,
+    UNIQUE (user_id, date)
+);
+
+CREATE TABLE IF NOT EXISTS sleep_logs (
+    id      BIGSERIAL PRIMARY KEY,
+    user_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    date    DATE NOT NULL,
+    hours   NUMERIC(4,1) NOT NULL,
+    UNIQUE (user_id, date)
+);
+
+CREATE TABLE IF NOT EXISTS step_logs (
+    id      BIGSERIAL PRIMARY KEY,
+    user_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    date    DATE NOT NULL,
+    count   INT NOT NULL DEFAULT 0,
+    UNIQUE (user_id, date)
+);
+
+CREATE TABLE IF NOT EXISTS measurements (
+    id      BIGSERIAL PRIMARY KEY,
+    user_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    date    DATE NOT NULL,
+    waist   NUMERIC(5,1),
+    hip     NUMERIC(5,1),
+    chest   NUMERIC(5,1),
+    arm     NUMERIC(5,1),
+    thigh   NUMERIC(5,1),
+    UNIQUE (user_id, date)
+);
+
+-- Hábitos e diário de refeições marcados no dia (mapa item -> bool em JSONB).
+CREATE TABLE IF NOT EXISTS habit_logs (
+    id      BIGSERIAL PRIMARY KEY,
+    user_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    date    DATE NOT NULL,
+    done    JSONB NOT NULL DEFAULT '{}',
+    UNIQUE (user_id, date)
+);
+
+CREATE TABLE IF NOT EXISTS meal_logs (
+    id      BIGSERIAL PRIMARY KEY,
+    user_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    date    DATE NOT NULL,
+    done    JSONB NOT NULL DEFAULT '{}',
+    UNIQUE (user_id, date)
+);
+
+-- ------------------------------------------------------------------
+-- Captação e telemetria
+-- ------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS contact_messages (
+    id         BIGSERIAL PRIMARY KEY,
+    name       TEXT NOT NULL,
+    email      TEXT NOT NULL,
+    subject    TEXT NOT NULL,
+    message    TEXT NOT NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE TABLE IF NOT EXISTS waitlist (
+    id         BIGSERIAL PRIMARY KEY,
+    email      TEXT NOT NULL UNIQUE,
+    source     TEXT NOT NULL DEFAULT 'fit',
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE TABLE IF NOT EXISTS analytics_events (
+    id         BIGSERIAL PRIMARY KEY,
+    event      TEXT NOT NULL,
+    props      JSONB,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
 -- Índices que previnem degradação das leituras de tracking/consulta (ver dívida DT-05).
 CREATE INDEX IF NOT EXISTS ix_consultations_user ON consultations(user_id, date, time);
 CREATE INDEX IF NOT EXISTS ix_weight_logs_user   ON weight_logs(user_id, date);
 CREATE INDEX IF NOT EXISTS ix_water_logs_user    ON water_logs(user_id, date);
+CREATE INDEX IF NOT EXISTS ix_sleep_logs_user    ON sleep_logs(user_id, date);
+CREATE INDEX IF NOT EXISTS ix_step_logs_user     ON step_logs(user_id, date);
+CREATE INDEX IF NOT EXISTS ix_measurements_user  ON measurements(user_id, date);

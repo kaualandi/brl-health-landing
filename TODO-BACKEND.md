@@ -83,7 +83,7 @@
 - [x] 🗄️ `DbConnectionFactory` (abre `NpgsqlConnection` a partir da config).
 - [ ] 🗄️ Seed: 34 alimentos (`lib/foods.ts`), 8 refeições (`lib/meals.ts`),
   4 nutricionistas (`lib/nutritionists.ts`), 3 planos, artigos (`lib/nutri-content.ts`).
-- [ ] 🗄️ Repositórios Dapper por agregado (`UsersRepository`,
+- [x] 🗄️ Repositórios Dapper por agregado (`UsersRepository`,
   `ConsultationsRepository`, `SubscriptionsRepository`, `TrackingRepository`…),
   todos com `@Parametro`.
 
@@ -141,7 +141,7 @@
   Sobrepeso / Obesidade).
 - [ ] 🧮 Distribuição de refeições por nº (3→30/40/30, 4, 5, 6) e `autoSchedule` por
   horários acordar/treinar/dormir.
-- [ ] 🔌 Usado no onboarding (`POST /auth/register` + `PUT /nutri/profile`) e exposto
+- [x] 🔌 Usado no onboarding (`POST /auth/register` + `PUT /nutri/profile`) e exposto
   em `GET /nutri/plan`. Confere com os 23 testes que já existem no front
   (`nutri-plan.test.ts`) como tabela-verdade.
 
@@ -170,10 +170,10 @@
 | `health-store` | sono / passos | `GET/POST /nutri/sleep` · `/nutri/steps` |
 | tracking (água/peso/hábitos/diário) | logs diários | `GET/POST /nutri/water` · `/nutri/weight` · `/nutri/habits` · `/nutri/diary` |
 
-- [ ] 🔌 Implementar a tabela acima (auth, perfil/plano, planos, billing, consultas,
+- [x] 🔌 Implementar a tabela acima (auth, perfil/plano, planos, billing, consultas,
   contato, waitlist, analytics, tracking).
-- [ ] 🔌 Conta demo `demo@brl.com` / `123456` semeada pra bater com o front.
-- [ ] 🔌 Resposta 401 em token inválido (o axios do front já limpa a sessão no 401).
+- [x] 🔌 Conta demo `demo@brl.com` / `123456` semeada pra bater com o front.
+- [x] 🔌 Resposta 401 em token inválido (o axios do front já limpa a sessão no 401).
 
 ---
 

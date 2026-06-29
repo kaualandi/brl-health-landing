@@ -44,4 +44,34 @@ public sealed class SubscriptionsRepository
             "UPDATE subscriptions SET plan_id = @PlanId WHERE user_id = @UserId";
         await conn.ExecuteAsync(sql, new { UserId = userId, PlanId = planId });
     }
+
+    /// <summary>Cria a assinatura inicial do usuário (usado no registro).</summary>
+    public async Task InsertAsync(long userId, string planId)
+    {
+        using var conn = _factory.Create();
+        const string sql =
+            @"INSERT INTO subscriptions (user_id, plan_id, status, has_pending_charge)
+              VALUES (@UserId, @PlanId, 'active', FALSE)
+              ON CONFLICT (user_id) DO NOTHING";
+        await conn.ExecuteAsync(sql, new { UserId = userId, PlanId = planId });
+    }
+
+    /// <summary>Ativa um plano pago após o pagamento (checkout): troca o plano e zera a pendência.</summary>
+    public async Task ActivatePlanAsync(long userId, string planId)
+    {
+        using var conn = _factory.Create();
+        const string sql =
+            @"UPDATE subscriptions
+              SET plan_id = @PlanId, status = 'active', has_pending_charge = FALSE
+              WHERE user_id = @UserId";
+        await conn.ExecuteAsync(sql, new { UserId = userId, PlanId = planId });
+    }
+
+    public async Task<PlanRow[]> GetAllPlansAsync()
+    {
+        using var conn = _factory.Create();
+        const string sql =
+            "SELECT id AS Id, rank AS Rank, monthly_price AS MonthlyPrice, credits AS Credits FROM plans ORDER BY rank";
+        return (await conn.QueryAsync<PlanRow>(sql)).ToArray();
+    }
 }
