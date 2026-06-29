@@ -93,6 +93,26 @@ CREATE TABLE IF NOT EXISTS meals (
     roles        TEXT[] NOT NULL DEFAULT '{}'  -- papéis de alimento que compõem a refeição
 );
 
+-- Catálogo de receitas (espelha RECIPES_CATALOG de lib/nutri-content.ts), página /receitas.
+CREATE TABLE IF NOT EXISTS recipes (
+    id          TEXT PRIMARY KEY,             -- slug
+    title       TEXT NOT NULL,
+    emoji       TEXT,
+    category    TEXT NOT NULL,                -- Café da manhã | Almoço | Lanche | Jantar | Sobremesa fit
+    excerpt     TEXT NOT NULL,
+    prep_time   TEXT NOT NULL,                -- ex.: '25 min'
+    kcal        INT NOT NULL,
+    protein     INT NOT NULL,                 -- macros por porção (g)
+    carbs       INT NOT NULL,
+    fat         INT NOT NULL,
+    servings    INT NOT NULL DEFAULT 1,
+    diet        TEXT NOT NULL,                -- omnivore|vegetarian|vegan|lowcarb|mediterranean
+    goals       TEXT[] NOT NULL DEFAULT '{}', -- objetivos indicados (vazio = todos)
+    ingredients TEXT[] NOT NULL DEFAULT '{}',
+    steps       TEXT[] NOT NULL DEFAULT '{}',
+    tags        TEXT[] NOT NULL DEFAULT '{}'
+);
+
 -- Conteúdo editorial (espelha lib/nutri-content.ts). body = seções em JSONB.
 CREATE TABLE IF NOT EXISTS articles (
     id        TEXT PRIMARY KEY,                -- slug
