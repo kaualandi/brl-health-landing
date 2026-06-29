@@ -13,4 +13,6 @@ public sealed record NutriProfile
     public ActivityLevel Activity { get; init; }
     public Goal Goal { get; init; }
     public int MealsPerDay { get; init; } = 3;
+    /// <summary>Refeições escolhidas com horário; quando presente, manda na distribuição.</summary>
+    public IReadOnlyList<MealEntry>? Meals { get; init; }
 }
