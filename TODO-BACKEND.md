@@ -141,8 +141,9 @@
 - [x] 🧮 Macros: proteína por kg (2.0 / 1.9 / 1.8 / 1.8 / 1.6), gordura 27% das kcal,
   carbo no resto. Água `35ml/kg`. IMC + classificação (Abaixo / Saudável /
   Sobrepeso / Obesidade).
-- [ ] 🧮 Distribuição de refeições por nº (3→30/40/30, 4, 5, 6) e `autoSchedule` por
-  horários acordar/treinar/dormir.
+- [x] 🧮 Distribuição de refeições por nº (3→30/40/30, 4, 5, 6) e `autoSchedule` por
+  horários acordar/treinar/dormir. (`MealPlanner`; cardápio entra no `NutriPlan`;
+  exposto em `POST /nutri/schedule`.)
 - [x] 🔌 Usado no onboarding (`POST /auth/register` + `PUT /nutri/profile`) e exposto
   em `GET /nutri/plan`. Confere com os 23 testes que já existem no front
   (`nutri-plan.test.ts`) como tabela-verdade.

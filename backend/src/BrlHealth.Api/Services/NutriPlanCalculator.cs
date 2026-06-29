@@ -76,6 +76,10 @@ public static class NutriPlanCalculator
             WaterMl = waterMl,
             Bmi = bmi,
             BmiLabel = ClassifyBmi(bmi),
+            // Refeições agendadas (com horário) mandam; senão, distribui por nº de refeições.
+            Meals = profile.Meals is { Count: > 0 }
+                ? MealPlanner.BuildScheduled(profile.Meals, targetCalories)
+                : MealPlanner.BuildByCount(targetCalories, profile.MealsPerDay),
         };
     }
 

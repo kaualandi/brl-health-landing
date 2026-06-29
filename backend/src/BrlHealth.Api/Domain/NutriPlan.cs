@@ -14,4 +14,5 @@ public sealed record NutriPlan
     public int WaterMl { get; init; }
     public double Bmi { get; init; }
     public string BmiLabel { get; init; } = "";
+    public IReadOnlyList<MealSlice> Meals { get; init; } = [];
 }
