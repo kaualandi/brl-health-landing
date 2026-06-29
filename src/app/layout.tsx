@@ -1,6 +1,8 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter, Syne } from "next/font/google";
 
+import { AnalyticsTracker } from "@/components/analytics/analytics-tracker";
+import { ServiceWorkerRegister } from "@/components/pwa/service-worker-register";
 import { ThemeWatcher } from "@/components/theme/theme-watcher";
 import { ToastProvider } from "@/components/ui/toast";
 import { QueryProvider } from "@/providers/query-provider";
@@ -17,7 +19,11 @@ const syne = Syne({
   subsets: ["latin"],
   weight: ["700", "800"],
   variable: "--font-display",
-  display: "swap",
+  // `optional` evita o swap da fonte display no meio da carga (a Syne é
+  // pré-carregada pelo next/font, então normalmente aparece mesmo assim).
+  // Mata o reflow do headline do hero, que sozinho causava CLS ~0.36 na
+  // primeira visita. Ver pass de performance.
+  display: "optional",
 });
 
 const inter = Inter({
@@ -70,6 +76,16 @@ export const metadata: Metadata = {
   },
 };
 
+// `themeColor`/`colorScheme` vivem no viewport (no metadata estão deprecados).
+// A cor da barra do navegador acompanha o tema claro/escuro.
+export const viewport: Viewport = {
+  colorScheme: "dark light",
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#f8f7fc" },
+    { media: "(prefers-color-scheme: dark)", color: "#0d0d1a" },
+  ],
+};
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -87,6 +103,8 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }}
         />
         <ThemeWatcher />
+        <ServiceWorkerRegister />
+        <AnalyticsTracker />
         <QueryProvider>
           <ToastProvider>{children}</ToastProvider>
         </QueryProvider>

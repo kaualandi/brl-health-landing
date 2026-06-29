@@ -1,11 +1,25 @@
 import type { Metadata } from "next";
 
 import { ContentExplorer } from "@/components/content/content-explorer";
+import { SITE_NAME } from "@/lib/site";
+
+const TITLE = "Conteúdos — BRL Health";
+const DESCRIPTION =
+  "Artigos diretos sobre nutrição, treino e hábitos. Sem mito, sem enrolação — o que funciona na vida real.";
 
 export const metadata: Metadata = {
-  title: "Conteúdos — BRL Health",
-  description:
-    "Artigos diretos sobre nutrição, treino e hábitos. Sem mito, sem enrolação — o que funciona na vida real.",
+  title: TITLE,
+  description: DESCRIPTION,
+  alternates: { canonical: "/conteudos" },
+  openGraph: {
+    type: "website",
+    locale: "pt_BR",
+    siteName: SITE_NAME,
+    url: "/conteudos",
+    title: TITLE,
+    description: DESCRIPTION,
+    images: ["/opengraph-image"],
+  },
 };
 
 export default function ContentPage() {

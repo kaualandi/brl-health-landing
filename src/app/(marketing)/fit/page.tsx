@@ -12,11 +12,25 @@ import {
 import { AnimatedSection } from "@/components/animations/animated-section";
 import { WaitlistForm } from "@/components/forms/waitlist-form";
 import { Button } from "@/components/ui/button";
+import { SITE_NAME } from "@/lib/site";
+
+const TITLE = "BRL Fit — treinos adaptativos (em breve)";
+const DESCRIPTION =
+  "O BRL Fit está chegando: treinos que se adaptam ao seu progresso e conversam com a sua nutrição. Entre na lista de espera.";
 
 export const metadata: Metadata = {
-  title: "BRL Fit — treinos adaptativos (em breve)",
-  description:
-    "O BRL Fit está chegando: treinos que se adaptam ao seu progresso e conversam com a sua nutrição. Entre na lista de espera.",
+  title: TITLE,
+  description: DESCRIPTION,
+  alternates: { canonical: "/fit" },
+  openGraph: {
+    type: "website",
+    locale: "pt_BR",
+    siteName: SITE_NAME,
+    url: "/fit",
+    title: TITLE,
+    description: DESCRIPTION,
+    images: ["/opengraph-image"],
+  },
 };
 
 const FEATURES = [

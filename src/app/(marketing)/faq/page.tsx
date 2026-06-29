@@ -5,11 +5,25 @@ import { ArrowRightIcon } from "lucide-react";
 import { FaqAccordion } from "@/components/faq/faq-accordion";
 import { Button } from "@/components/ui/button";
 import { FAQ } from "@/lib/faq";
+import { SITE_NAME } from "@/lib/site";
+
+const TITLE = "Perguntas frequentes — BRL Health";
+const DESCRIPTION =
+  "Tire suas dúvidas sobre o BRL Nutri, planos e cobrança, conta e privacidade.";
 
 export const metadata: Metadata = {
-  title: "Perguntas frequentes — BRL Health",
-  description:
-    "Tire suas dúvidas sobre o BRL Nutri, planos e cobrança, conta e privacidade.",
+  title: TITLE,
+  description: DESCRIPTION,
+  alternates: { canonical: "/faq" },
+  openGraph: {
+    type: "website",
+    locale: "pt_BR",
+    siteName: SITE_NAME,
+    url: "/faq",
+    title: TITLE,
+    description: DESCRIPTION,
+    images: ["/opengraph-image"],
+  },
 };
 
 // Dados estruturados pra rich results de FAQ no Google.

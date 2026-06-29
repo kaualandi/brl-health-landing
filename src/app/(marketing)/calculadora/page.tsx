@@ -1,11 +1,25 @@
 import type { Metadata } from "next";
 
 import { CalculatorForm } from "@/components/calculator/calculator-form";
+import { SITE_NAME } from "@/lib/site";
+
+const TITLE = "Calculadora de calorias, TDEE e IMC grátis — BRL Health";
+const DESCRIPTION =
+  "Calcule grátis suas calorias diárias, TDEE, macros, IMC e meta de água — sem precisar criar conta. Estimativa por Mifflin-St Jeor.";
 
 export const metadata: Metadata = {
-  title: "Calculadora de calorias, TDEE e IMC grátis — BRL Health",
-  description:
-    "Calcule grátis suas calorias diárias, TDEE, macros, IMC e meta de água — sem precisar criar conta. Estimativa por Mifflin-St Jeor.",
+  title: TITLE,
+  description: DESCRIPTION,
+  alternates: { canonical: "/calculadora" },
+  openGraph: {
+    type: "website",
+    locale: "pt_BR",
+    siteName: SITE_NAME,
+    url: "/calculadora",
+    title: TITLE,
+    description: DESCRIPTION,
+    images: ["/opengraph-image"],
+  },
 };
 
 export default function CalculatorPage() {

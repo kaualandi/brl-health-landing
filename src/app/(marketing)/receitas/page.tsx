@@ -1,11 +1,25 @@
 import type { Metadata } from "next";
 
 import { RecipeExplorer } from "@/components/content/recipe-explorer";
+import { SITE_NAME } from "@/lib/site";
+
+const TITLE = "Receitas — BRL Health";
+const DESCRIPTION =
+  "Receitas realistas por dieta e objetivo, em nível de alimento: ingredientes, modo de preparo, calorias e macros de cada prato.";
 
 export const metadata: Metadata = {
-  title: "Receitas — BRL Health",
-  description:
-    "Receitas realistas por dieta e objetivo, em nível de alimento: ingredientes, modo de preparo, calorias e macros de cada prato.",
+  title: TITLE,
+  description: DESCRIPTION,
+  alternates: { canonical: "/receitas" },
+  openGraph: {
+    type: "website",
+    locale: "pt_BR",
+    siteName: SITE_NAME,
+    url: "/receitas",
+    title: TITLE,
+    description: DESCRIPTION,
+    images: ["/opengraph-image"],
+  },
 };
 
 export default function RecipesPage() {
