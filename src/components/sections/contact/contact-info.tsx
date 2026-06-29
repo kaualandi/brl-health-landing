@@ -68,7 +68,7 @@ function InfoCard({
   return (
     <article
       className={cn(
-        "rounded-2xl border border-white/5 border-l-4 bg-brl-card p-6",
+        "rounded-2xl border border-foreground/5 border-l-4 bg-brl-card p-6",
         borderClassName,
       )}
     >
@@ -166,7 +166,7 @@ export function ContactInfo() {
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label={label}
-                className="inline-flex size-10 items-center justify-center rounded-lg border border-white/10 bg-brl-card text-muted-foreground transition-colors hover:border-brl-purple hover:text-foreground"
+                className="inline-flex size-10 items-center justify-center rounded-lg border border-foreground/10 bg-brl-card text-muted-foreground transition-colors outline-none hover:border-brl-purple hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
               >
                 <Icon aria-hidden className="size-5" />
               </a>

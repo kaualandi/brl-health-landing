@@ -10,7 +10,7 @@ export function AboutCta() {
       className="relative overflow-hidden py-20 md:py-28"
       style={{
         background:
-          "linear-gradient(135deg, #0d0d1a 0%, rgba(150,86,161,0.15) 100%)",
+          "linear-gradient(135deg, var(--background) 0%, rgba(150,86,161,0.15) 100%)",
       }}
     >
       <div
@@ -38,7 +38,7 @@ export function AboutCta() {
           />
           <Link
             href="/contato"
-            className="text-sm font-medium text-muted-foreground underline-offset-4 transition-colors hover:text-foreground hover:underline"
+            className="rounded text-sm font-medium text-muted-foreground underline-offset-4 transition-colors outline-none hover:text-foreground hover:underline focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
           >
             Fala com a gente
           </Link>

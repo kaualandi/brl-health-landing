@@ -32,7 +32,7 @@ function AboutProductCard({
   return (
     <article
       className={cn(
-        "relative overflow-hidden rounded-2xl border border-white/5 bg-brl-card p-8",
+        "relative overflow-hidden rounded-2xl border border-foreground/5 bg-brl-card p-8",
         "before:absolute before:inset-x-0 before:top-0 before:h-1",
         styles.border,
       )}

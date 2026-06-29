@@ -90,7 +90,7 @@ export function Cta() {
       className="relative overflow-hidden py-20 md:py-28"
       style={{
         background:
-          "linear-gradient(135deg, #0d0d1a 0%, rgba(150,86,161,0.25) 100%)",
+          "linear-gradient(135deg, var(--background) 0%, rgba(150,86,161,0.25) 100%)",
       }}
     >
       <div

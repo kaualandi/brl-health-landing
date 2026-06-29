@@ -45,7 +45,7 @@ export function ProductCard({
       onMouseEnter={hoverAnim.onMouseEnter}
       onMouseLeave={hoverAnim.onMouseLeave}
       className={cn(
-        "relative flex flex-col gap-6 overflow-hidden rounded-2xl border border-white/5 bg-brl-card p-8 transition-colors",
+        "relative flex flex-col gap-6 overflow-hidden rounded-2xl border border-foreground/5 bg-brl-card p-8 transition-colors",
         "before:absolute before:inset-x-0 before:top-0 before:h-1",
         styles.border,
       )}
@@ -91,7 +91,7 @@ export function ProductCard({
           size="lg"
           variant="outline"
           nativeButton={false}
-          className="h-11 w-full border-white/15 bg-white/5 text-sm hover:bg-white/10 md:w-auto"
+          className="h-11 w-full border-foreground/15 bg-foreground/5 text-sm hover:bg-foreground/10 md:w-auto"
           render={<Link href={cta.href}>{cta.label}</Link>}
         />
       </div>
