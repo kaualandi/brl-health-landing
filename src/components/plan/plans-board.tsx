@@ -118,20 +118,18 @@ function PlanCard({
           {plan.name}
         </h3>
         <p className="text-sm text-muted-foreground">{plan.tagline}</p>
-        <div className="mt-4 flex flex-col gap-1">
-          <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
-            <span className="font-display text-4xl font-extrabold tracking-tight md:text-5xl">
-              {price.amount}
-            </span>
-            {price.perMonth ? (
-              <span className="text-sm text-muted-foreground">/mês</span>
-            ) : null}
-            {price.strikethrough ? (
-              <span className="text-sm text-muted-foreground line-through">
-                {price.strikethrough}
-              </span>
-            ) : null}
-          </div>
+        <div className="mt-4 flex flex-col gap-1 @container">
+          <span className="font-display text-[clamp(1.875rem,13cqi,2.5rem)] leading-none font-extrabold tracking-tight">
+            {price.amount}
+          </span>
+          {price.perMonth || price.strikethrough ? (
+            <div className="flex flex-wrap items-baseline gap-x-2 text-sm text-muted-foreground">
+              {price.perMonth ? <span>/mês</span> : null}
+              {price.strikethrough ? (
+                <span className="line-through">{price.strikethrough}</span>
+              ) : null}
+            </div>
+          ) : null}
           {price.annualNote ? (
             <p className="text-xs font-medium text-brl-orange">
               {price.annualNote}
