@@ -293,9 +293,12 @@
   HTTP/SDK, mas não é o caminho mais confortável no .NET._ Boas-vindas, verificação,
   reset, recibo, waitlist.
 - [ ] 🚀 **Conteúdo:** mover artigos/receitas pra DB ou CMS.
-- [ ] 🚀 **Rate limiting** (`Microsoft.AspNetCore.RateLimiting`), **validação
-  server-side** (FluentValidation), **logs/observabilidade** (Serilog +
-  OpenTelemetry + health checks).
+- [~] 🚀 **Rate limiting / observabilidade:**
+  - [x] **Rate limiting** (`Microsoft.AspNetCore.RateLimiting`): teto global por IP
+    + política estrita em `/auth/*` (`429` + `Retry-After`). _Resolve a dívida DT-02._
+  - [x] **Logs/observabilidade:** **Serilog** (console + request logging estruturado)
+    e **health checks** (`/health/live` liveness · `/health/ready` readiness do Postgres).
+  - [ ] **Validação server-side** (FluentValidation) e **OpenTelemetry** (tracing/OTLP).
 - [ ] 🚀 **LGPD:** exportar/excluir dados, consentimento.
 - [ ] 🚀 **Jobs em background** (Hangfire/Quartz) para e-mails e geração de cardápio.
 - [ ] 🚀 **IA de cardápio:** geração por LLM atrás de `IMenuGenerator`

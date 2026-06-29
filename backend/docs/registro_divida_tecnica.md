@@ -31,6 +31,10 @@
 
 ## Atualização — quitação de dívidas (pós-AV2)
 
+- **DT-02 (quitada):** os endpoints de autenticação passaram a ter **rate limit**
+  (`Microsoft.AspNetCore.RateLimiting`): política estrita por IP em `/auth/*`
+  (10 req/min) sobre um teto global (120 req/min), respondendo `429` com
+  `Retry-After`. Fecha a janela de brute-force em login/registro/reset.
 - **DT-03 (quitada):** a sessão deixou de usar token opaco. A fase de auth real
   (§7) introduziu **JWT HS256** (claim `sub`) com **refresh token rotativo
   single-use** (`/auth/refresh`, `/auth/logout`; só o hash do token vive no banco)

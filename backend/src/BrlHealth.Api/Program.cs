@@ -4,8 +4,16 @@ using BrlHealth.Api.Endpoints;
 using BrlHealth.Api.Services;
 using BrlHealth.Api.Services.Email;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Logging estruturado (observabilidade — §7): console com contexto enriquecido.
+builder.Host.UseSerilog((context, config) => config
+    .ReadFrom.Configuration(context.Configuration)
+    .Enrich.FromLogContext()
+    .WriteTo.Console());
 
 // Dapper: trata DateOnly em colunas `date`.
 Dapper.SqlMapper.AddTypeHandler(new DateOnlyTypeHandler());
@@ -40,6 +48,14 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     });
 builder.Services.AddAuthorization();
 
+// Rate limiting por IP (§7): teto global + política estrita em /auth/* (dívida DT-02).
+builder.Services.AddBrlRateLimiter();
+
+// Health checks: liveness (sem dependências) + readiness (PostgreSQL).
+builder.Services.AddScoped<DatabaseHealthCheck>();
+builder.Services.AddHealthChecks()
+    .AddCheck<DatabaseHealthCheck>("postgres", tags: ["ready"]);
+
 // E-mail transacional: em dev loga no console (provedor real entra atrás do mesmo contrato).
 builder.Services.AddSingleton<IEmailSender, ConsoleEmailSender>();
 
@@ -52,11 +68,16 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
+app.UseSerilogRequestLogging();
 app.UseCors();
+app.UseRateLimiter();
 app.UseAuthentication();
 app.UseAuthorization();
 
+// Health: liveness não roda checagens; readiness exige o banco respondendo.
 app.MapGet("/health", () => Results.Ok(new { status = "ok" }));
+app.MapHealthChecks("/health/live", new HealthCheckOptions { Predicate = _ => false });
+app.MapHealthChecks("/health/ready", new HealthCheckOptions { Predicate = check => check.Tags.Contains("ready") });
 
 // Núcleo de negócio da AV2
 app.MapNutriPlan();        // POST /nutri/plan       (motor de cálculo, público)
@@ -64,7 +85,7 @@ app.MapConsultations();    // POST /consultations + GET /consultations/me (JOIN)
 app.MapPlanChange();       // PUT  /me/plan
 
 // Espelho dos mocks do front (§5)
-app.MapAuth();             // /auth/login · register · refresh · logout · forgot · reset · verify
+app.MapAuth();             // /auth/login · register · refresh · logout · forgot · reset · verify  (rate-limited)
 app.MapProfile();          // GET/PUT /nutri/profile · GET /nutri/plan
 app.MapPlans();            // GET /plans
 app.MapFoods();            // GET /foods · /meals (catálogo do cardápio)

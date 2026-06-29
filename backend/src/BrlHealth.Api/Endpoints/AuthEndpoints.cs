@@ -16,8 +16,11 @@ public static class AuthEndpoints
 {
     public static void MapAuth(this WebApplication app)
     {
+        // Todos os endpoints de auth herdam a política de rate limit estrita (dívida DT-02).
+        var auth = app.MapGroup("/auth").RequireRateLimiting(RateLimiting.AuthPolicy);
+
         // POST /auth/login — espelha auth.service.ts:loginUser
-        app.MapPost("/auth/login", async (
+        auth.MapPost("/login", async (
             LoginRequest body, UsersRepository users,
             JwtTokenService jwt, JwtOptions options, RefreshTokensRepository refreshTokens) =>
         {
@@ -33,7 +36,7 @@ public static class AuthEndpoints
         });
 
         // POST /auth/register — cria conta + assinatura Free e já abre sessão
-        app.MapPost("/auth/register", async (
+        auth.MapPost("/register", async (
             RegisterRequest body, UsersRepository users, SubscriptionsRepository subscriptions,
             JwtTokenService jwt, JwtOptions options, RefreshTokensRepository refreshTokens) =>
         {
@@ -51,7 +54,7 @@ public static class AuthEndpoints
         });
 
         // POST /auth/refresh — rotaciona o refresh token e emite um novo access token
-        app.MapPost("/auth/refresh", async (
+        auth.MapPost("/refresh", async (
             RefreshRequest body, UsersRepository users,
             JwtTokenService jwt, JwtOptions options, RefreshTokensRepository refreshTokens) =>
         {
@@ -72,7 +75,7 @@ public static class AuthEndpoints
         });
 
         // POST /auth/logout — revoga o refresh token informado
-        app.MapPost("/auth/logout", async (RefreshRequest body, RefreshTokensRepository refreshTokens) =>
+        auth.MapPost("/logout", async (RefreshRequest body, RefreshTokensRepository refreshTokens) =>
         {
             if (!string.IsNullOrWhiteSpace(body.RefreshToken))
             {
@@ -85,7 +88,7 @@ public static class AuthEndpoints
         });
 
         // POST /auth/forgot — gera token de reset, envia por e-mail; resposta não revela cadastro
-        app.MapPost("/auth/forgot", async (
+        auth.MapPost("/forgot", async (
             ForgotRequest body, UsersRepository users, EmailTokensRepository emailTokens,
             IEmailSender email, IConfiguration config) =>
         {
@@ -105,7 +108,7 @@ public static class AuthEndpoints
         });
 
         // POST /auth/reset — valida o token, grava a nova senha (BCrypt) e encerra sessões abertas
-        app.MapPost("/auth/reset", async (
+        auth.MapPost("/reset", async (
             ResetRequest body, UsersRepository users,
             EmailTokensRepository emailTokens, RefreshTokensRepository refreshTokens) =>
         {
@@ -124,7 +127,7 @@ public static class AuthEndpoints
         });
 
         // POST /auth/verify/resend — exige sessão; gera código de 6 dígitos e envia por e-mail
-        app.MapPost("/auth/verify/resend", async (
+        auth.MapPost("/verify/resend", async (
             HttpContext ctx, UsersRepository users, EmailTokensRepository emailTokens, IEmailSender email) =>
         {
             if (!ctx.TryGetUserId(out var userId))
@@ -143,7 +146,7 @@ public static class AuthEndpoints
         });
 
         // POST /auth/verify — valida o código do usuário autenticado e marca o e-mail como verificado
-        app.MapPost("/auth/verify", async (
+        auth.MapPost("/verify", async (
             VerifyRequest body, HttpContext ctx, UsersRepository users, EmailTokensRepository emailTokens) =>
         {
             if (!ctx.TryGetUserId(out var userId))

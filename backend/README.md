@@ -75,8 +75,20 @@ dotnet test  BrlHealth.slnx          # 35 testes AAA
 dotnet run --project src/BrlHealth.Api
 ```
 
-> `GET /health` e `POST /nutri/plan` (motor de cálculo) funcionam sem banco;
-> os endpoints de consulta/plano precisam do PostgreSQL configurado.
+> `GET /health`, `GET /health/live` e `POST /nutri/plan` (motor de cálculo)
+> funcionam sem banco; os endpoints de consulta/plano e `GET /health/ready`
+> precisam do PostgreSQL configurado.
+
+## Observabilidade e proteção
+
+- **Logs estruturados:** [Serilog](https://serilog.net) no console + request
+  logging (`HTTP {Método} {Rota} respondeu {Status} em {ms}`).
+- **Health checks:** `GET /health/live` (liveness, sem dependências) e
+  `GET /health/ready` (readiness — faz `SELECT 1` no Postgres; `503` se o banco
+  estiver fora).
+- **Rate limiting** (`Microsoft.AspNetCore.RateLimiting`): teto global de
+  120 req/min por IP e política estrita de **10 req/min em `/auth/*`**
+  (anti-brute-force); ao exceder, `429` com header `Retry-After`.
 
 ## Endpoints de negócio (requisitos da AV2)
 
