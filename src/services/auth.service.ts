@@ -73,3 +73,26 @@ export async function resetPassword(
   return { message: "Senha redefinida" };
   // TODO: substituir por api.post('/auth/reset')
 }
+
+export async function requestEmailVerification(
+  email: string,
+): Promise<{ message: string }> {
+  await wait(800);
+
+  void email;
+
+  return { message: "Enviamos um novo código para o seu e-mail." };
+  // TODO: substituir por api.post('/auth/verify/resend')
+}
+
+export async function verifyEmail(code: string): Promise<{ message: string }> {
+  await wait(800);
+
+  // Mock: aceita qualquer código de 6 dígitos (o backend valida de verdade).
+  if (!/^\d{6}$/.test(code.trim())) {
+    throw new Error("Código inválido. Confira os 6 dígitos e tente de novo.");
+  }
+
+  return { message: "E-mail verificado" };
+  // TODO: substituir por api.post('/auth/verify')
+}

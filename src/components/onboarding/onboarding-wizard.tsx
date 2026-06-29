@@ -7,6 +7,7 @@ import {
   AlertCircleIcon,
   ArrowLeftIcon,
   ArrowRightIcon,
+  CheckIcon,
   EyeIcon,
   EyeOffIcon,
   Loader2Icon,
@@ -55,36 +56,14 @@ import {
   saveNutriProfileForCurrentUser,
   subscribeNutriProfile,
 } from "@/services/nutri.service";
+import {
+  clearOnboardingDraft,
+  readOnboardingDraft,
+  saveOnboardingDraft,
+  type WizardData,
+} from "@/lib/onboarding-draft";
 import { cn } from "@/lib/utils";
-import type {
-  ActivityLevel,
-  BiologicalSex,
-  DietStyle,
-  Goal,
-  MealEntry,
-  NutriProfile,
-  Restriction,
-} from "@/types";
-
-type WizardData = {
-  name: string;
-  email: string;
-  password: string;
-  sex: BiologicalSex | null;
-  age: string;
-  heightCm: string;
-  weightKg: string;
-  goalWeightKg: string;
-  goal: Goal | null;
-  activity: ActivityLevel | null;
-  diet: DietStyle | null;
-  restrictions: Restriction[];
-  meals: MealEntry[];
-  wakeTime: string;
-  sleepTime: string;
-  trainTime: string;
-  waterGlasses: string;
-};
+import type { NutriProfile, Restriction } from "@/types";
 
 const INITIAL: WizardData = {
   name: "",
@@ -300,7 +279,7 @@ function SummaryCard({
   children: ReactNode;
 }) {
   return (
-    <div className="rounded-2xl border border-white/8 bg-brl-card p-4">
+    <div className="rounded-2xl border border-foreground/8 bg-brl-card p-4">
       <div className="mb-2 flex items-center justify-between gap-3">
         <h3 className="flex items-center gap-2 text-sm font-bold text-foreground">
           <span aria-hidden>{emoji}</span>
@@ -331,10 +310,18 @@ function SummaryRow({ label, value }: { label: string; value: string }) {
 export function OnboardingWizard() {
   const router = useRouter();
   const { user, isAuthenticated, status } = useAuth();
-  const [step, setStep] = useState(0);
-  // Pré-preenche com o que veio da calculadora pública (se houver), pra não
-  // redigitar sexo/idade/altura/peso/atividade/objetivo.
+  // Rascunho de uma sessão anterior (se houver): tem prioridade pra retomar de
+  // onde o usuário parou depois de um refresh.
+  const [initialDraft] = useState(() => readOnboardingDraft());
+  const [step, setStep] = useState(() =>
+    initialDraft
+      ? Math.min(Math.max(initialDraft.step, 0), ALL_STEPS.length - 1)
+      : 0,
+  );
+  // Sem rascunho, pré-preenche com o que veio da calculadora pública (se houver),
+  // pra não redigitar sexo/idade/altura/peso/atividade/objetivo.
   const [data, setData] = useState<WizardData>(() => {
+    if (initialDraft) return initialDraft.data;
     const draft = readCalcDraft();
     if (!draft) return INITIAL;
     return {
@@ -352,9 +339,13 @@ export function OnboardingWizard() {
   const [genMsg, setGenMsg] = useState(0);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
+  // Indicador discreto de "rascunho salvo" (já começa visível ao retomar).
+  const [draftSaved, setDraftSaved] = useState(Boolean(initialDraft));
 
   const contentRef = useRef<HTMLDivElement | null>(null);
   const directionRef = useRef(1);
+  // Pula o save da montagem pra não mostrar o aviso antes de o usuário mexer.
+  const skipFirstDraftSave = useRef(true);
 
   // Plano que já existe (undefined = ainda lendo, null = sem plano).
   const existingProfile = useSyncExternalStore(
@@ -379,9 +370,13 @@ export function OnboardingWizard() {
     [isAuthenticated],
   );
 
-  const current = steps[step];
-  const isLast = step === steps.length - 1;
-  const progress = ((step + 1) / steps.length) * 100;
+  // Clampa o passo: um rascunho retomado pode apontar pra um índice que não
+  // existe mais se a sessão mudou (logado pula a etapa de conta). A navegação
+  // (goNext/goBack) também reclampa, então o estado converge na 1ª interação.
+  const safeStep = Math.min(Math.max(step, 0), steps.length - 1);
+  const current = steps[safeStep];
+  const isLast = safeStep === steps.length - 1;
+  const progress = ((safeStep + 1) / steps.length) * 100;
 
   useEffect(() => {
     const el = contentRef.current;
@@ -405,6 +400,19 @@ export function OnboardingWizard() {
     }, 520);
     return () => clearInterval(id);
   }, [generating]);
+
+  // Persiste o progresso pra retomar após um refresh. Pula a montagem: só grava
+  // depois de uma mudança real do usuário — assim não cria rascunho-fantasma pra
+  // quem só passa pela tela nem sombreia um prefill novo vindo da calculadora.
+  useEffect(() => {
+    if (generating) return;
+    if (skipFirstDraftSave.current) {
+      skipFirstDraftSave.current = false;
+      return;
+    }
+    saveOnboardingDraft({ step, data });
+    setDraftSaved(true);
+  }, [step, data, generating]);
 
   function update<K extends keyof WizardData>(key: K, value: WizardData[K]) {
     setData((prev) => ({ ...prev, [key]: value }));
@@ -615,6 +623,7 @@ export function OnboardingWizard() {
         }
       })();
       await Promise.all([work, minDelay]);
+      clearOnboardingDraft();
       router.push("/nutri");
     } catch (error) {
       setGenerating(false);
@@ -654,14 +663,25 @@ export function OnboardingWizard() {
           <span className="text-brl-purple">BRL</span>
           <span className="text-foreground"> Nutri</span>
         </Link>
-        <span className="text-xs font-medium text-muted-foreground tabular-nums">
-          Passo {step + 1} de {steps.length}
-        </span>
+        <div className="flex flex-col items-end gap-0.5">
+          <span className="text-xs font-medium text-muted-foreground tabular-nums">
+            Passo {safeStep + 1} de {steps.length}
+          </span>
+          {draftSaved ? (
+            <span
+              aria-live="polite"
+              className="flex items-center gap-1 text-[11px] font-medium text-muted-foreground/70"
+            >
+              <CheckIcon aria-hidden className="size-3 text-emerald-400" />
+              Rascunho salvo
+            </span>
+          ) : null}
+        </div>
       </header>
 
       <div className="mx-auto w-full max-w-2xl px-4 pt-4 md:px-6">
         <div
-          className="h-1.5 overflow-hidden rounded-full bg-white/8"
+          className="h-1.5 overflow-hidden rounded-full bg-foreground/8"
           role="progressbar"
           aria-valuenow={Math.round(progress)}
           aria-valuemin={0}
@@ -938,7 +958,7 @@ export function OnboardingWizard() {
                           "flex items-center gap-3 rounded-xl border p-3 transition-colors",
                           selected
                             ? "border-brl-purple/50 bg-brl-purple/10"
-                            : "border-white/8",
+                            : "border-foreground/8",
                         )}
                       >
                         <button
@@ -953,7 +973,7 @@ export function OnboardingWizard() {
                               "flex size-5 shrink-0 items-center justify-center rounded-md border transition-colors",
                               selected
                                 ? "border-brl-purple bg-brl-purple text-white"
-                                : "border-white/20",
+                                : "border-foreground/20",
                             )}
                           >
                             {selected ? "✓" : ""}
@@ -1097,7 +1117,7 @@ export function OnboardingWizard() {
                   label="Água"
                   value={`${data.waterGlasses} copos`}
                 />
-                <div className="mt-1 flex flex-col gap-1 border-t border-white/5 pt-2">
+                <div className="mt-1 flex flex-col gap-1 border-t border-foreground/5 pt-2">
                   {[...data.meals]
                     .sort((a, b) => a.time.localeCompare(b.time))
                     .map((meal) => (
