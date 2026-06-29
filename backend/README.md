@@ -120,6 +120,8 @@ Trocam os _services_ mock do front por API real. Rotas com 🔒 exigem
 | `DELETE` 🔒 | `/consultations/{id}` | cancelar (devolve crédito) |
 | `POST` | `/contact` · `/waitlist` · `/analytics/events` | contato / waitlist / analytics |
 | `GET`/`POST` 🔒 | `/nutri/water` · `/weight` · `/sleep` · `/steps` · `/measurements` · `/habits` · `/diary` | tracking diário |
+| `GET`/`DELETE` 🔒 | `/me/data-export` · `/me/account` | LGPD: exportar todos os dados · excluir conta (cascata) |
+| `POST`/`GET` 🔒 | `/me/consent` | LGPD: registrar / listar consentimentos |
 
 > **Auth real (§7):** access token **JWT (HS256)** com claim `sub`, **refresh
 > token** rotativo (single-use, hash no banco) via `/auth/refresh`, senha em
