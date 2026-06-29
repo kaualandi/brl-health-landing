@@ -55,6 +55,16 @@ public sealed class ConsultationsRepository
             sql, new { UserId = userId, NutritionistId = nutritionistId, Date = date, Time = time });
     }
 
+    /// <summary>Cancela a consulta do usuário (status='cancelled') — devolve o crédito do plano.</summary>
+    public async Task<int> CancelAsync(long id, long userId)
+    {
+        using var conn = _factory.Create();
+        const string sql =
+            @"UPDATE consultations SET status = 'cancelled'
+              WHERE id = @Id AND user_id = @UserId AND status = 'scheduled'";
+        return await conn.ExecuteAsync(sql, new { Id = id, UserId = userId });
+    }
+
     /// <summary>Endpoint com JOIN (Regra 2): consultations × nutritionists × users.</summary>
     public async Task<IEnumerable<ConsultationView>> GetByUserWithDetailsAsync(long userId)
     {

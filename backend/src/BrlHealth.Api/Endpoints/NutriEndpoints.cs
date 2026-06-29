@@ -19,37 +19,20 @@ public static class NutriEndpoints
         // Expõe o motor de cálculo nutricional (regra de negócio, não-CRUD).
         app.MapPost("/nutri/plan", (NutriProfileRequest body) =>
         {
+            if (body.Age <= 0 || body.HeightCm <= 0 || body.WeightKg <= 0)
+                return Results.BadRequest(new { errors = new[] { "Idade, altura e peso devem ser maiores que zero." } });
+
             var profile = new NutriProfile
             {
-                Sex = body.Sex == "male" ? Sex.Male : Sex.Female,
+                Sex = NutriMapping.ParseSex(body.Sex),
                 Age = body.Age,
                 HeightCm = body.HeightCm,
                 WeightKg = body.WeightKg,
-                Activity = ParseActivity(body.Activity),
-                Goal = ParseGoal(body.Goal),
+                Activity = NutriMapping.ParseActivity(body.Activity),
+                Goal = NutriMapping.ParseGoal(body.Goal),
                 MealsPerDay = body.MealsPerDay,
             };
             return Results.Ok(NutriPlanCalculator.Compute(profile));
         });
     }
-
-    private static ActivityLevel ParseActivity(string value) => value switch
-    {
-        "sedentary" => ActivityLevel.Sedentary,
-        "light" => ActivityLevel.Light,
-        "moderate" => ActivityLevel.Moderate,
-        "active" => ActivityLevel.Active,
-        "athlete" => ActivityLevel.Athlete,
-        _ => ActivityLevel.Sedentary,
-    };
-
-    private static Goal ParseGoal(string value) => value switch
-    {
-        "lose" => Goal.Lose,
-        "recomp" => Goal.Recomp,
-        "gain" => Goal.Gain,
-        "performance" => Goal.Performance,
-        "health" => Goal.Health,
-        _ => Goal.Health,
-    };
 }

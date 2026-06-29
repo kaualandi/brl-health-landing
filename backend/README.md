@@ -71,3 +71,23 @@ dotnet run --project src/BrlHealth.Api
 | `POST` | `/consultations` | Agendamento com **5 validações** → `400` com mensagem específica |
 | `GET`  | `/consultations/me` | Consultas do usuário com **INNER JOIN** (consultations × nutritionists × users) |
 | `PUT`  | `/me/plan` | Mudança de plano com **4 validações** (cartão `0000` recusado, etc.) |
+
+## Endpoints do espelho dos mocks (§5)
+
+Trocam os _services_ mock do front por API real. Rotas com 🔒 exigem
+`Authorization: Bearer <token>` (token inválido/ausente → `401`).
+
+| Método | Rota | Origem (front) |
+|---|---|---|
+| `POST` | `/auth/login` · `/auth/register` | `auth.service.ts` |
+| `POST` | `/auth/forgot` · `/auth/reset` · `/auth/verify/resend` · `/auth/verify` | `auth.service.ts` |
+| `GET`/`PUT` 🔒 | `/nutri/profile` | `nutri.service.ts` |
+| `GET` 🔒 | `/nutri/plan` | plano calculado do perfil salvo |
+| `GET` | `/plans` | `plans.service.ts` |
+| `POST` 🔒 | `/billing/checkout` | `billing.service.ts` |
+| `DELETE` 🔒 | `/consultations/{id}` | cancelar (devolve crédito) |
+| `POST` | `/contact` · `/waitlist` · `/analytics/events` | contato / waitlist / analytics |
+| `GET`/`POST` 🔒 | `/nutri/water` · `/weight` · `/sleep` · `/steps` · `/measurements` · `/habits` · `/diary` | tracking diário |
+
+> A autenticação é um token opaco simples (mirror). JWT + refresh token, hash
+> BCrypt e validação server-side completa são da fase de produção (§7).

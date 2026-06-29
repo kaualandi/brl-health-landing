@@ -3,7 +3,7 @@ using BrlHealth.Api.Services;
 
 namespace BrlHealth.Api.Endpoints;
 
-public sealed record ScheduleConsultationRequest(long UserId, string NutritionistId, string Date, string Time);
+public sealed record ScheduleConsultationRequest(string NutritionistId, string Date, string Time);
 
 public static class ConsultationsEndpoints
 {
@@ -21,18 +21,22 @@ public static class ConsultationsEndpoints
         // Regra 3 — endpoint de negócio com 5 validações -> 400 com mensagem específica.
         app.MapPost("/consultations", async (
             ScheduleConsultationRequest body,
+            HttpContext ctx,
             ConsultationsRepository consultations,
             SubscriptionsRepository subscriptions) =>
         {
+            if (!ctx.TryGetUserId(out var userId))
+                return Results.Unauthorized();
+
             if (!DateOnly.TryParse(body.Date, out var date))
                 return Results.BadRequest(new { errors = new[] { "Data inválida (use o formato YYYY-MM-DD)." } });
 
-            var subscription = await subscriptions.GetSubscriptionAsync(body.UserId);
+            var subscription = await subscriptions.GetSubscriptionAsync(userId);
             var planId = subscription?.PlanId ?? "free";
             var plan = await subscriptions.GetPlanAsync(planId);
             var credits = plan?.Credits ?? 0;
 
-            var active = await consultations.CountActiveByUserAsync(body.UserId);
+            var active = await consultations.CountActiveByUserAsync(userId);
             var slotTaken = await consultations.IsSlotTakenAsync(body.NutritionistId, date, body.Time);
             var slots = SlotsByNutri.TryGetValue(body.NutritionistId, out var s) ? s : [];
 
@@ -48,12 +52,24 @@ public static class ConsultationsEndpoints
             if (!result.IsValid)
                 return Results.BadRequest(new { errors = result.Errors });
 
-            var id = await consultations.InsertAsync(body.UserId, body.NutritionistId, date, body.Time);
+            var id = await consultations.InsertAsync(userId, body.NutritionistId, date, body.Time);
             return Results.Created($"/consultations/{id}", new { id });
         });
 
         // Regra 2 — endpoint com INNER JOIN (consultations × nutritionists × users).
-        app.MapGet("/consultations/me", async (long userId, ConsultationsRepository consultations) =>
-            Results.Ok(await consultations.GetByUserWithDetailsAsync(userId)));
+        app.MapGet("/consultations/me", async (HttpContext ctx, ConsultationsRepository consultations) =>
+            ctx.TryGetUserId(out var userId)
+                ? Results.Ok(await consultations.GetByUserWithDetailsAsync(userId))
+                : Results.Unauthorized());
+
+        // DELETE /consultations/{id} — cancela e devolve o crédito do plano.
+        app.MapDelete("/consultations/{id:long}", async (long id, HttpContext ctx, ConsultationsRepository consultations) =>
+        {
+            if (!ctx.TryGetUserId(out var userId))
+                return Results.Unauthorized();
+
+            var affected = await consultations.CancelAsync(id, userId);
+            return affected > 0 ? Results.NoContent() : Results.NotFound();
+        });
     }
 }

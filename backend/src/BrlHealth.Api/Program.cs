@@ -7,6 +7,10 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddSingleton<IDbConnectionFactory, NpgsqlConnectionFactory>();
 builder.Services.AddScoped<ConsultationsRepository>();
 builder.Services.AddScoped<SubscriptionsRepository>();
+builder.Services.AddScoped<UsersRepository>();
+builder.Services.AddScoped<ProfilesRepository>();
+builder.Services.AddScoped<TrackingRepository>();
+builder.Services.AddScoped<EngagementRepository>();
 
 // CORS para o front Next.js (NEXT_PUBLIC_API_URL aponta para cá).
 builder.Services.AddCors(options =>
@@ -20,8 +24,18 @@ var app = builder.Build();
 app.UseCors();
 
 app.MapGet("/health", () => Results.Ok(new { status = "ok" }));
-app.MapNutriPlan();        // POST /nutri/plan       (motor de cálculo)
-app.MapConsultations();    // POST /consultations + GET /consultations/me (JOIN)
+
+// Núcleo de negócio da AV2
+app.MapNutriPlan();        // POST /nutri/plan       (motor de cálculo, público)
+app.MapConsultations();    // POST /consultations + GET /consultations/me (JOIN) + DELETE
 app.MapPlanChange();       // PUT  /me/plan
+
+// Espelho dos mocks do front (§5)
+app.MapAuth();             // /auth/login · register · forgot · reset · verify
+app.MapProfile();          // GET/PUT /nutri/profile · GET /nutri/plan
+app.MapPlans();            // GET /plans
+app.MapBilling();          // POST /billing/checkout
+app.MapEngagement();       // POST /contact · /waitlist · /analytics/events
+app.MapTracking();         // /nutri/water · weight · sleep · steps · measurements · habits · diary
 
 app.Run();
