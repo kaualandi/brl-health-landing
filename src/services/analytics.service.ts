@@ -1,4 +1,4 @@
-const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+import { api } from "@/lib/axios";
 
 export type AnalyticsProps = Record<
   string,
@@ -6,19 +6,22 @@ export type AnalyticsProps = Record<
 >;
 
 /**
- * Registra um evento de analytics (mock). Hoje só simula a latência e loga em
- * dev; na produção vira uma chamada ao backend de telemetria.
+ * Registra um evento de analytics (POST /analytics/events). Fire-and-forget:
+ * nunca quebra a UX — engole qualquer erro de rede e só loga em dev.
  */
 export async function track(
   event: string,
   props?: AnalyticsProps,
 ): Promise<void> {
-  await wait(60);
-
   if (process.env.NODE_ENV !== "production") {
     console.debug("[analytics]", event, props ?? {});
   }
-  // TODO: substituir por api.post('/analytics/events', { event, props }) na fase de backend
+
+  try {
+    await api.post("/analytics/events", { event, props });
+  } catch {
+    // Telemetria é best-effort — falha silenciosa.
+  }
 }
 
 /** Registra a visualização de uma página (atalho sobre `track`). */
