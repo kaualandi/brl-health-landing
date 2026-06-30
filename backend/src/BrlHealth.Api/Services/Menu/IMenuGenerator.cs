@@ -10,5 +10,6 @@ namespace BrlHealth.Api.Services.Menu;
 /// </summary>
 public interface IMenuGenerator
 {
-    Task<GeneratedMenu> GenerateAsync(NutriProfile profile, NutriPlan plan, CancellationToken ct = default);
+    Task<GeneratedMenu> GenerateAsync(
+        NutriProfile profile, NutriPlan plan, MenuPreferences? preferences = null, CancellationToken ct = default);
 }

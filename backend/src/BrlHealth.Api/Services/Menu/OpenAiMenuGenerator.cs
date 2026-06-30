@@ -35,8 +35,10 @@ public sealed class OpenAiMenuGenerator : IMenuGenerator
         _logger = logger;
     }
 
-    public async Task<GeneratedMenu> GenerateAsync(NutriProfile profile, NutriPlan plan, CancellationToken ct = default)
+    public async Task<GeneratedMenu> GenerateAsync(
+        NutriProfile profile, NutriPlan plan, MenuPreferences? preferences = null, CancellationToken ct = default)
     {
+        var prefs = preferences ?? MenuPreferences.None;
         try
         {
             var request = new
@@ -46,7 +48,7 @@ public sealed class OpenAiMenuGenerator : IMenuGenerator
                 messages = new object[]
                 {
                     new { role = "system", content = "Você é um nutricionista. Responda exclusivamente com JSON válido." },
-                    new { role = "user", content = BuildPrompt(profile, plan) },
+                    new { role = "user", content = BuildPrompt(profile, plan, prefs) },
                 },
             };
 
@@ -66,20 +68,28 @@ public sealed class OpenAiMenuGenerator : IMenuGenerator
             var meals = ParseMeals(content);
             return meals.Count > 0
                 ? new GeneratedMenu("openai", meals)
-                : await _fallback.GenerateAsync(profile, plan, ct);
+                : await _fallback.GenerateAsync(profile, plan, prefs, ct);
         }
         catch (Exception ex)
         {
             _logger.LogWarning(ex, "Falha ao gerar cardápio por IA; usando fallback local.");
-            return await _fallback.GenerateAsync(profile, plan, ct);
+            return await _fallback.GenerateAsync(profile, plan, prefs, ct);
         }
     }
 
-    private static string BuildPrompt(NutriProfile profile, NutriPlan plan) =>
-        $"Monte um cardápio de 1 dia com {profile.MealsPerDay} refeições para o objetivo '{profile.Goal}'. " +
-        $"Alvos diários: {plan.TargetCalories} kcal, {plan.Protein}g de proteína, {plan.Carbs}g de carboidrato, " +
-        $"{plan.Fat}g de gordura. Responda em JSON no formato " +
-        "{\"meals\":[{\"name\":\"...\",\"suggestion\":\"...\",\"kcal\":000,\"time\":\"HH:MM\"}]}.";
+    private static string BuildPrompt(NutriProfile profile, NutriPlan plan, MenuPreferences prefs)
+    {
+        var constraints = "";
+        if (!string.IsNullOrWhiteSpace(prefs.Diet))
+            constraints += $" Respeite a dieta '{prefs.Diet}'.";
+        if (prefs.Restrictions is { Count: > 0 })
+            constraints += $" Evite estritamente: {string.Join(", ", prefs.Restrictions)}.";
+
+        return $"Monte um cardápio de 1 dia com {profile.MealsPerDay} refeições para o objetivo '{profile.Goal}'. " +
+            $"Alvos diários: {plan.TargetCalories} kcal, {plan.Protein}g de proteína, {plan.Carbs}g de carboidrato, " +
+            $"{plan.Fat}g de gordura.{constraints} Responda em JSON no formato " +
+            "{\"meals\":[{\"name\":\"...\",\"suggestion\":\"...\",\"kcal\":000,\"time\":\"HH:MM\"}]}.";
+    }
 
     private static List<GeneratedMeal> ParseMeals(string json)
     {

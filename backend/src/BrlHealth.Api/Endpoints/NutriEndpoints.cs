@@ -11,7 +11,9 @@ public sealed record NutriProfileRequest(
     string Activity,
     string Goal,
     int MealsPerDay = 3,
-    IReadOnlyList<MealEntry>? Meals = null);
+    IReadOnlyList<MealEntry>? Meals = null,
+    string? Diet = null,
+    IReadOnlyList<string>? Restrictions = null);
 
 public sealed record AutoScheduleRequest(IReadOnlyList<MealEntry> Meals, DailyRoutine Routine);
 
