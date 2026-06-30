@@ -16,6 +16,7 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { useMeals } from "@/hooks/use-nutri-tracking";
+import { useFoods } from "@/hooks/use-foods";
 import { useMenu } from "@/hooks/use-menu";
 import { alternativesCount, buildMealFoods, sumMeal } from "@/lib/foods";
 import { cn } from "@/lib/utils";
@@ -36,7 +37,9 @@ function MealDetail({
   eaten: boolean;
   onToggle: () => void;
 }) {
+  const { data: catalog = [] } = useFoods();
   const foods = buildMealFoods(
+    catalog,
     meal.name,
     profile.diet,
     profile.restrictions,
@@ -102,6 +105,7 @@ function MealDetail({
           {foods.map((mf, i) => {
             const canSwap =
               alternativesCount(
+                catalog,
                 meal.name,
                 i,
                 profile.diet,
