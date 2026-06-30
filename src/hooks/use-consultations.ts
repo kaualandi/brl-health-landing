@@ -6,9 +6,9 @@ import {
   addConsultation,
   getConsultationsServerSnapshot,
   getConsultationsSnapshot,
-  removeConsultation,
   subscribeConsultations,
 } from "@/lib/consultations-store";
+import { cancelConsultation } from "@/services/consultations.service";
 
 export function useConsultations() {
   const consultations = useSyncExternalStore(
@@ -19,6 +19,6 @@ export function useConsultations() {
   return {
     consultations,
     add: addConsultation,
-    cancel: removeConsultation,
+    cancel: cancelConsultation,
   };
 }
