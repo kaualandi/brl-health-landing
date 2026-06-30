@@ -126,3 +126,14 @@ export function relatedArticlesFrom(
 export function articleCategoriesFrom(list: ArticleListItem[]): string[] {
   return Array.from(new Set(list.map((a) => a.category)));
 }
+
+/** Prioriza artigos relevantes ao objetivo, mas sempre devolve `count` itens. */
+export function curatedArticlesFrom(
+  list: ArticleListItem[],
+  goal: Goal,
+  count = 6,
+): ArticleListItem[] {
+  const relevant = list.filter((a) => a.goals?.includes(goal));
+  const rest = list.filter((a) => !relevant.includes(a));
+  return [...relevant, ...rest].slice(0, count);
+}
