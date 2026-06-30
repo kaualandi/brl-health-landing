@@ -300,7 +300,9 @@
     + política estrita em `/auth/*` (`429` + `Retry-After`). _Resolve a dívida DT-02._
   - [x] **Logs/observabilidade:** **Serilog** (console + request logging estruturado)
     e **health checks** (`/health/live` liveness · `/health/ready` readiness do Postgres).
-  - [ ] **Validação server-side** (FluentValidation) e **OpenTelemetry** (tracing/OTLP).
+  - [x] **Validação server-side** (FluentValidation): validators dos DTOs de entrada
+    (`Register`/`Login`/`Reset`/`Consent`) via `ValidationFilter` → `400 { errors: [...] }`.
+  - [ ] **OpenTelemetry** (tracing/OTLP).
 - [x] 🚀 **LGPD:** `GET /me/data-export` (portabilidade — todos os dados do titular
   em JSON), `DELETE /me/account` (eliminação — apaga a conta e tudo em cascata) e
   `POST`/`GET /me/consent` (registro de consentimento). Tabela `consent_records`.
