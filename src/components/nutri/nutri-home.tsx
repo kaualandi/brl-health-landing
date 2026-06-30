@@ -39,11 +39,9 @@ import { useAuth } from "@/hooks/use-auth";
 import { useFavorites } from "@/hooks/use-favorites";
 import { useHabits } from "@/hooks/use-nutri-tracking";
 import { computeNutriPlan } from "@/lib/nutri-plan";
+import { useArticles, useRecipes } from "@/hooks/use-content";
 import {
-  curatedArticles,
   DAILY_HABITS,
-  getArticle,
-  getRecipe,
   QUICK_TIPS,
   recipeForDiet,
 } from "@/lib/nutri-content";
@@ -52,6 +50,7 @@ import {
   dietLabel,
   goalLabel,
 } from "@/lib/nutri-options";
+import { curatedArticlesFrom } from "@/services/content.service";
 import {
   getNutriProfileServerSnapshot,
   getNutriProfileSnapshot,
@@ -282,7 +281,8 @@ function HabitsCard() {
 function InicioTab({ profile }: { profile: NutriProfile }) {
   const plan = computeNutriPlan(profile);
   const firstName = profile.name.split(" ")[0] || profile.name;
-  const articles = curatedArticles(profile.goal, 6);
+  const { data: allArticles = [] } = useArticles();
+  const articles = curatedArticlesFrom(allArticles, profile.goal, 6);
 
   return (
     <>
@@ -532,16 +532,18 @@ function SaudeTab({ profile }: { profile: NutriProfile }) {
 
 function SalvosTab() {
   const { favorites } = useFavorites();
+  const { data: allArticles = [] } = useArticles();
+  const { data: allRecipes = [] } = useRecipes();
   // Mais recentes primeiro; descarta ids que não existem mais no catálogo.
   const articles = [...favorites]
     .reverse()
     .filter((f) => f.type === "article")
-    .map((f) => getArticle(f.id))
+    .map((f) => allArticles.find((a) => a.id === f.id))
     .filter((a): a is NonNullable<typeof a> => a !== undefined);
   const recipes = [...favorites]
     .reverse()
     .filter((f) => f.type === "recipe")
-    .map((f) => getRecipe(f.id))
+    .map((f) => allRecipes.find((r) => r.id === f.id))
     .filter((r): r is NonNullable<typeof r> => r !== undefined);
 
   const isEmpty = articles.length === 0 && recipes.length === 0;
