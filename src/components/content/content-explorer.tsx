@@ -5,7 +5,10 @@ import { ArrowRightIcon, SearchIcon } from "lucide-react";
 import { useMemo, useState } from "react";
 
 import { Input } from "@/components/ui/input";
-import { ARTICLES, articleCategories } from "@/lib/nutri-content";
+import {
+  type ArticleListItem,
+  articleCategoriesFrom,
+} from "@/services/content.service";
 import { cn } from "@/lib/utils";
 
 const ALL = "Todos";
@@ -17,14 +20,17 @@ function normalize(value: string): string {
     .replace(/\p{Diacritic}/gu, "");
 }
 
-export function ContentExplorer() {
-  const categories = useMemo(() => [ALL, ...articleCategories()], []);
+export function ContentExplorer({ articles }: { articles: ArticleListItem[] }) {
+  const categories = useMemo(
+    () => [ALL, ...articleCategoriesFrom(articles)],
+    [articles],
+  );
   const [category, setCategory] = useState(ALL);
   const [query, setQuery] = useState("");
 
   const results = useMemo(() => {
     const q = normalize(query.trim());
-    return ARTICLES.filter((article) => {
+    return articles.filter((article) => {
       const matchesCategory = category === ALL || article.category === category;
       const matchesQuery =
         q.length === 0 ||
@@ -33,7 +39,7 @@ export function ContentExplorer() {
         normalize(article.category).includes(q);
       return matchesCategory && matchesQuery;
     });
-  }, [category, query]);
+  }, [category, query, articles]);
 
   return (
     <div>

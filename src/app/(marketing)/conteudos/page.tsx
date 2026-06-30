@@ -2,6 +2,10 @@ import type { Metadata } from "next";
 
 import { ContentExplorer } from "@/components/content/content-explorer";
 import { SITE_NAME } from "@/lib/site";
+import { fetchArticles } from "@/services/content.service";
+
+// ISR: regenera a lista do banco de hora em hora, sem redeploy.
+export const revalidate = 3600;
 
 const TITLE = "Conteúdos — BRL Health";
 const DESCRIPTION =
@@ -22,7 +26,8 @@ export const metadata: Metadata = {
   },
 };
 
-export default function ContentPage() {
+export default async function ContentPage() {
+  const articles = await fetchArticles();
   return (
     <section className="relative overflow-hidden bg-brl-dark pt-32 pb-24 md:pt-40 md:pb-28">
       <div
@@ -48,7 +53,7 @@ export default function ContentPage() {
         </header>
 
         <div className="mt-12 md:mt-16">
-          <ContentExplorer />
+          <ContentExplorer articles={articles} />
         </div>
       </div>
     </section>

@@ -11,20 +11,24 @@ import {
 import { FavoriteButton } from "@/components/content/favorite-button";
 import { Button } from "@/components/ui/button";
 import {
-  ARTICLES,
-  getArticle,
-  relatedArticles,
-} from "@/lib/nutri-content";
+  fetchArticle,
+  fetchArticles,
+  relatedArticlesFrom,
+} from "@/services/content.service";
+
+// ISR: pré-renderiza os slugs no build e revalida do banco de hora em hora.
+export const revalidate = 3600;
 
 type Params = { params: Promise<{ slug: string }> };
 
-export function generateStaticParams() {
-  return ARTICLES.map((article) => ({ slug: article.id }));
+export async function generateStaticParams() {
+  const articles = await fetchArticles();
+  return articles.map((article) => ({ slug: article.id }));
 }
 
 export async function generateMetadata({ params }: Params): Promise<Metadata> {
   const { slug } = await params;
-  const article = getArticle(slug);
+  const article = await fetchArticle(slug);
   if (!article) {
     return { title: "Conteúdo não encontrado — BRL Health" };
   }
@@ -36,10 +40,10 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
 
 export default async function ArticlePage({ params }: Params) {
   const { slug } = await params;
-  const article = getArticle(slug);
+  const article = await fetchArticle(slug);
   if (!article) notFound();
 
-  const related = relatedArticles(slug, 3);
+  const related = relatedArticlesFrom(await fetchArticles(), slug, 3);
 
   return (
     <article className="bg-brl-dark pt-28 pb-24 md:pt-32 md:pb-28">
