@@ -11,6 +11,33 @@
 > assinatura/planos → consultas → billing → contato/waitlist/analytics →
 > tracking → conteúdo (opcional).
 
+## ✅ Status (2026-06-30) — integração core concluída
+
+Os **8 services mock viraram chamadas reais**, validados e2e contra Postgres em
+Docker e mergeados no `main`:
+
+| Fase | O quê | PR(s) |
+|---|---|---|
+| 0+1 | Infra (axios refresh/erro, refresh token, `.env`) + **auth** JWT | #53 |
+| 2 | **Perfil/onboarding** servidor-autoritativo (+ backend persiste restrições/água/refeições) | #55, #54 |
+| 3+5 | **Assinatura/tier** + **checkout** (+ backend `GET /me/subscription`, `PUT /me/plan` via JWT) | #57, #56 |
+| 4 | **Consultas** agendar/listar/cancelar (+ backend `nutritionistId` no JOIN) | #59, #58 |
+| 6 | **Contato/waitlist/analytics** | #60 |
+| 7 | **Tracking** (água/peso/sono/passos/medidas/hábitos/diário) write-through + hidratação | #61 |
+| 8 | **Excluir conta** (LGPD `DELETE /me/account`, cascata) | #62 |
+
+**Padrão adotado:** hidratação servidor→cache uma vez por usuário/sessão
+(`ensure*Hydrated`, gateada no `RequireAuth` p/ perfil+tier); escrita
+write-through (local imediato + POST best-effort); `logout` limpa caches e
+hidratações. Erros do backend (`{error}`/`{errors[]}`) viram `error.message` no
+axios (status preservado p/ 404/400).
+
+**🔜 Restante (opcional — Fase 9):** exportação LGPD (`GET /me/data-export`) e
+consentimento (`POST /me/consent`) são features novas; catálogos via API
+(foods/meals/articles/recipes) hoje são **estáticos de propósito** (SSG/SEO);
+`POST /nutri/menu` (IA) e Stripe Checkout real (precisa de test keys) são upgrades
+sobre o que já funciona.
+
 ## Decisões travadas (2026-06-30)
 
 1. **Gaps do backend → estender o backend** (PRs/commits próprios, mesmo
