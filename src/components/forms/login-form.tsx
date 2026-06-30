@@ -114,7 +114,7 @@ export function LoginForm() {
     mutationFn: ({ email, password }) => loginUser(email, password),
     onSuccess: (data) => {
       setAuthError(null);
-      login(data.user, data.token);
+      login(data.user, data.token, data.refreshToken);
       toast({
         variant: "success",
         title: `Bem-vindo de volta, ${data.user.name.split(" ")[0]}!`,

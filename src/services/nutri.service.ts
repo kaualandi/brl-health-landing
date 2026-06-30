@@ -100,7 +100,7 @@ export async function completeOnboarding({
     password,
   );
 
-  setAuth(auth.user, auth.token);
+  setAuth(auth.user, auth.token, auth.refreshToken);
 
   const profile: NutriProfile = {
     ...profileInput,

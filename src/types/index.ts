@@ -7,6 +7,8 @@ export type User = {
 export type AuthResponse = {
   user: User;
   token: string;
+  /** Refresh token rotativo (single-use) — usado pelo axios pra renovar a sessão. */
+  refreshToken: string;
 };
 
 export type PlanId = "free" | "pro" | "family";

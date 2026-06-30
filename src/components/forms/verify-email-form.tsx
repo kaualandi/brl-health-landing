@@ -83,7 +83,7 @@ export function VerifyEmailForm() {
   });
 
   const resendMutation = useMutation<{ message: string }, Error, void>({
-    mutationFn: () => requestEmailVerification(email),
+    mutationFn: () => requestEmailVerification(),
     onSuccess: () => {
       setCooldown(RESEND_COOLDOWN_SECONDS);
       toast({
