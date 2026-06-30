@@ -6,7 +6,14 @@
  * objeto/array são cacheados por conteúdo bruto pra manter a referência estável.
  *
  * O "reset diário" acontece na leitura: se a data guardada não é hoje, zera.
+ *
+ * Integração: os setters de usuário fazem write-through (gravam local na hora e
+ * disparam um POST best-effort pro backend); os `hydrate*` escrevem só local
+ * (usados ao carregar do servidor, sem eco de POST). O streak fica só local
+ * (sem endpoint).
  */
+
+import { api } from "@/lib/axios";
 
 const WATER_KEY = "brl.nutri.water";
 const WEIGHT_KEY = "brl.nutri.weights";
@@ -84,7 +91,8 @@ export function getWaterServerSnapshot(): number {
   return 0;
 }
 
-export function setWaterMl(ml: number): void {
+/** Escreve a água de hoje só no cache local (hidratação do servidor). */
+export function hydrateWater(ml: number): void {
   if (typeof window === "undefined") return;
   const next = Math.max(0, Math.round(ml));
   window.localStorage.setItem(
@@ -92,6 +100,13 @@ export function setWaterMl(ml: number): void {
     JSON.stringify({ date: todayKey(), ml: next }),
   );
   emit();
+}
+
+export function setWaterMl(ml: number): void {
+  if (typeof window === "undefined") return;
+  const next = Math.max(0, Math.round(ml));
+  hydrateWater(next);
+  void api.post("/nutri/water", { ml: next }).catch(() => {});
 }
 
 /* ------------------------------------------------------------------ */
@@ -126,6 +141,17 @@ export function getWeightServerSnapshot(): WeightEntry[] {
   return EMPTY_WEIGHTS;
 }
 
+/** Substitui o histórico de peso só no cache local (hidratação do servidor). */
+export function hydrateWeights(list: WeightEntry[]): void {
+  if (typeof window === "undefined") return;
+  const next = [...list].sort((a, b) => a.date.localeCompare(b.date));
+  const raw = JSON.stringify(next);
+  window.localStorage.setItem(WEIGHT_KEY, raw);
+  weightRaw = raw;
+  weightSnap = next;
+  emit();
+}
+
 /** Registra (ou substitui) o peso de hoje. */
 export function addWeight(kg: number): void {
   if (typeof window === "undefined") return;
@@ -133,11 +159,8 @@ export function addWeight(kg: number): void {
   const next = [...readWeights().filter((e) => e.date !== date), { date, kg }].sort(
     (a, b) => a.date.localeCompare(b.date),
   );
-  const raw = JSON.stringify(next);
-  window.localStorage.setItem(WEIGHT_KEY, raw);
-  weightRaw = raw;
-  weightSnap = next;
-  emit();
+  hydrateWeights(next);
+  void api.post("/nutri/weight", { kg }).catch(() => {});
 }
 
 /* ------------------------------------------------------------------ */
@@ -176,7 +199,8 @@ export function getHabitsServerSnapshot(): Record<string, boolean> {
   return EMPTY_HABITS;
 }
 
-export function setHabits(done: Record<string, boolean>): void {
+/** Escreve os hábitos de hoje só no cache local (hidratação do servidor). */
+export function hydrateHabits(done: Record<string, boolean>): void {
   if (typeof window === "undefined") return;
   const raw = JSON.stringify({ date: todayKey(), done });
   window.localStorage.setItem(HABITS_KEY, raw);
@@ -184,6 +208,12 @@ export function setHabits(done: Record<string, boolean>): void {
   habitsDay = todayKey();
   habitsSnap = done;
   emit();
+}
+
+export function setHabits(done: Record<string, boolean>): void {
+  if (typeof window === "undefined") return;
+  hydrateHabits(done);
+  void api.post("/nutri/habits", { done }).catch(() => {});
 }
 
 export function getStreakSnapshot(): number {
@@ -266,7 +296,8 @@ export function getMealsServerSnapshot(): Record<string, boolean> {
   return EMPTY_MEALS;
 }
 
-export function setMeals(done: Record<string, boolean>): void {
+/** Escreve o diário de hoje só no cache local (hidratação do servidor). */
+export function hydrateMeals(done: Record<string, boolean>): void {
   if (typeof window === "undefined") return;
   const raw = JSON.stringify({ date: todayKey(), done });
   window.localStorage.setItem(MEALS_KEY, raw);
@@ -274,4 +305,10 @@ export function setMeals(done: Record<string, boolean>): void {
   mealsDay = todayKey();
   mealsSnap = done;
   emit();
+}
+
+export function setMeals(done: Record<string, boolean>): void {
+  if (typeof window === "undefined") return;
+  hydrateMeals(done);
+  void api.post("/nutri/diary", { done }).catch(() => {});
 }

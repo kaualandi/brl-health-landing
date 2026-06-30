@@ -13,7 +13,12 @@ import {
   ShoppingCartIcon,
   UtensilsIcon,
 } from "lucide-react";
-import { useState, useSyncExternalStore, type ReactNode } from "react";
+import {
+  useEffect,
+  useState,
+  useSyncExternalStore,
+  type ReactNode,
+} from "react";
 
 import { AnimatedSection } from "@/components/animations/animated-section";
 import { UserMenu } from "@/components/layout/user-menu";
@@ -52,6 +57,7 @@ import {
   getNutriProfileSnapshot,
   subscribeNutriProfile,
 } from "@/services/nutri.service";
+import { ensureTrackingHydrated } from "@/services/tracking.service";
 import { cn } from "@/lib/utils";
 import type { Goal, NutriProfile } from "@/types";
 
@@ -639,7 +645,14 @@ function SalvosTab() {
 }
 
 function ReadyHome({ profile }: { profile: NutriProfile }) {
+  const { user } = useAuth();
   const [tab, setTab] = useState<NutriTab>("inicio");
+
+  // Carrega o tracking (água/peso/sono/passos/medidas/hábitos/diário) do servidor
+  // ao entrar no dashboard — uma vez por usuário/sessão.
+  useEffect(() => {
+    if (user) void ensureTrackingHydrated(user);
+  }, [user]);
 
   function changeTab(next: NutriTab) {
     setTab(next);

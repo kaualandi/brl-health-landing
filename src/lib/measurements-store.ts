@@ -6,7 +6,13 @@
  *
  * Registrar no mesmo dia faz upsert: mescla as medidas com as já guardadas
  * naquela data, em vez de criar uma entrada duplicada.
+ *
+ * Integração: `recordMeasurements` faz write-through (local + POST best-effort,
+ * mandando só as medidas alteradas — o backend faz COALESCE); `hydrateMeasurements`
+ * escreve só local (carga do servidor, sem eco).
  */
+
+import { api } from "@/lib/axios";
 
 const KEY = "brl.nutri.measurements";
 
@@ -81,6 +87,13 @@ export function getMeasurementsServerSnapshot(): MeasurementEntry[] {
   return EMPTY;
 }
 
+/** Substitui o histórico de medidas só no cache local (hidratação do servidor). */
+export function hydrateMeasurements(list: MeasurementEntry[]): void {
+  if (typeof window === "undefined") return;
+  const next = [...list].sort((a, b) => a.date.localeCompare(b.date));
+  write(next);
+}
+
 /** Registra (ou mescla) as medidas de hoje. */
 export function recordMeasurements(
   values: Partial<Record<MeasurementKey, number>>,
@@ -97,4 +110,5 @@ export function recordMeasurements(
     a.date.localeCompare(b.date),
   );
   write(next);
+  void api.post("/nutri/measurements", values).catch(() => {});
 }
