@@ -16,6 +16,7 @@ import {
   clearNutriProfile,
   resetNutriProfileHydration,
 } from "@/services/nutri.service";
+import { resetPlanHydration } from "@/services/plans.service";
 import type { User } from "@/types";
 
 export type AuthStatus = "loading" | "authenticated" | "unauthenticated";
@@ -43,6 +44,7 @@ function logout(): void {
   // Limpa o perfil em cache e a hidratação pro próximo usuário começar limpo.
   clearNutriProfile();
   resetNutriProfileHydration();
+  resetPlanHydration();
 }
 
 /** Hook de sessão. SSR-safe — devolve `loading` no primeiro paint. */

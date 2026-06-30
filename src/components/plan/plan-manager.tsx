@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/toast";
 import { usePlan } from "@/hooks/use-plan";
 import { creditsForTier } from "@/lib/consultations-store";
-import { getPlanById } from "@/services/plans.service";
+import { changePlan, getPlanById } from "@/services/plans.service";
 import { cn } from "@/lib/utils";
 import type { PlanId } from "@/types";
 
@@ -32,14 +32,23 @@ function downgradeEffects(from: PlanId, to: PlanId): string[] {
 }
 
 export function PlanManager() {
-  const { tier, setTier } = usePlan();
+  const { tier } = usePlan();
   const toast = useToast();
   const [pending, setPending] = useState<PlanId | null>(null);
 
   const currentRank = rankOf(tier);
 
-  function applyDowngrade(target: PlanId) {
-    setTier(target);
+  async function applyDowngrade(target: PlanId) {
+    try {
+      await changePlan(target);
+    } catch (error) {
+      toast({
+        variant: "error",
+        title: "Não consegui mudar o plano",
+        description: error instanceof Error ? error.message : "Tente de novo.",
+      });
+      return;
+    }
     setPending(null);
     toast({
       variant: "success",
