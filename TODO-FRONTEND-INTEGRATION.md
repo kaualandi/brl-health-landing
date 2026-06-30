@@ -11,32 +11,90 @@
 > assinatura/planos → consultas → billing → contato/waitlist/analytics →
 > tracking → conteúdo (opcional).
 
-## ✅ Status (2026-06-30) — integração core concluída
+## ✅ Status (2026-06-30) — integração CONCLUÍDA ("tudo via API, sem mocks")
 
-Os **8 services mock viraram chamadas reais**, validados e2e contra Postgres em
-Docker e mergeados no `main`:
+**Tudo que é dado-com-endpoint vem do backend.** 19 PRs mergeados no `main`
+(#53–#71), validados via `tsc`+`lint`+`build` e e2e contra Postgres em Docker
+(contratos/HTML por `curl`). Auditoria final: **zero** service mock; **zero**
+catálogo de dado estático que tenha endpoint.
 
+### Integração core — os 8 services mock viraram reais
 | Fase | O quê | PR(s) |
 |---|---|---|
-| 0+1 | Infra (axios refresh/erro, refresh token, `.env`) + **auth** JWT | #53 |
+| 0+1 | Infra (axios refresh/erro, refresh token, `.env`→`:5226`) + **auth** JWT | #53 |
 | 2 | **Perfil/onboarding** servidor-autoritativo (+ backend persiste restrições/água/refeições) | #55, #54 |
 | 3+5 | **Assinatura/tier** + **checkout** (+ backend `GET /me/subscription`, `PUT /me/plan` via JWT) | #57, #56 |
 | 4 | **Consultas** agendar/listar/cancelar (+ backend `nutritionistId` no JOIN) | #59, #58 |
 | 6 | **Contato/waitlist/analytics** | #60 |
 | 7 | **Tracking** (água/peso/sono/passos/medidas/hábitos/diário) write-through + hidratação | #61 |
 | 8 | **Excluir conta** (LGPD `DELETE /me/account`, cascata) | #62 |
+| — | docs (marco do core) | #63 |
 
-**Padrão adotado:** hidratação servidor→cache uma vez por usuário/sessão
-(`ensure*Hydrated`, gateada no `RequireAuth` p/ perfil+tier); escrita
-write-through (local imediato + POST best-effort); `logout` limpa caches e
-hidratações. Erros do backend (`{error}`/`{errors[]}`) viram `error.message` no
-axios (status preservado p/ 404/400).
+### "Tudo via API" — catálogos e o último mock
+| O quê | PR(s) |
+|---|---|
+| Receitas/Conteúdos **públicos** (`/receitas`, `/conteudos`) via `GET /recipes`,`/articles` — **SSG/ISR** (`generateStaticParams` async + `revalidate 3600`) | #64, #65 |
+| **getPlans** → `GET /plans` (era o **último service mock**: tinha `wait`+TODO) | #66 |
+| **Nutricionistas** → novo backend `GET /nutritionists` (+colunas avatar/goals/diets) + front React Query | #67, #68 |
+| **foods** → `GET /foods` (meal-diary) | #69 |
+| **Dashboard** (recomendados + favoritos) → `/articles`,`/recipes` (React Query) | #70 |
+| **sitemap** via API + **removeu `ARTICLES`/`RECIPES_CATALOG`** e 7 funções-lib mortas (nutri-content 742→126 linhas) | #71 |
 
-**🔜 Restante (opcional — Fase 9):** exportação LGPD (`GET /me/data-export`) e
-consentimento (`POST /me/consent`) são features novas; catálogos via API
-(foods/meals/articles/recipes) hoje são **estáticos de propósito** (SSG/SEO);
-`POST /nutri/menu` (IA) e Stripe Checkout real (precisa de test keys) são upgrades
-sobre o que já funciona.
+### Padrões de arquitetura (seguir nas próximas sessões)
+- **Sessão/erros:** `src/lib/axios.ts` — anexa Bearer, faz **refresh rotativo no 401**
+  (repete a request 1×), e converte `{error}`/`{errors[]}` do backend em
+  `error.message` **preservando `error.status`** (services distinguem 404/400).
+- **Hidratação servidor→cache** 1×/usuário/sessão: `ensure*Hydrated(user)` +
+  `is*Hydrated(user)`. Perfil+tier gateados no `RequireAuth`; tracking no
+  `ReadyHome`; consultas no `NutriCoach`. `logout` limpa **todos** os caches +
+  hidratações (`clear*` + `reset*Hydration`).
+- **Escrita write-through:** setter grava local na hora + dispara `POST`
+  best-effort (otimista). Tracking: `set*` (POST) vs `hydrate*` (só local, sem eco).
+- **Catálogos de referência (client):** **React Query** (`useNutritionists`,
+  `useFoods`, `useArticles`, `useRecipes`; `staleTime 1h`) + helpers puros
+  `*From(lista, …)` (ex.: `recommendedNutritionist(list, …)`, `buildMealFoods(catalog, …)`).
+- **Catálogos com página de SEO (server):** `fetch` nativo + ISR em
+  `content.service.ts` (`fetchRecipes`/`fetchArticles`); `generateStaticParams`
+  async. Next em **modo clássico** (sem Cache Components). Gotcha: `/recipes` já
+  devolve a forma do `RecipeFull` (mapear de `time`/`macros`, não do row do DB).
+
+### Fica estático **de propósito** (NÃO é mock — não migrar sem decisão de produto)
+- **`meals.ts` (`MEAL_OPTIONS`)** — os pesos alimentam `buildScheduledMeals`
+  **dentro do `computeNutriPlan`** (cálculo instantâneo que o usuário quis manter
+  **local**); migrar tornaria o cálculo assíncrono.
+- **`nutri-plan.ts`** — cálculo puro (Mifflin-St Jeor), decisão: **local**.
+- **`recipeForDiet`** (teaser por dieta), **`QUICK_TIPS`**, **`DAILY_HABITS`**,
+  **`faq.ts`**, **`legal.ts`** (Termos/Privacidade), **`nutri-options.ts`** (labels),
+  **`achievements.ts`**, **copy de marketing dos planos** (nome/tagline/features) —
+  conteúdo de UI **sem tabela no backend** (usuário optou por não virar CMS).
+- **`shopping-list.ts`** — geração da lista (lógica de cliente).
+
+### Estado de usuário só-local (fora do escopo combinado — sem endpoint)
+`favorites-store` (artigos/receitas salvos), `menu-store` (trocas de alimento),
+`shopping-store` (itens marcados). Drafts (`calc-draft`/`onboarding-draft`) e
+`theme-store` são UI/transientes — ficam locais.
+
+### 🔜 Só sobrou opcional (precisa decisão/insumo do usuário)
+- **Export/consent LGPD** (`GET /me/data-export`, `POST/GET /me/consent`): features
+  novas (não são mock→real). Backend pronto; falta UI no front.
+- **`POST /nutri/menu` (IA):** o front já calcula o cardápio igual localmente —
+  ganho só com chave OpenAI no backend.
+- **Stripe Checkout real** (`/billing/stripe/{config,checkout,portal}`): **precisa o
+  usuário setar test keys** no backend; substitui o mock `/billing/checkout` (#57).
+- **Estado de usuário no servidor** (favorites/menu/shopping): exigiria endpoints novos.
+- **Conteúdo de UI no banco** (FAQ/legal/copy/tips): viraria um CMS — decisão de produto.
+
+### ⚠️ Validação pendente
+**Click-through no browser do app logado nunca rodou** (a extensão do Chrome não
+conectou nesta sessão). Tudo foi validado por `build` + **contratos/HTML via `curl`**.
+Recomendado testar manualmente (`localhost:3000`, demo `demo@brl.com`/`123456`) ou
+conectar a extensão. As páginas públicas de SEO foram conferidas no HTML renderizado.
+
+### Como rodar a stack de teste
+1. Postgres descartável: `docker run -d --name brl-pg -e POSTGRES_PASSWORD=devsecret -e POSTGRES_DB=brlhealth -p 5432:5432 postgres:16-alpine`
+2. Schema+seed: `docker exec -i brl-pg psql -U postgres -d brlhealth < backend/src/BrlHealth.Api/Data/schema.sql` (e `seed.sql`)
+3. API: `cd backend/src/BrlHealth.Api && ConnectionStrings__Default="Host=localhost;Port=5432;Database=brlhealth;Username=postgres;Password=devsecret" ASPNETCORE_URLS="http://localhost:5226" dotnet run` (sobe em `:5226`)
+4. Front: `npm run dev` (`:3000`; `.env.local` aponta `NEXT_PUBLIC_API_URL=http://localhost:5226`). CORS do backend libera `:3000`.
 
 ## Decisões travadas (2026-06-30)
 
