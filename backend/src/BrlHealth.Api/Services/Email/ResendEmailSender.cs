@@ -8,8 +8,8 @@ namespace BrlHealth.Api.Services.Email;
 public sealed class ResendOptions
 {
     public string ApiKey { get; set; } = "";
-    /// <summary>Remetente. Em prod, um endereço do seu domínio verificado; em teste, o onboarding do Resend.</summary>
-    public string From { get; set; } = "BRL Health <onboarding@resend.dev>";
+    /// <summary>Remetente — endereço do domínio verificado no Resend (envia para qualquer destinatário).</summary>
+    public string From { get; set; } = "BRL Health <nao-responda@email.kaualf.com>";
     public string BaseUrl { get; set; } = "https://api.resend.com";
 }
 
