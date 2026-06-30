@@ -19,6 +19,7 @@ import {
   resetNutriProfileHydration,
 } from "@/services/nutri.service";
 import { resetPlanHydration } from "@/services/plans.service";
+import { resetTracking } from "@/services/tracking.service";
 import type { User } from "@/types";
 
 export type AuthStatus = "loading" | "authenticated" | "unauthenticated";
@@ -49,6 +50,7 @@ function logout(): void {
   resetPlanHydration();
   clearConsultations();
   resetConsultationsHydration();
+  resetTracking();
 }
 
 /** Hook de sessão. SSR-safe — devolve `loading` no primeiro paint. */

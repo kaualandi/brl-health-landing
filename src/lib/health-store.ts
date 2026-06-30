@@ -3,7 +3,14 @@
  * mostrar a semana. Mesmo padrão SSR-safe (useSyncExternalStore) dos outros
  * stores, com snapshots de array cacheados por conteúdo bruto pra manter a
  * referência estável. Registrar no mesmo dia faz upsert (substitui o do dia).
+ *
+ * Integração: `recordSleep`/`setSteps` fazem write-through (local + POST
+ * best-effort); `hydrateSleep`/`hydrateSteps` escrevem só local (carga do
+ * servidor, sem eco). `addSteps` reusa `setSteps`, então o POST do total sai de
+ * graça.
  */
+
+import { api } from "@/lib/axios";
 
 const SLEEP_KEY = "brl.nutri.sleep";
 const STEPS_KEY = "brl.nutri.steps";
@@ -94,19 +101,28 @@ export function getSleepServerSnapshot(): SleepEntry[] {
   return EMPTY_SLEEP;
 }
 
-/** Registra (ou substitui) o sono de hoje. */
-export function recordSleep(hours: number): void {
+/** Substitui o histórico de sono só no cache local (hidratação do servidor). */
+export function hydrateSleep(list: SleepEntry[]): void {
   if (typeof window === "undefined") return;
-  const date = todayKey();
-  const next = [
-    ...readSleep().filter((e) => e.date !== date),
-    { date, hours: Math.max(0, hours) },
-  ].sort((a, b) => a.date.localeCompare(b.date));
+  const next = [...list].sort((a, b) => a.date.localeCompare(b.date));
   const raw = JSON.stringify(next);
   window.localStorage.setItem(SLEEP_KEY, raw);
   sleepRaw = raw;
   sleepSnap = next;
   emit();
+}
+
+/** Registra (ou substitui) o sono de hoje. */
+export function recordSleep(hours: number): void {
+  if (typeof window === "undefined") return;
+  const date = todayKey();
+  const value = Math.max(0, hours);
+  const next = [
+    ...readSleep().filter((e) => e.date !== date),
+    { date, hours: value },
+  ].sort((a, b) => a.date.localeCompare(b.date));
+  hydrateSleep(next);
+  void api.post("/nutri/sleep", { hours: value }).catch(() => {});
 }
 
 /* ------------------------------------------------------------------ */
@@ -140,19 +156,28 @@ export function getStepsServerSnapshot(): StepEntry[] {
   return EMPTY_STEPS;
 }
 
-/** Define os passos de hoje (substitui). */
-export function setSteps(count: number): void {
+/** Substitui o histórico de passos só no cache local (hidratação do servidor). */
+export function hydrateSteps(list: StepEntry[]): void {
   if (typeof window === "undefined") return;
-  const date = todayKey();
-  const next = [
-    ...readSteps().filter((e) => e.date !== date),
-    { date, count: Math.max(0, Math.round(count)) },
-  ].sort((a, b) => a.date.localeCompare(b.date));
+  const next = [...list].sort((a, b) => a.date.localeCompare(b.date));
   const raw = JSON.stringify(next);
   window.localStorage.setItem(STEPS_KEY, raw);
   stepsRaw = raw;
   stepsSnap = next;
   emit();
+}
+
+/** Define os passos de hoje (substitui). */
+export function setSteps(count: number): void {
+  if (typeof window === "undefined") return;
+  const date = todayKey();
+  const value = Math.max(0, Math.round(count));
+  const next = [
+    ...readSteps().filter((e) => e.date !== date),
+    { date, count: value },
+  ].sort((a, b) => a.date.localeCompare(b.date));
+  hydrateSteps(next);
+  void api.post("/nutri/steps", { count: value }).catch(() => {});
 }
 
 /** Soma (ou subtrai) passos ao total de hoje. */
