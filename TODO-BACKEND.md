@@ -295,14 +295,15 @@
 - [x] 🚀 **Conteúdo:** artigos e **receitas** no banco. Tabela `recipes` + seed das
   10 receitas (`RECIPES_CATALOG`) com `GET /recipes` e `GET /recipes/{id}` (espelha a
   página `/receitas`). _Fecha a ponta solta da §2._ (CMS de verdade fica pós-isto.)
-- [~] 🚀 **Rate limiting / observabilidade:**
+- [x] 🚀 **Rate limiting / observabilidade:**
   - [x] **Rate limiting** (`Microsoft.AspNetCore.RateLimiting`): teto global por IP
     + política estrita em `/auth/*` (`429` + `Retry-After`). _Resolve a dívida DT-02._
   - [x] **Logs/observabilidade:** **Serilog** (console + request logging estruturado)
     e **health checks** (`/health/live` liveness · `/health/ready` readiness do Postgres).
   - [x] **Validação server-side** (FluentValidation): validators dos DTOs de entrada
     (`Register`/`Login`/`Reset`/`Consent`) via `ValidationFilter` → `400 { errors: [...] }`.
-  - [ ] **OpenTelemetry** (tracing/OTLP).
+  - [x] **OpenTelemetry** (tracing + métricas): instrumentação ASP.NET Core + HttpClient
+    + Npgsql; console exporter em dev, OTLP quando `Otel:Endpoint` definido.
 - [x] 🚀 **LGPD:** `GET /me/data-export` (portabilidade — todos os dados do titular
   em JSON), `DELETE /me/account` (eliminação — apaga a conta e tudo em cascata) e
   `POST`/`GET /me/consent` (registro de consentimento). Tabela `consent_records`.
