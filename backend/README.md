@@ -68,9 +68,14 @@ export Resend__From="BRL Health <nao-responda@email.kaualf.com>"   # opcional
 ### Pagamento (Stripe, opcional)
 
 Com `Stripe:SecretKey` definido, `/billing/stripe/checkout` cria uma Checkout
-Session e `/billing/stripe/webhook` ativa o plano quando o pagamento confirma.
-Sem chave, o checkout responde `501`. **Em dev use chaves de teste**; valide
-webhooks com a Stripe CLI (`stripe listen --forward-to localhost:5226/billing/stripe/webhook`).
+Session e `/billing/stripe/webhook` ativa o plano quando o pagamento confirma
+(guardando o `customer` do Stripe). `/billing/stripe/portal` abre o **Customer
+Portal** para o usuário gerir/cancelar a assinatura. Sem chave, respondem `501`.
+**Em dev use chaves de teste**; valide webhooks com a Stripe CLI
+(`stripe listen --forward-to localhost:5226/billing/stripe/webhook`).
+
+> O portal precisa estar **ativado no Dashboard** (Settings → Billing → Customer
+> portal) para funcionar com a conta.
 
 ```bash
 export Stripe__SecretKey="sk_test_..."
@@ -168,7 +173,8 @@ Trocam os _services_ mock do front por API real. Rotas com 🔒 exigem
 | `POST` 🔒 | `/billing/checkout` | `billing.service.ts` (mock) |
 | `GET` | `/billing/stripe/config` | chave pública do Stripe p/ o front |
 | `POST` 🔒 | `/billing/stripe/checkout` | cria a Checkout Session (Stripe) |
-| `POST` | `/billing/stripe/webhook` | webhook do Stripe (ativa o plano no pagamento) |
+| `POST` | `/billing/stripe/webhook` | webhook do Stripe (ativa o plano + guarda o customer) |
+| `POST` 🔒 | `/billing/stripe/portal` | abre o Customer Portal (gerir/cancelar assinatura) |
 | `DELETE` 🔒 | `/consultations/{id}` | cancelar (devolve crédito) |
 | `POST` | `/contact` · `/waitlist` · `/analytics/events` | contato / waitlist / analytics |
 | `GET`/`POST` 🔒 | `/nutri/water` · `/weight` · `/sleep` · `/steps` · `/measurements` · `/habits` · `/diary` | tracking diário |
