@@ -284,9 +284,12 @@
   dos hashes legados) e fluxos reais de **verificação e reset de e-mail** (tokens em
   `email_tokens`, envio atrás de `IEmailSender`). _Resolve a dívida DT-03._ Falta só
   o **provedor de e-mail de produção** — coberto pelo bullet "E-mail transacional".
-- [ ] 🚀 **Pagamento — manter Stripe:** `Stripe.net` (SDK oficial .NET) para
-  checkout, webhooks, gestão/cancelamento de assinatura e faturas. _Avaliação: sem
-  motivo pra trocar — é a opção mais confortável no .NET._
+- [~] 🚀 **Pagamento — Stripe** (`Stripe.net`): scaffold pronto — `IPaymentGateway`
+  + `StripePaymentGateway` (Checkout Session de assinatura), webhook com verificação
+  de assinatura + ativação do plano (`/billing/stripe/{config,checkout,webhook}`),
+  gate por `Stripe:SecretKey` (sem chave → 501). Lógica do webhook coberta por testes.
+  _Validado sem chave (config/501/assinatura inválida). E2e de checkout/webhook +
+  gestão/cancelamento de assinatura ficam para quando houver **test keys**._
 - [x] 🚀 **E-mail transacional — Resend** (decisão: manter, conta já existente + free
   tier generoso). `ResendEmailSender` (HTTP API) atrás de `IEmailSender`, ativado por
   `Resend:ApiKey`; sem chave, cai no `ConsoleEmailSender`. Envio assíncrono pela fila
