@@ -42,6 +42,23 @@ public static class StripeEndpoints
             return Results.Ok(new { url = session.Url, sessionId = session.SessionId });
         });
 
+        // POST /billing/stripe/portal — abre o Customer Portal do Stripe (gerir/cancelar assinatura).
+        app.MapPost("/billing/stripe/portal", async (
+            HttpContext ctx, IPaymentGateway gateway, SubscriptionsRepository subscriptions) =>
+        {
+            if (!ctx.TryGetUserId(out var userId))
+                return Results.Unauthorized();
+            if (!gateway.IsConfigured)
+                return Results.Json(new { error = "Pagamento não configurado." }, statusCode: 501);
+
+            var customerId = await subscriptions.GetStripeCustomerIdAsync(userId);
+            if (string.IsNullOrWhiteSpace(customerId))
+                return Results.BadRequest(new { errors = new[] { "Nenhuma assinatura paga para gerenciar." } });
+
+            var url = await gateway.CreatePortalSessionAsync(customerId);
+            return Results.Ok(new { url });
+        });
+
         // POST /billing/stripe/webhook — verifica a assinatura e ativa o plano no pagamento.
         app.MapPost("/billing/stripe/webhook", async (
             HttpContext ctx, StripeOptions options, StripeWebhookProcessor processor,
@@ -59,7 +76,8 @@ public static class StripeEndpoints
                     && stripeEvent.Data.Object is Session session
                     && StripeWebhookProcessor.TryGetActivation(session, out var uid, out var pid))
                 {
-                    await subscriptions.ActivatePlanAsync(uid, pid);
+                    // Guarda o Customer do Stripe (vem na sessão) para habilitar o portal de assinatura.
+                    await subscriptions.ActivatePlanAsync(uid, pid, session.CustomerId);
                     logger.LogInformation("Stripe: plano {Plan} ativado para o usuário {User}.", pid, uid);
                 }
 

@@ -13,6 +13,7 @@ public sealed class StripeOptions
     public string WebhookSecret { get; set; } = "";
     public string SuccessUrl { get; set; } = "http://localhost:3000/conta?checkout=success";
     public string CancelUrl { get; set; } = "http://localhost:3000/precos?checkout=cancel";
+    public string PortalReturnUrl { get; set; } = "http://localhost:3000/conta";
     public string Currency { get; set; } = "brl";
 
     /// <summary>True quando há chave secreta — habilita o gateway real; senão, gateway desabilitado.</summary>

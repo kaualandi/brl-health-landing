@@ -290,7 +290,8 @@
   (sem chave → 501). _Validado e2e com **test keys**: checkout cria sessão real
   (`cs_test_...`); webhook assinado ativa o plano no banco (free→family); assinatura
   inválida → 400._ Webhook usa `throwOnApiVersionMismatch: false` (tolera skew de versão).
-  _Falta: gestão/cancelamento de assinatura via portal Stripe._
+  **Customer Portal:** webhook guarda o `stripe_customer_id`; `POST /billing/stripe/portal`
+  abre o portal (gerir/cancelar plano). _Requer o portal ativado no Dashboard do Stripe._
 - [x] 🚀 **E-mail transacional — Resend** (decisão: manter, conta já existente + free
   tier generoso). `ResendEmailSender` (HTTP API) atrás de `IEmailSender`, ativado por
   `Resend:ApiKey`; sem chave, cai no `ConsoleEmailSender`. Envio assíncrono pela fila

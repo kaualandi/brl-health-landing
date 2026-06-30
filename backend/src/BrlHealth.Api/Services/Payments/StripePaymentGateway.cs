@@ -56,4 +56,18 @@ public sealed class StripePaymentGateway : IPaymentGateway
 
         return new CheckoutSession(session.Url, session.Id);
     }
+
+    public async Task<string> CreatePortalSessionAsync(string customerId, CancellationToken ct = default)
+    {
+        var createOptions = new Stripe.BillingPortal.SessionCreateOptions
+        {
+            Customer = customerId,
+            ReturnUrl = _options.PortalReturnUrl,
+        };
+
+        var session = await new Stripe.BillingPortal.SessionService().CreateAsync(
+            createOptions, new RequestOptions { ApiKey = _options.SecretKey }, ct);
+
+        return session.Url;
+    }
 }

@@ -43,9 +43,12 @@ CREATE TABLE IF NOT EXISTS subscriptions (
     status             TEXT NOT NULL DEFAULT 'active',
     has_pending_charge BOOLEAN NOT NULL DEFAULT FALSE,
     current_period_end DATE,
+    stripe_customer_id TEXT,                    -- id do Customer no Stripe (p/ o portal de assinatura)
     created_at         TIMESTAMPTZ NOT NULL DEFAULT now(),
     UNIQUE (user_id)
 );
+-- Para bancos já criados antes desta coluna:
+ALTER TABLE subscriptions ADD COLUMN IF NOT EXISTS stripe_customer_id TEXT;
 
 CREATE TABLE IF NOT EXISTS nutritionists (
     id      TEXT PRIMARY KEY,

@@ -56,15 +56,26 @@ public sealed class SubscriptionsRepository
         await conn.ExecuteAsync(sql, new { UserId = userId, PlanId = planId });
     }
 
-    /// <summary>Ativa um plano pago após o pagamento (checkout): troca o plano e zera a pendência.</summary>
-    public async Task ActivatePlanAsync(long userId, string planId)
+    /// <summary>Ativa um plano pago após o pagamento (checkout): troca o plano, zera a pendência
+    /// e guarda o id do Customer no Stripe (quando vier do webhook) para o portal de assinatura.</summary>
+    public async Task ActivatePlanAsync(long userId, string planId, string? stripeCustomerId = null)
     {
         using var conn = _factory.Create();
         const string sql =
             @"UPDATE subscriptions
-              SET plan_id = @PlanId, status = 'active', has_pending_charge = FALSE
+              SET plan_id = @PlanId, status = 'active', has_pending_charge = FALSE,
+                  stripe_customer_id = COALESCE(@StripeCustomerId, stripe_customer_id)
               WHERE user_id = @UserId";
-        await conn.ExecuteAsync(sql, new { UserId = userId, PlanId = planId });
+        await conn.ExecuteAsync(
+            sql, new { UserId = userId, PlanId = planId, StripeCustomerId = stripeCustomerId });
+    }
+
+    /// <summary>Id do Customer no Stripe do usuário (null se nunca pagou via Stripe).</summary>
+    public async Task<string?> GetStripeCustomerIdAsync(long userId)
+    {
+        using var conn = _factory.Create();
+        const string sql = "SELECT stripe_customer_id FROM subscriptions WHERE user_id = @UserId";
+        return await conn.QuerySingleOrDefaultAsync<string?>(sql, new { UserId = userId });
     }
 
     public async Task<PlanRow[]> GetAllPlansAsync()
