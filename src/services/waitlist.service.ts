@@ -1,18 +1,18 @@
-const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+import { api } from "@/lib/axios";
 
 const STORAGE_KEY = "brl.fit.waitlist";
 
 export type WaitlistSource = "fit" | "newsletter";
 
 /**
- * Entra na lista de espera (mock). Guarda o e-mail localmente só pra UX
- * (evitar duplicar) e simula a latência da rede.
+ * Entra na lista de espera (POST /waitlist, idempotente no backend). Guarda o
+ * e-mail localmente também só pra UX (evitar reenvio na mesma sessão).
  */
 export async function joinWaitlist(
   email: string,
   source: WaitlistSource = "fit",
 ): Promise<void> {
-  await wait(900);
+  await api.post("/waitlist", { email, source });
 
   if (typeof window !== "undefined") {
     try {
@@ -28,5 +28,4 @@ export async function joinWaitlist(
       // localStorage indisponível — segue o jogo, é só conveniência.
     }
   }
-  // TODO: substituir por api.post('/waitlist', { email, source }) na fase de backend
 }
