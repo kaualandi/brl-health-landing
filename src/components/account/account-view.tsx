@@ -18,6 +18,7 @@ import { useToast } from "@/components/ui/toast";
 import { useAuth } from "@/hooks/use-auth";
 import { computeNutriPlan } from "@/lib/nutri-plan";
 import { goalLabel } from "@/lib/nutri-options";
+import { deleteAccount } from "@/services/account.service";
 import {
   clearNutriProfile,
   getNutriProfileServerSnapshot,
@@ -92,8 +93,18 @@ export function AccountView() {
     router.push("/cadastro");
   }
 
-  function handleDelete() {
-    clearNutriProfile();
+  async function handleDelete() {
+    try {
+      await deleteAccount();
+    } catch (error) {
+      toast({
+        variant: "error",
+        title: "Não consegui excluir a conta",
+        description: error instanceof Error ? error.message : "Tente de novo.",
+      });
+      return;
+    }
+    // logout() já limpa perfil, tracking, consultas e a sessão.
     logout();
     toast({ title: "Conta excluída", description: "Sentiremos sua falta. 💜" });
     router.push("/");
