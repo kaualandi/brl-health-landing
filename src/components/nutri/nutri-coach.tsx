@@ -13,7 +13,7 @@ import {
   XIcon,
 } from "lucide-react";
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import {
   Sheet,
@@ -23,6 +23,7 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { useToast } from "@/components/ui/toast";
+import { useAuth } from "@/hooks/use-auth";
 import { useConsultations } from "@/hooks/use-consultations";
 import { usePlan } from "@/hooks/use-plan";
 import { creditsForTier } from "@/lib/consultations-store";
@@ -35,7 +36,10 @@ import {
   recommendedNutritionist,
   slotsForDay,
 } from "@/lib/nutritionists";
-import { scheduleConsultation } from "@/services/consultations.service";
+import {
+  ensureConsultationsHydrated,
+  scheduleConsultation,
+} from "@/services/consultations.service";
 import { cn } from "@/lib/utils";
 import type { NutriProfile } from "@/types";
 
@@ -184,11 +188,14 @@ function ScheduleSheet({
         description: `${nutri.name} · ${formatAgendaDate(day)} às ${time}.`,
       });
       handleOpenChange(false);
-    } catch {
+    } catch (error) {
       toast({
         variant: "error",
         title: "Não rolou agendar",
-        description: "Tente de novo em instantes.",
+        description:
+          error instanceof Error
+            ? error.message
+            : "Tente de novo em instantes.",
       });
       setBooking(false);
     }
@@ -359,6 +366,7 @@ function ScheduleSheet({
 }
 
 export function NutriCoach({ profile }: { profile: NutriProfile }) {
+  const { user } = useAuth();
   const { tier } = usePlan();
   const { consultations, cancel } = useConsultations();
   const toast = useToast();
@@ -368,8 +376,22 @@ export function NutriCoach({ profile }: { profile: NutriProfile }) {
   const remaining = Math.max(0, credits - consultations.length);
   const canBook = remaining > 0;
 
-  function handleCancel(id: string) {
-    cancel(id);
+  // Carrega as consultas do servidor ao abrir a tela.
+  useEffect(() => {
+    if (user) void ensureConsultationsHydrated(user);
+  }, [user]);
+
+  async function handleCancel(id: string) {
+    try {
+      await cancel(id);
+    } catch (error) {
+      toast({
+        variant: "error",
+        title: "Não consegui cancelar",
+        description: error instanceof Error ? error.message : "Tente de novo.",
+      });
+      return;
+    }
     toast({
       variant: "info",
       title: "Consulta cancelada",

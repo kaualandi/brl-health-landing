@@ -12,6 +12,8 @@ import {
   type AuthState,
 } from "@/lib/auth-store";
 import { logoutUser } from "@/services/auth.service";
+import { clearConsultations } from "@/lib/consultations-store";
+import { resetConsultationsHydration } from "@/services/consultations.service";
 import {
   clearNutriProfile,
   resetNutriProfileHydration,
@@ -41,10 +43,12 @@ function logout(): void {
     });
   }
   clearAuth();
-  // Limpa o perfil em cache e a hidratação pro próximo usuário começar limpo.
+  // Limpa caches e hidratações pro próximo usuário começar limpo.
   clearNutriProfile();
   resetNutriProfileHydration();
   resetPlanHydration();
+  clearConsultations();
+  resetConsultationsHydration();
 }
 
 /** Hook de sessão. SSR-safe — devolve `loading` no primeiro paint. */

@@ -101,3 +101,18 @@ export function removeConsultation(id: string): void {
   if (typeof window === "undefined") return;
   write(read().filter((c) => c.id !== id));
 }
+
+/** Substitui a lista inteira (usado na hidratação a partir do servidor). */
+export function setConsultations(list: Consultation[]): void {
+  if (typeof window === "undefined") return;
+  const next = [...list].sort((a, b) =>
+    `${a.date} ${a.time}`.localeCompare(`${b.date} ${b.time}`),
+  );
+  write(next);
+}
+
+/** Limpa as consultas em cache (logout). */
+export function clearConsultations(): void {
+  if (typeof window === "undefined") return;
+  write([]);
+}
