@@ -311,8 +311,11 @@
   (`IEmailQueue`/`HangfireEmailQueue`), fora do caminho da requisição, com retry e painel
   `/hangfire` (dev). Storage em memória em dev (Postgres em prod). _Falta o job de geração
   de cardápio — entra junto com a IA de cardápio (usa `IMenuGenerator`)._
-- [ ] 🚀 **IA de cardápio:** geração por LLM atrás de `IMenuGenerator`
-  (provider-agnostic, via HTTP), a partir do perfil + banco de alimentos (TACO/USDA).
+- [~] 🚀 **IA de cardápio:** terreno pronto — `IMenuGenerator` (provider-agnostic),
+  `LocalMenuGenerator` (determinístico, default) + `OpenAiMenuGenerator` (ChatGPT via
+  HTTP, ativado por `OpenAI:ApiKey`, com fallback no local) e `POST /nutri/menu`.
+  _Falta: a chave de produção, refino do prompt (incluir dieta/restrições do banco de
+  alimentos) e o job Hangfire de geração assíncrona._
 
 ---
 

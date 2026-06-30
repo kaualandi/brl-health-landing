@@ -3,6 +3,7 @@ using BrlHealth.Api.Data;
 using BrlHealth.Api.Endpoints;
 using BrlHealth.Api.Services;
 using BrlHealth.Api.Services.Email;
+using BrlHealth.Api.Services.Menu;
 using BrlHealth.Api.Validation;
 using FluentValidation;
 using Hangfire;
@@ -80,6 +81,21 @@ builder.Services.AddHangfire(cfg => cfg
 builder.Services.AddHangfireServer();
 builder.Services.AddScoped<IEmailQueue, HangfireEmailQueue>();
 
+// IA de cardápio (§7): IMenuGenerator. Local (determinístico) por padrão;
+// OpenAI/ChatGPT quando OpenAI:ApiKey está definido (ambiente/secrets — nunca no código).
+var openAiOptions = builder.Configuration.GetSection("OpenAI").Get<OpenAiOptions>() ?? new OpenAiOptions();
+builder.Services.AddSingleton(openAiOptions);
+builder.Services.AddScoped<LocalMenuGenerator>();
+if (!string.IsNullOrWhiteSpace(openAiOptions.ApiKey))
+{
+    builder.Services.AddHttpClient<OpenAiMenuGenerator>();
+    builder.Services.AddScoped<IMenuGenerator>(sp => sp.GetRequiredService<OpenAiMenuGenerator>());
+}
+else
+{
+    builder.Services.AddScoped<IMenuGenerator>(sp => sp.GetRequiredService<LocalMenuGenerator>());
+}
+
 // CORS para o front Next.js (NEXT_PUBLIC_API_URL aponta para cá).
 builder.Services.AddCors(options =>
     options.AddDefaultPolicy(policy => policy
@@ -106,6 +122,7 @@ app.MapHealthChecks("/health/ready", new HealthCheckOptions { Predicate = check 
 
 // Núcleo de negócio da AV2
 app.MapNutriPlan();        // POST /nutri/plan       (motor de cálculo, público)
+app.MapMenu();             // POST /nutri/menu       (cardápio: local por padrão, IA quando há chave)
 app.MapConsultations();    // POST /consultations + GET /consultations/me (JOIN) + DELETE
 app.MapPlanChange();       // PUT  /me/plan
 
