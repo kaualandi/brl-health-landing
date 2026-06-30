@@ -1,4 +1,6 @@
-import type { Plan, PlanId } from "@/types";
+import { api } from "@/lib/axios";
+import { setPlanTier } from "@/lib/plan-store";
+import type { Plan, PlanId, User } from "@/types";
 
 const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -65,4 +67,63 @@ export async function getPlans(): Promise<Plan[]> {
 /** Lookup síncrono de um plano pelo id (usado no checkout). */
 export function getPlanById(id: PlanId): Plan | undefined {
   return PLANS.find((plan) => plan.id === id);
+}
+
+/* --- assinatura atual (tier) — servidor-autoritativo --- */
+
+export type Subscription = {
+  planId: PlanId;
+  credits: number;
+  hasPendingCharge: boolean;
+};
+
+/** Tier/assinatura atual do usuário (GET /me/subscription). */
+export async function getSubscription(): Promise<Subscription> {
+  const { data } = await api.get<Subscription>("/me/subscription");
+  return data;
+}
+
+/**
+ * Muda o plano (downgrade/cancelamento) via PUT /me/plan e atualiza o cache
+ * local. O usuário é identificado pelo JWT; cartão só é exigido em upgrade.
+ */
+export async function changePlan(target: PlanId): Promise<void> {
+  await api.put("/me/plan", { target });
+  setPlanTier(target);
+}
+
+/* --- hidratação do tier a partir do servidor (uma vez por usuário/sessão) --- */
+
+let planHydratedUserId: string | null = null;
+let planHydrating: Promise<void> | null = null;
+
+async function fetchSubscription(): Promise<void> {
+  try {
+    const sub = await getSubscription();
+    setPlanTier(sub.planId);
+  } catch {
+    // Falha de rede: mantém o tier em cache, silencioso.
+  }
+}
+
+/** True se o tier deste usuário já foi hidratado nesta sessão. */
+export function isPlanHydrated(user: User): boolean {
+  return planHydratedUserId === user.id;
+}
+
+/** Garante (uma única vez por usuário) que o tier foi carregado do servidor. */
+export function ensurePlanHydrated(user: User): Promise<void> {
+  if (planHydratedUserId === user.id) return Promise.resolve();
+  if (planHydrating) return planHydrating;
+  planHydrating = fetchSubscription().finally(() => {
+    planHydratedUserId = user.id;
+    planHydrating = null;
+  });
+  return planHydrating;
+}
+
+/** Zera a hidratação do tier (chamado no logout). */
+export function resetPlanHydration(): void {
+  planHydratedUserId = null;
+  planHydrating = null;
 }

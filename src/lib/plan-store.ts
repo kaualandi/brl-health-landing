@@ -80,7 +80,6 @@ export function setPlanTier(tier: PlanTier): void {
   cachedTierRaw = tier;
   cachedState = { ...readSnapshot(), tier };
   emit();
-  // TODO: na fase de backend, o tier vem da assinatura real (Stripe).
 }
 
 export function dismissUpgradeNudge(tier: PlanTier): void {
