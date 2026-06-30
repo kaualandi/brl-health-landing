@@ -5,6 +5,7 @@ namespace BrlHealth.Api.Data;
 /// <summary>Consulta já enriquecida com dados do nutricionista e do usuário (saída do JOIN).</summary>
 public sealed record ConsultationView(
     long Id,
+    string NutritionistId,
     string Date,
     string Time,
     string NutritionistName,
@@ -71,6 +72,7 @@ public sealed class ConsultationsRepository
         using var conn = _factory.Create();
         const string sql =
             @"SELECT c.id                            AS Id,
+                     c.nutritionist_id               AS NutritionistId,
                      to_char(c.date, 'YYYY-MM-DD')   AS Date,
                      c.time                          AS Time,
                      n.name                          AS NutritionistName,
