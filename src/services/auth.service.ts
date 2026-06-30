@@ -1,29 +1,17 @@
+import { api } from "@/lib/axios";
 import type { AuthResponse } from "@/types";
 
-const DEMO_EMAIL = "demo@brl.com";
-const DEMO_PASSWORD = "123456";
-
-const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+type Message = { message: string };
 
 export async function loginUser(
   email: string,
   password: string,
 ): Promise<AuthResponse> {
-  await wait(800);
-
-  if (email === DEMO_EMAIL && password === DEMO_PASSWORD) {
-    return {
-      user: {
-        id: "usr_demo_001",
-        name: "Kauã Demo",
-        email: DEMO_EMAIL,
-      },
-      token: "mock.jwt.token.demo",
-    };
-  }
-
-  throw new Error("Credenciais inválidas");
-  // TODO: substituir por api.post('/auth/login')
+  const { data } = await api.post<AuthResponse>("/auth/login", {
+    email,
+    password,
+  });
+  return data;
 }
 
 export async function registerUser(
@@ -31,68 +19,43 @@ export async function registerUser(
   email: string,
   password: string,
 ): Promise<AuthResponse> {
-  await wait(1000);
-
-  void password;
-
-  return {
-    user: {
-      id: `usr_${Date.now()}`,
-      name,
-      email,
-    },
-    token: "mock.jwt.token.new-user",
-  };
-  // TODO: substituir por api.post('/auth/register')
+  const { data } = await api.post<AuthResponse>("/auth/register", {
+    name,
+    email,
+    password,
+  });
+  return data;
 }
 
-export async function requestPasswordReset(
-  email: string,
-): Promise<{ message: string }> {
-  await wait(800);
+/** Encerra a sessão no servidor (revoga o refresh token). Best-effort. */
+export async function logoutUser(refreshToken: string): Promise<void> {
+  await api.post("/auth/logout", { refreshToken });
+}
 
-  void email;
-
-  // Resolve sempre — não revelamos se o e-mail existe (privacidade).
-  return { message: "Se houver uma conta, enviamos um link de redefinição." };
-  // TODO: substituir por api.post('/auth/forgot')
+export async function requestPasswordReset(email: string): Promise<Message> {
+  // Resposta sempre 200 — o backend não revela se o e-mail existe (privacidade).
+  const { data } = await api.post<Message>("/auth/forgot", { email });
+  return data;
 }
 
 export async function resetPassword(
   token: string,
   password: string,
-): Promise<{ message: string }> {
-  await wait(800);
-
-  void password;
-
-  if (!token) {
-    throw new Error("Link inválido ou expirado");
-  }
-
-  return { message: "Senha redefinida" };
-  // TODO: substituir por api.post('/auth/reset')
+): Promise<Message> {
+  const { data } = await api.post<Message>("/auth/reset", { token, password });
+  return data;
 }
 
-export async function requestEmailVerification(
-  email: string,
-): Promise<{ message: string }> {
-  await wait(800);
-
-  void email;
-
-  return { message: "Enviamos um novo código para o seu e-mail." };
-  // TODO: substituir por api.post('/auth/verify/resend')
+/**
+ * Reenvia o código de verificação. Endpoint autenticado e **sem body** — o
+ * backend identifica o e-mail pelo JWT da sessão (token anexado pelo axios).
+ */
+export async function requestEmailVerification(): Promise<Message> {
+  const { data } = await api.post<Message>("/auth/verify/resend", {});
+  return data;
 }
 
-export async function verifyEmail(code: string): Promise<{ message: string }> {
-  await wait(800);
-
-  // Mock: aceita qualquer código de 6 dígitos (o backend valida de verdade).
-  if (!/^\d{6}$/.test(code.trim())) {
-    throw new Error("Código inválido. Confira os 6 dígitos e tente de novo.");
-  }
-
-  return { message: "E-mail verificado" };
-  // TODO: substituir por api.post('/auth/verify')
+export async function verifyEmail(code: string): Promise<Message> {
+  const { data } = await api.post<Message>("/auth/verify", { code });
+  return data;
 }
