@@ -32,6 +32,7 @@ builder.Services.AddScoped<ProfilesRepository>();
 builder.Services.AddScoped<TrackingRepository>();
 builder.Services.AddScoped<EngagementRepository>();
 builder.Services.AddScoped<FoodsRepository>();
+builder.Services.AddScoped<NutritionistsRepository>();
 builder.Services.AddScoped<ArticlesRepository>();
 builder.Services.AddScoped<RecipesRepository>();
 builder.Services.AddScoped<RefreshTokensRepository>();
@@ -147,6 +148,7 @@ app.MapAuth();             // /auth/login · register · refresh · logout · fo
 app.MapProfile();          // GET/PUT /nutri/profile · GET /nutri/plan
 app.MapPlans();            // GET /plans
 app.MapFoods();            // GET /foods · /meals (catálogo do cardápio)
+app.MapNutritionists();    // GET /nutritionists (catálogo de profissionais)
 app.MapArticles();         // GET /articles · /articles/{id} (conteúdo editorial)
 app.MapRecipes();          // GET /recipes · /recipes/{id} (catálogo de receitas)
 app.MapBilling();          // POST /billing/checkout (mock)

@@ -60,8 +60,15 @@ CREATE TABLE IF NOT EXISTS nutritionists (
     bio     TEXT,
     rating  NUMERIC(2,1),
     reviews INT,
-    years   INT
+    years   INT,
+    avatar  TEXT,                          -- emoji placeholder até ter foto real
+    goals   TEXT[] NOT NULL DEFAULT '{}',  -- objetivos com que mais combina (recomendação)
+    diets   TEXT[] NOT NULL DEFAULT '{}'   -- estilos de dieta que domina
 );
+-- Para bancos já criados antes destas colunas:
+ALTER TABLE nutritionists ADD COLUMN IF NOT EXISTS avatar TEXT;
+ALTER TABLE nutritionists ADD COLUMN IF NOT EXISTS goals TEXT[] NOT NULL DEFAULT '{}';
+ALTER TABLE nutritionists ADD COLUMN IF NOT EXISTS diets TEXT[] NOT NULL DEFAULT '{}';
 
 CREATE TABLE IF NOT EXISTS consultations (
     id              BIGSERIAL PRIMARY KEY,

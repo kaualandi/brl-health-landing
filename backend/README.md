@@ -169,6 +169,7 @@ Trocam os _services_ mock do front por API real. Rotas com 🔒 exigem
 | `GET` | `/plans` | `plans.service.ts` |
 | `GET` 🔒 | `/me/subscription` | tier/assinatura atual do usuário (plano, créditos) → `plan-store.ts` |
 | `GET` | `/foods` · `/meals` | catálogo do cardápio (`lib/foods.ts` · `lib/meals.ts`) |
+| `GET` | `/nutritionists` | catálogo de nutricionistas (`lib/nutritionists.ts`) |
 | `GET` | `/articles` · `/articles/{id}` | conteúdo editorial (`lib/nutri-content.ts`) |
 | `GET` | `/recipes` · `/recipes/{id}` | catálogo de receitas (`RECIPES_CATALOG`, página `/receitas`) |
 | `POST` 🔒 | `/billing/checkout` | `billing.service.ts` (mock) |

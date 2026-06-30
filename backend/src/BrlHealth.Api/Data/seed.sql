@@ -8,15 +8,19 @@ INSERT INTO plans (id, name, monthly_price, rank, credits) VALUES
     ('family', 'BRL Family',49.90, 2, 8)
 ON CONFLICT (id) DO NOTHING;
 
-INSERT INTO nutritionists (id, name, crn, focus, bio, rating, reviews, years) VALUES
+INSERT INTO nutritionists (id, name, crn, focus, bio, rating, reviews, years, avatar, goals, diets) VALUES
     ('ana-prado',     'Ana Prado',     'CRN-3 12345', 'Emagrecimento e reeducação alimentar',
-        'Ajuda a perder gordura sem dietas malucas, ajustando o plano à sua rotina.', 4.9, 212, 9),
+        'Ajuda a perder gordura sem dietas malucas, ajustando o plano à sua rotina.', 4.9, 212, 9,
+        '👩🏻‍⚕️', '{lose,health}', '{omnivore,lowcarb,mediterranean}'),
     ('rafael-couto',  'Rafael Couto',  'CRN-4 23456', 'Nutrição esportiva e ganho de massa',
-        'Foco em performance e hipertrofia — periodiza a dieta junto com o treino.', 4.8, 168, 7),
+        'Foco em performance e hipertrofia — periodiza a dieta junto com o treino.', 4.8, 168, 7,
+        '👨🏽‍⚕️', '{gain,performance,recomp}', '{omnivore,lowcarb}'),
     ('bianca-rios',   'Bianca Rios',   'CRN-1 34567', 'Alimentação vegetariana e vegana',
-        'Monta planos 100% vegetais equilibrados, sem deixar nenhum nutriente pra trás.', 5.0, 143, 6),
+        'Monta planos 100% vegetais equilibrados, sem deixar nenhum nutriente pra trás.', 5.0, 143, 6,
+        '👩🏾‍⚕️', '{health,recomp,lose}', '{vegetarian,vegan,mediterranean}'),
     ('diego-martins', 'Diego Martins', 'CRN-2 45678', 'Nutrição clínica e saúde metabólica',
-        'Cuida de quem busca saúde no longo prazo — colesterol, glicemia e bem-estar.', 4.7, 97, 12)
+        'Cuida de quem busca saúde no longo prazo — colesterol, glicemia e bem-estar.', 4.7, 97, 12,
+        '🧑🏼‍⚕️', '{health,performance,gain}', '{omnivore,mediterranean,lowcarb}')
 ON CONFLICT (id) DO NOTHING;
 
 -- Conta demo (demo@brl.com / 123456) e sua assinatura Free.
