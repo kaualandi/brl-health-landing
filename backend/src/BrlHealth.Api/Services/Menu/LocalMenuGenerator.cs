@@ -9,7 +9,8 @@ namespace BrlHealth.Api.Services.Menu;
 /// </summary>
 public sealed class LocalMenuGenerator : IMenuGenerator
 {
-    public Task<GeneratedMenu> GenerateAsync(NutriProfile profile, NutriPlan plan, CancellationToken ct = default)
+    public Task<GeneratedMenu> GenerateAsync(
+        NutriProfile profile, NutriPlan plan, MenuPreferences? preferences = null, CancellationToken ct = default)
     {
         var meals = plan.Meals
             .Select(m => new GeneratedMeal(m.Name, SuggestFor(m.Name), m.Kcal, m.Time))

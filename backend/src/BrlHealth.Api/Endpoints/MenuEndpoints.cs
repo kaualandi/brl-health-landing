@@ -27,7 +27,8 @@ public static class MenuEndpoints
             };
 
             var plan = NutriPlanCalculator.Compute(profile);
-            var menu = await generator.GenerateAsync(profile, plan, ct);
+            var preferences = new MenuPreferences(body.Diet, body.Restrictions);
+            var menu = await generator.GenerateAsync(profile, plan, preferences, ct);
             return Results.Ok(menu);
         });
     }

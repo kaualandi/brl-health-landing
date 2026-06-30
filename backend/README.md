@@ -127,7 +127,7 @@ dotnet run --project src/BrlHealth.Api
 |---|---|---|
 | `POST` | `/nutri/plan` | Motor de cálculo nutricional (Mifflin-St Jeor, TDEE, macros, água, IMC) + cardápio do dia |
 | `POST` | `/nutri/schedule` | Encaixa os horários das refeições na rotina (acordar/treinar/dormir) |
-| `POST` | `/nutri/menu` | Gera o cardápio do dia via `IMenuGenerator` (local por padrão; IA quando há chave) |
+| `POST` | `/nutri/menu` | Gera o cardápio do dia via `IMenuGenerator` (local por padrão; IA quando há chave). Aceita `diet` + `restrictions` opcionais |
 | `POST` | `/consultations` | Agendamento com **5 validações** → `400` com mensagem específica |
 | `GET`  | `/consultations/me` | Consultas do usuário com **INNER JOIN** (consultations × nutritionists × users) |
 | `PUT`  | `/me/plan` | Mudança de plano com **4 validações** (cartão `0000` recusado, etc.) |
