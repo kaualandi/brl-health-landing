@@ -44,8 +44,19 @@ Quadro Kanban da iteração (5 colunas):
 | Demais endpoints (tracking) | — | — | — | Artefatos SDD (docs) |
 | Seed completo do banco | — | — | — | `GET /consultations/me` (JOIN) |
 
-**WIP máximo: 3 tarefas** por coluna de trabalho ativo (Em Desenvolvimento /
+**WIP máximo: 6 tarefas** por coluna de trabalho ativo (Em Desenvolvimento /
 Code Review / Em Teste).
 
-> O limite de WIP (3) é **menor ou igual ao número de integrantes do grupo**.
-> Ajuste o número se o seu grupo tiver menos de 3 pessoas.
+> O limite de WIP (6) é **menor ou igual ao número de integrantes do grupo**
+> (6 pessoas).
+
+**Equipe (6 integrantes):**
+
+| Integrante | Matrícula |
+|---|---|
+| Lucas Abrahão Anes | 06009881 |
+| Kauã Landi Fernando | 06009262 |
+| Natan de Souza Sampaio | 06010668 |
+| Guilherme da Cunha Sequeira | 06002529 |
+| Murilo de Melo Mouteira | 06010561 |
+| Lucas Gomes Coco da Silva | 06011471 |
