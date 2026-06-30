@@ -53,8 +53,19 @@ export Jwt__Secret="<segredo-forte-de-pelo-menos-32-bytes>"
 ```
 
 E-mails (reset de senha / verificação) usam um `IEmailSender`; em dev o
-`ConsoleEmailSender` apenas **loga** a mensagem — o provedor real (SES/SendGrid)
+`ConsoleEmailSender` apenas **loga** a mensagem — o provedor real (Resend/SES/SendGrid)
 entra atrás do mesmo contrato na fase de produção.
+
+### IA de cardápio (opcional)
+
+`POST /nutri/menu` gera o cardápio via `IMenuGenerator`. Sem chave, usa o
+`LocalMenuGenerator` (determinístico). Para gerar por **OpenAI/ChatGPT**, defina a
+chave por ambiente (a geração por IA cai no gerador local em qualquer falha):
+
+```bash
+export OpenAI__ApiKey="sk-..."
+export OpenAI__Model="gpt-4o-mini"   # opcional
+```
 
 ## Subir o banco
 
@@ -107,6 +118,7 @@ dotnet run --project src/BrlHealth.Api
 |---|---|---|
 | `POST` | `/nutri/plan` | Motor de cálculo nutricional (Mifflin-St Jeor, TDEE, macros, água, IMC) + cardápio do dia |
 | `POST` | `/nutri/schedule` | Encaixa os horários das refeições na rotina (acordar/treinar/dormir) |
+| `POST` | `/nutri/menu` | Gera o cardápio do dia via `IMenuGenerator` (local por padrão; IA quando há chave) |
 | `POST` | `/consultations` | Agendamento com **5 validações** → `400` com mensagem específica |
 | `GET`  | `/consultations/me` | Consultas do usuário com **INNER JOIN** (consultations × nutritionists × users) |
 | `PUT`  | `/me/plan` | Mudança de plano com **4 validações** (cartão `0000` recusado, etc.) |
