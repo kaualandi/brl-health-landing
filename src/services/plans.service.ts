@@ -2,8 +2,11 @@ import { api } from "@/lib/axios";
 import { setPlanTier } from "@/lib/plan-store";
 import type { Plan, PlanId, User } from "@/types";
 
-const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
-
+/**
+ * Templates de marketing dos planos (copy: nome, tagline, features, CTA). O
+ * **preço** é autoritativo do backend (`GET /plans`) e mesclado em `getPlans` —
+ * a copy fica no front por decisão de produto (DT-07).
+ */
 const PLANS: Plan[] = [
   {
     id: "free",
@@ -58,10 +61,39 @@ const PLANS: Plan[] = [
   },
 ];
 
+type PlanApi = { id: PlanId; monthlyPrice: number; credits: number };
+
+function formatBRL(value: number): string {
+  if (value === 0) return "R$ 0";
+  return new Intl.NumberFormat("pt-BR", {
+    style: "currency",
+    currency: "BRL",
+  }).format(value);
+}
+
+/**
+ * Catálogo de planos: preço/créditos vêm do `GET /plans` (autoritativos) e são
+ * mesclados na copy de marketing. Se a API cair, cai no template estático (cujos
+ * preços batem com o seed).
+ */
 export async function getPlans(): Promise<Plan[]> {
-  await wait(400);
-  return PLANS;
-  // TODO: substituir por api.get('/plans')
+  try {
+    const { data } = await api.get<PlanApi[]>("/plans");
+    const byId = new Map(data.map((p) => [p.id, p]));
+    return PLANS.map((template) => {
+      const apiPlan = byId.get(template.id);
+      if (!apiPlan) return template;
+      const monthlyPrice = apiPlan.monthlyPrice;
+      return {
+        ...template,
+        monthlyPrice,
+        priceLabel: formatBRL(monthlyPrice),
+        annualPrice: monthlyPrice > 0 ? monthlyPrice * 10 : undefined,
+      };
+    });
+  } catch {
+    return PLANS;
+  }
 }
 
 /** Lookup síncrono de um plano pelo id (usado no checkout). */
