@@ -2,6 +2,10 @@ import type { Metadata } from "next";
 
 import { RecipeExplorer } from "@/components/content/recipe-explorer";
 import { SITE_NAME } from "@/lib/site";
+import { fetchRecipes } from "@/services/content.service";
+
+// ISR: regenera o catálogo do banco de hora em hora, sem redeploy.
+export const revalidate = 3600;
 
 const TITLE = "Receitas — BRL Health";
 const DESCRIPTION =
@@ -22,7 +26,8 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RecipesPage() {
+export default async function RecipesPage() {
+  const recipes = await fetchRecipes();
   return (
     <section className="relative overflow-hidden bg-brl-dark pt-32 pb-24 md:pt-40 md:pb-28">
       <div
@@ -48,7 +53,7 @@ export default function RecipesPage() {
         </header>
 
         <div className="mt-12 md:mt-16">
-          <RecipeExplorer />
+          <RecipeExplorer recipes={recipes} />
         </div>
       </div>
     </section>

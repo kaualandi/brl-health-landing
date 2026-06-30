@@ -5,7 +5,8 @@ import { ArrowRightIcon, SearchIcon } from "lucide-react";
 import { useMemo, useState } from "react";
 
 import { Input } from "@/components/ui/input";
-import { RECIPES_CATALOG, recipeCategories } from "@/lib/nutri-content";
+import type { RecipeFull } from "@/lib/nutri-content";
+import { recipeCategoriesFrom } from "@/services/content.service";
 import { cn } from "@/lib/utils";
 
 const ALL = "Todas";
@@ -17,14 +18,17 @@ function normalize(value: string): string {
     .replace(/\p{Diacritic}/gu, "");
 }
 
-export function RecipeExplorer() {
-  const categories = useMemo(() => [ALL, ...recipeCategories()], []);
+export function RecipeExplorer({ recipes }: { recipes: RecipeFull[] }) {
+  const categories = useMemo(
+    () => [ALL, ...recipeCategoriesFrom(recipes)],
+    [recipes],
+  );
   const [category, setCategory] = useState(ALL);
   const [query, setQuery] = useState("");
 
   const results = useMemo(() => {
     const q = normalize(query.trim());
-    return RECIPES_CATALOG.filter((recipe) => {
+    return recipes.filter((recipe) => {
       const matchesCategory = category === ALL || recipe.category === category;
       const matchesQuery =
         q.length === 0 ||
@@ -34,7 +38,7 @@ export function RecipeExplorer() {
         recipe.ingredients.some((item) => normalize(item).includes(q));
       return matchesCategory && matchesQuery;
     });
-  }, [category, query]);
+  }, [category, query, recipes]);
 
   return (
     <div>

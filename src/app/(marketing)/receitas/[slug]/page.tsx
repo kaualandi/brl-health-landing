@@ -13,20 +13,24 @@ import {
 import { FavoriteButton } from "@/components/content/favorite-button";
 import { Button } from "@/components/ui/button";
 import {
-  RECIPES_CATALOG,
-  getRecipe,
-  relatedRecipes,
-} from "@/lib/nutri-content";
+  fetchRecipe,
+  fetchRecipes,
+  relatedRecipesFrom,
+} from "@/services/content.service";
+
+// ISR: pré-renderiza os slugs no build e revalida do banco de hora em hora.
+export const revalidate = 3600;
 
 type Params = { params: Promise<{ slug: string }> };
 
-export function generateStaticParams() {
-  return RECIPES_CATALOG.map((recipe) => ({ slug: recipe.id }));
+export async function generateStaticParams() {
+  const recipes = await fetchRecipes();
+  return recipes.map((recipe) => ({ slug: recipe.id }));
 }
 
 export async function generateMetadata({ params }: Params): Promise<Metadata> {
   const { slug } = await params;
-  const recipe = getRecipe(slug);
+  const recipe = await fetchRecipe(slug);
   if (!recipe) {
     return { title: "Receita não encontrada — BRL Health" };
   }
@@ -38,10 +42,10 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
 
 export default async function RecipePage({ params }: Params) {
   const { slug } = await params;
-  const recipe = getRecipe(slug);
+  const recipe = await fetchRecipe(slug);
   if (!recipe) notFound();
 
-  const related = relatedRecipes(slug, 3);
+  const related = relatedRecipesFrom(await fetchRecipes(), slug, 3);
 
   const macros = [
     { label: "Proteína", value: recipe.macros.protein },
