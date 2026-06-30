@@ -58,6 +58,9 @@ builder.Services.AddBrlRateLimiter();
 // Validação server-side declarativa (§7): valida os DTOs de entrada via ValidationFilter.
 builder.Services.AddValidatorsFromAssemblyContaining<RegisterRequestValidator>();
 
+// OpenTelemetry (§7): tracing/métricas — console em dev, OTLP quando Otel:Endpoint definido.
+builder.Services.AddBrlTelemetry(builder.Configuration);
+
 // Health checks: liveness (sem dependências) + readiness (PostgreSQL).
 builder.Services.AddScoped<DatabaseHealthCheck>();
 builder.Services.AddHealthChecks()

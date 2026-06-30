@@ -92,6 +92,10 @@ dotnet run --project src/BrlHealth.Api
 - **Validação server-side** ([FluentValidation](https://fluentvalidation.net)):
   os DTOs de entrada (registro, login, reset, consentimento) passam por um
   `ValidationFilter` que devolve `400 { errors: [...] }` antes do handler.
+- **Tracing/métricas** ([OpenTelemetry](https://opentelemetry.io)): instrumentação
+  de ASP.NET Core, HttpClient e Npgsql. Sem coletor, usa o **console exporter**
+  (spans no stdout); para exportar via OTLP, defina `Otel__Endpoint`
+  (ex.: `http://localhost:4317`).
 
 ## Endpoints de negócio (requisitos da AV2)
 
