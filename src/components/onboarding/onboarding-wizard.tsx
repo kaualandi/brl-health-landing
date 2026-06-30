@@ -598,7 +598,7 @@ export function OnboardingWizard() {
           // Já tem conta — só salva o plano, sem registrar de novo.
           const { createdAt: _omit, ...profileInput } = profile;
           void _omit;
-          saveNutriProfileForCurrentUser(profileInput);
+          await saveNutriProfileForCurrentUser(profileInput);
         } else {
           await completeOnboarding({
             name: profile.name,

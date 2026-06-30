@@ -12,6 +12,10 @@ import {
   type AuthState,
 } from "@/lib/auth-store";
 import { logoutUser } from "@/services/auth.service";
+import {
+  clearNutriProfile,
+  resetNutriProfileHydration,
+} from "@/services/nutri.service";
 import type { User } from "@/types";
 
 export type AuthStatus = "loading" | "authenticated" | "unauthenticated";
@@ -36,6 +40,9 @@ function logout(): void {
     });
   }
   clearAuth();
+  // Limpa o perfil em cache e a hidratação pro próximo usuário começar limpo.
+  clearNutriProfile();
+  resetNutriProfileHydration();
 }
 
 /** Hook de sessão. SSR-safe — devolve `loading` no primeiro paint. */
