@@ -291,7 +291,8 @@
   (`cs_test_...`); webhook assinado ativa o plano no banco (free→family); assinatura
   inválida → 400._ Webhook usa `throwOnApiVersionMismatch: false` (tolera skew de versão).
   **Customer Portal:** webhook guarda o `stripe_customer_id`; `POST /billing/stripe/portal`
-  abre o portal (gerir/cancelar plano). _Requer o portal ativado no Dashboard do Stripe._
+  abre o portal (gerir/cancelar plano). _Validado e2e com test keys: customer real → webhook
+  guarda no banco → portal devolve URL real (`billing.stripe.com`)._ Erro do Stripe → 502.
 - [x] 🚀 **E-mail transacional — Resend** (decisão: manter, conta já existente + free
   tier generoso). `ResendEmailSender` (HTTP API) atrás de `IEmailSender`, ativado por
   `Resend:ApiKey`; sem chave, cai no `ConsoleEmailSender`. Envio assíncrono pela fila

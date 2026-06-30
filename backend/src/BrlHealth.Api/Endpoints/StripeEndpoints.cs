@@ -44,8 +44,11 @@ public static class StripeEndpoints
 
         // POST /billing/stripe/portal — abre o Customer Portal do Stripe (gerir/cancelar assinatura).
         app.MapPost("/billing/stripe/portal", async (
-            HttpContext ctx, IPaymentGateway gateway, SubscriptionsRepository subscriptions) =>
+            HttpContext ctx, IPaymentGateway gateway, SubscriptionsRepository subscriptions,
+            ILoggerFactory loggerFactory) =>
         {
+            var logger = loggerFactory.CreateLogger("StripePortal");
+
             if (!ctx.TryGetUserId(out var userId))
                 return Results.Unauthorized();
             if (!gateway.IsConfigured)
@@ -55,8 +58,16 @@ public static class StripeEndpoints
             if (string.IsNullOrWhiteSpace(customerId))
                 return Results.BadRequest(new { errors = new[] { "Nenhuma assinatura paga para gerenciar." } });
 
-            var url = await gateway.CreatePortalSessionAsync(customerId);
-            return Results.Ok(new { url });
+            try
+            {
+                var url = await gateway.CreatePortalSessionAsync(customerId);
+                return Results.Ok(new { url });
+            }
+            catch (StripeException ex)
+            {
+                logger.LogError(ex, "Falha ao abrir o Customer Portal do Stripe.");
+                return Results.Json(new { error = "Não foi possível abrir o portal de assinatura." }, statusCode: 502);
+            }
         });
 
         // POST /billing/stripe/webhook — verifica a assinatura e ativa o plano no pagamento.
