@@ -1,7 +1,7 @@
 import type { MetadataRoute } from "next";
 
-import { ARTICLES, RECIPES_CATALOG } from "@/lib/nutri-content";
 import { SITE_URL } from "@/lib/site";
+import { fetchArticles, fetchRecipes } from "@/services/content.service";
 
 // Data fixa pra manter o sitemap determinístico entre builds.
 const LAST_MODIFIED = "2026-06-26";
@@ -27,7 +27,7 @@ const STATIC_ROUTES: StaticRoute[] = [
   { path: "/privacidade", priority: 0.2, changeFrequency: "yearly" },
 ];
 
-export default function sitemap(): MetadataRoute.Sitemap {
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const staticEntries = STATIC_ROUTES.map((route) => ({
     url: `${SITE_URL}${route.path}`,
     lastModified: LAST_MODIFIED,
@@ -35,14 +35,20 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: route.priority,
   }));
 
-  const articleEntries = ARTICLES.map((article) => ({
+  // Conteúdo dinâmico vindo do backend (vazio se a API estiver fora no build).
+  const [articles, recipes] = await Promise.all([
+    fetchArticles(),
+    fetchRecipes(),
+  ]);
+
+  const articleEntries = articles.map((article) => ({
     url: `${SITE_URL}/conteudos/${article.id}`,
     lastModified: LAST_MODIFIED,
     changeFrequency: "monthly" as const,
     priority: 0.5,
   }));
 
-  const recipeEntries = RECIPES_CATALOG.map((recipe) => ({
+  const recipeEntries = recipes.map((recipe) => ({
     url: `${SITE_URL}/receitas/${recipe.id}`,
     lastModified: LAST_MODIFIED,
     changeFrequency: "monthly" as const,
