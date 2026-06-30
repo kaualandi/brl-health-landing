@@ -34,7 +34,7 @@ import {
 import {
   getNutriProfileServerSnapshot,
   getNutriProfileSnapshot,
-  saveNutriProfile,
+  pushNutriProfile,
   subscribeNutriProfile,
 } from "@/services/nutri.service";
 import { cn } from "@/lib/utils";
@@ -257,7 +257,7 @@ function EditorForm({ initial }: { initial: NutriProfile }) {
     });
   }, [state, initial]);
 
-  function handleSave() {
+  async function handleSave() {
     const age = Number(state.age);
     const height = Number(state.heightCm);
     const weight = Number(state.weightKg);
@@ -291,7 +291,17 @@ function EditorForm({ initial }: { initial: NutriProfile }) {
       return;
     }
     setSaving(true);
-    saveNutriProfile(build());
+    try {
+      await pushNutriProfile(build());
+    } catch (error) {
+      setSaving(false);
+      toast({
+        variant: "error",
+        title: "Não consegui salvar",
+        description: error instanceof Error ? error.message : "Tente de novo.",
+      });
+      return;
+    }
     toast({
       variant: "success",
       title: "Perfil atualizado ✅",

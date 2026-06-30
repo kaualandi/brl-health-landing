@@ -109,6 +109,12 @@ api.interceptors.response.use(
       clearAuth();
     }
 
-    return Promise.reject(new Error(extractMessage(error)));
+    // Preserva o status no Error (services distinguem 404, 400, etc.); os forms
+    // seguem lendo `error.message` normalmente.
+    const rejection = new Error(extractMessage(error)) as Error & {
+      status?: number;
+    };
+    rejection.status = status;
+    return Promise.reject(rejection);
   },
 );
