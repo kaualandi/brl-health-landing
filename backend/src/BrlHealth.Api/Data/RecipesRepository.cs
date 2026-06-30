@@ -31,23 +31,27 @@ public sealed class RecipesRepository
 
     public RecipesRepository(IDbConnectionFactory factory) => _factory = factory;
 
-    private const string Columns =
-        @"id AS Id, title AS Title, emoji AS Emoji, category AS Category, excerpt AS Excerpt,
-          prep_time AS PrepTime, kcal AS Kcal, protein AS Protein, carbs AS Carbs, fat AS Fat,
-          servings AS Servings, diet AS Diet, goals AS Goals,
-          ingredients AS Ingredients, steps AS Steps, tags AS Tags";
-
     public async Task<IEnumerable<RecipeRow>> GetAllAsync()
     {
         using var conn = _factory.Create();
-        var sql = $"SELECT {Columns} FROM recipes ORDER BY category, id";
+        const string sql =
+            @"SELECT id AS Id, title AS Title, emoji AS Emoji, category AS Category, excerpt AS Excerpt,
+                     prep_time AS PrepTime, kcal AS Kcal, protein AS Protein, carbs AS Carbs, fat AS Fat,
+                     servings AS Servings, diet AS Diet, goals AS Goals,
+                     ingredients AS Ingredients, steps AS Steps, tags AS Tags
+              FROM recipes ORDER BY category, id";
         return await conn.QueryAsync<RecipeRow>(sql);
     }
 
     public async Task<RecipeRow?> GetByIdAsync(string id)
     {
         using var conn = _factory.Create();
-        var sql = $"SELECT {Columns} FROM recipes WHERE id = @Id";
+        const string sql =
+            @"SELECT id AS Id, title AS Title, emoji AS Emoji, category AS Category, excerpt AS Excerpt,
+                     prep_time AS PrepTime, kcal AS Kcal, protein AS Protein, carbs AS Carbs, fat AS Fat,
+                     servings AS Servings, diet AS Diet, goals AS Goals,
+                     ingredients AS Ingredients, steps AS Steps, tags AS Tags
+              FROM recipes WHERE id = @Id";
         return await conn.QuerySingleOrDefaultAsync<RecipeRow>(sql, new { Id = id });
     }
 }
