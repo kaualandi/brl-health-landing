@@ -1,6 +1,8 @@
 /**
- * Banco de nutricionistas (mock) e geração de agenda. O caminho "humano" do
- * BRL Nutri — escolher um profissional e marcar uma consulta por vídeo.
+ * Tipo do nutricionista + geração de agenda. O caminho "humano" do BRL Nutri —
+ * escolher um profissional e marcar uma consulta por vídeo. O **catálogo** vem
+ * do backend (`GET /nutritionists`, via `useNutritionists`); aqui ficam só o
+ * tipo, os helpers (que recebem a lista) e a lógica de agenda.
  *
  * A agenda é derivada da data atual: próximos dias úteis com horários fixos por
  * profissional. Os horários já ocupados (do `consultations-store`) são filtrados
@@ -29,73 +31,26 @@ export interface Nutritionist {
   diets: DietStyle[];
 }
 
-export const NUTRITIONISTS: Nutritionist[] = [
-  {
-    id: "ana-prado",
-    name: "Ana Prado",
-    avatar: "👩🏻‍⚕️",
-    crn: "CRN-3 12345",
-    focus: "Emagrecimento e reeducação alimentar",
-    bio: "Ajuda a perder gordura sem dietas malucas, ajustando o plano à sua rotina.",
-    rating: 4.9,
-    reviews: 212,
-    years: 9,
-    goals: ["lose", "health"],
-    diets: ["omnivore", "lowcarb", "mediterranean"],
-  },
-  {
-    id: "rafael-couto",
-    name: "Rafael Couto",
-    avatar: "👨🏽‍⚕️",
-    crn: "CRN-4 23456",
-    focus: "Nutrição esportiva e ganho de massa",
-    bio: "Foco em performance e hipertrofia — periodiza a dieta junto com o treino.",
-    rating: 4.8,
-    reviews: 168,
-    years: 7,
-    goals: ["gain", "performance", "recomp"],
-    diets: ["omnivore", "lowcarb"],
-  },
-  {
-    id: "bianca-rios",
-    name: "Bianca Rios",
-    avatar: "👩🏾‍⚕️",
-    crn: "CRN-1 34567",
-    focus: "Alimentação vegetariana e vegana",
-    bio: "Monta planos 100% vegetais equilibrados, sem deixar nenhum nutriente pra trás.",
-    rating: 5.0,
-    reviews: 143,
-    years: 6,
-    goals: ["health", "recomp", "lose"],
-    diets: ["vegetarian", "vegan", "mediterranean"],
-  },
-  {
-    id: "diego-martins",
-    name: "Diego Martins",
-    avatar: "🧑🏼‍⚕️",
-    crn: "CRN-2 45678",
-    focus: "Nutrição clínica e saúde metabólica",
-    bio: "Cuida de quem busca saúde no longo prazo — colesterol, glicemia e bem-estar.",
-    rating: 4.7,
-    reviews: 97,
-    years: 12,
-    goals: ["health", "performance", "gain"],
-    diets: ["omnivore", "mediterranean", "lowcarb"],
-  },
-];
-
-export function nutritionistById(id: string): Nutritionist | undefined {
-  return NUTRITIONISTS.find((n) => n.id === id);
+/** Lookup de um nutricionista na lista (vinda do `GET /nutritionists`). */
+export function nutritionistById(
+  list: Nutritionist[],
+  id: string,
+): Nutritionist | undefined {
+  return list.find((n) => n.id === id);
 }
 
-/** O profissional que mais combina com o objetivo + dieta do usuário. */
+/**
+ * O profissional que mais combina com o objetivo + dieta do usuário.
+ * `undefined` se a lista ainda não carregou.
+ */
 export function recommendedNutritionist(
+  list: Nutritionist[],
   goal: Goal,
   diet: DietStyle,
-): Nutritionist {
-  let best = NUTRITIONISTS[0];
+): Nutritionist | undefined {
+  let best: Nutritionist | undefined;
   let bestScore = -1;
-  for (const n of NUTRITIONISTS) {
+  for (const n of list) {
     const score = (n.goals.includes(goal) ? 2 : 0) + (n.diets.includes(diet) ? 1 : 0);
     if (score > bestScore) {
       best = n;

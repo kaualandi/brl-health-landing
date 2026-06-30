@@ -25,13 +25,13 @@ import {
 import { useToast } from "@/components/ui/toast";
 import { useAuth } from "@/hooks/use-auth";
 import { useConsultations } from "@/hooks/use-consultations";
+import { useNutritionists } from "@/hooks/use-nutritionists";
 import { usePlan } from "@/hooks/use-plan";
 import { creditsForTier } from "@/lib/consultations-store";
 import {
   agendaDays,
   formatAgendaDate,
   type Nutritionist,
-  NUTRITIONISTS,
   nutritionistById,
   recommendedNutritionist,
   slotsForDay,
@@ -123,27 +123,31 @@ function ScheduleSheet({
   open,
   onOpenChange,
   remaining,
+  nutritionists,
 }: {
   profile: NutriProfile;
   open: boolean;
   onOpenChange: (open: boolean) => void;
   remaining: number;
+  nutritionists: Nutritionist[];
 }) {
   const toast = useToast();
   const { consultations, add } = useConsultations();
   const recommended = useMemo(
-    () => recommendedNutritionist(profile.goal, profile.diet),
-    [profile.goal, profile.diet],
+    () => recommendedNutritionist(nutritionists, profile.goal, profile.diet),
+    [nutritionists, profile.goal, profile.diet],
   );
 
   const [step, setStep] = useState<"pick" | "slot">("pick");
-  const [nutriId, setNutriId] = useState(recommended.id);
+  // `null` = ninguém escolheu ainda → cai no recomendado (derivado, sem effect).
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const nutriId = selectedId ?? recommended?.id ?? "";
   const [day, setDay] = useState<string | null>(null);
   const [time, setTime] = useState<string | null>(null);
   const [booking, setBooking] = useState(false);
 
   const days = useMemo(() => agendaDays(5), []);
-  const nutri = nutritionistById(nutriId) ?? recommended;
+  const nutri = nutritionistById(nutritionists, nutriId) ?? recommended;
 
   const takenTimes = useMemo(() => {
     if (!day) return [];
@@ -155,7 +159,7 @@ function ScheduleSheet({
 
   function reset() {
     setStep("pick");
-    setNutriId(recommended.id);
+    setSelectedId(null);
     setDay(null);
     setTime(null);
     setBooking(false);
@@ -173,7 +177,7 @@ function ScheduleSheet({
   }
 
   async function confirm() {
-    if (!day || !time || booking) return;
+    if (!day || !time || booking || !nutri) return;
     setBooking(true);
     try {
       const consultation = await scheduleConsultation({
@@ -221,28 +225,34 @@ function ScheduleSheet({
 
         {step === "pick" ? (
           <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto p-6">
-            {NUTRITIONISTS.map((n) => (
-              <NutriRow
-                key={n.id}
-                nutri={n}
-                recommended={n.id === recommended.id}
-                selected={n.id === nutriId}
-                onSelect={() => setNutriId(n.id)}
-              />
-            ))}
+            {nutritionists.length > 0 ? (
+              nutritionists.map((n) => (
+                <NutriRow
+                  key={n.id}
+                  nutri={n}
+                  recommended={n.id === recommended?.id}
+                  selected={n.id === nutriId}
+                  onSelect={() => setSelectedId(n.id)}
+                />
+              ))
+            ) : (
+              <div className="flex flex-1 items-center justify-center py-10">
+                <Loader2Icon className="size-6 animate-spin text-brl-purple" />
+              </div>
+            )}
           </div>
         ) : (
           <div className="flex min-h-0 flex-1 flex-col gap-5 overflow-y-auto p-6">
             <div className="flex items-center gap-3 rounded-2xl border border-white/5 bg-brl-card p-4">
               <span className="grid size-10 place-items-center rounded-full bg-white/5 text-xl" aria-hidden>
-                {nutri.avatar}
+                {nutri?.avatar ?? "🧑‍⚕️"}
               </span>
               <span className="min-w-0 flex-1">
                 <span className="block font-display text-sm font-bold">
-                  {nutri.name}
+                  {nutri?.name ?? "Nutricionista"}
                 </span>
                 <span className="block truncate text-xs text-muted-foreground">
-                  {nutri.focus}
+                  {nutri?.focus ?? ""}
                 </span>
               </span>
             </div>
@@ -369,6 +379,7 @@ export function NutriCoach({ profile }: { profile: NutriProfile }) {
   const { user } = useAuth();
   const { tier } = usePlan();
   const { consultations, cancel } = useConsultations();
+  const { data: nutritionists = [] } = useNutritionists();
   const toast = useToast();
   const [open, setOpen] = useState(false);
 
@@ -469,7 +480,7 @@ export function NutriCoach({ profile }: { profile: NutriProfile }) {
           </p>
           <ul className="flex flex-col gap-2.5">
             {consultations.map((c) => {
-              const nutri = nutritionistById(c.nutritionistId);
+              const nutri = nutritionistById(nutritionists, c.nutritionistId);
               return (
                 <li
                   key={c.id}
@@ -516,6 +527,7 @@ export function NutriCoach({ profile }: { profile: NutriProfile }) {
         open={open}
         onOpenChange={setOpen}
         remaining={remaining}
+        nutritionists={nutritionists}
       />
     </div>
   );
