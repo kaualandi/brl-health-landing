@@ -12,7 +12,9 @@ namespace BrlHealth.Api.Services.Payments;
 public sealed class StripeWebhookProcessor
 {
     public Event Construct(string json, string signatureHeader, string webhookSecret) =>
-        EventUtility.ConstructEvent(json, signatureHeader, webhookSecret);
+        // throwOnApiVersionMismatch: false — não rejeita o evento por skew de versão
+        // entre a conta e o SDK (lemos só os campos que importam).
+        EventUtility.ConstructEvent(json, signatureHeader, webhookSecret, throwOnApiVersionMismatch: false);
 
     public static bool TryGetActivation(Session? session, out long userId, out string planId)
     {

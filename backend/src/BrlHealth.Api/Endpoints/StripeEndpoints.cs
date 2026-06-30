@@ -70,6 +70,11 @@ public static class StripeEndpoints
                 logger.LogWarning(ex, "Webhook Stripe rejeitado (assinatura inválida).");
                 return Results.BadRequest();
             }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Erro ao processar webhook Stripe.");
+                return Results.StatusCode(500);
+            }
         });
     }
 }
