@@ -287,11 +287,12 @@
 - [ ] 🚀 **Pagamento — manter Stripe:** `Stripe.net` (SDK oficial .NET) para
   checkout, webhooks, gestão/cancelamento de assinatura e faturas. _Avaliação: sem
   motivo pra trocar — é a opção mais confortável no .NET._
-- [ ] 🚀 **E-mail transacional — trocar Resend** por opção mais .NET-native atrás de
-  uma abstração `IEmailSender`: **MailKit** (SMTP, ex. Amazon SES) ou **SendGrid**
-  (SDK Twilio); `FluentEmail` como camada opcional. _Resend segue viável via
-  HTTP/SDK, mas não é o caminho mais confortável no .NET._ Boas-vindas, verificação,
-  reset, recibo, waitlist.
+- [x] 🚀 **E-mail transacional — Resend** (decisão: manter, conta já existente + free
+  tier generoso). `ResendEmailSender` (HTTP API) atrás de `IEmailSender`, ativado por
+  `Resend:ApiKey`; sem chave, cai no `ConsoleEmailSender`. Envio assíncrono pela fila
+  Hangfire (`IEmailQueue`), com retry. _Validado com chave real (id de envio retornado)._
+  ⚠️ Em modo teste o Resend só envia para o e-mail dono da conta; **para enviar a
+  qualquer destinatário, verificar um domínio em resend.com/domains e ajustar `Resend:From`.**
 - [x] 🚀 **Conteúdo:** artigos e **receitas** no banco. Tabela `recipes` + seed das
   10 receitas (`RECIPES_CATALOG`) com `GET /recipes` e `GET /recipes/{id}` (espelha a
   página `/receitas`). _Fecha a ponta solta da §2._ (CMS de verdade fica pós-isto.)

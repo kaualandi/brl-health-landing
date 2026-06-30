@@ -52,9 +52,18 @@ export Jwt__Secret="<segredo-forte-de-pelo-menos-32-bytes>"
 # opcionais: Jwt__AccessTokenMinutes, Jwt__RefreshTokenDays, Jwt__Issuer, Jwt__Audience
 ```
 
-E-mails (reset de senha / verificação) usam um `IEmailSender`; em dev o
-`ConsoleEmailSender` apenas **loga** a mensagem — o provedor real (Resend/SES/SendGrid)
-entra atrás do mesmo contrato na fase de produção.
+E-mails (reset de senha / verificação) usam um `IEmailSender`. Com `Resend:ApiKey`
+definido, usa o **Resend** (`ResendEmailSender`, HTTP API); sem chave, cai no
+`ConsoleEmailSender` (dev, só loga). O envio é assíncrono pela fila Hangfire.
+
+```bash
+export Resend__ApiKey="re_..."
+export Resend__From="BRL Health <contato@seudominio.com>"   # opcional
+```
+
+> Em modo teste o Resend só envia para o **e-mail dono da conta**. Para enviar a
+> qualquer destinatário, **verifique um domínio** em resend.com/domains e ajuste
+> `Resend:From` para um endereço desse domínio.
 
 ### IA de cardápio (opcional)
 

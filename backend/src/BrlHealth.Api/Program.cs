@@ -68,8 +68,13 @@ builder.Services.AddScoped<DatabaseHealthCheck>();
 builder.Services.AddHealthChecks()
     .AddCheck<DatabaseHealthCheck>("postgres", tags: ["ready"]);
 
-// E-mail transacional: em dev loga no console (provedor real entra atrás do mesmo contrato).
-builder.Services.AddSingleton<IEmailSender, ConsoleEmailSender>();
+// E-mail transacional (§7): Resend quando há chave (Resend:ApiKey via ambiente/secrets);
+// sem chave, ConsoleEmailSender (dev, apenas loga). Mesmo contrato IEmailSender nos dois.
+builder.Services.AddSingleton(builder.Configuration.GetSection("Resend").Get<ResendOptions>() ?? new ResendOptions());
+if (!string.IsNullOrWhiteSpace(builder.Configuration["Resend:ApiKey"]))
+    builder.Services.AddHttpClient<IEmailSender, ResendEmailSender>();
+else
+    builder.Services.AddSingleton<IEmailSender, ConsoleEmailSender>();
 
 // Jobs em background (§7): Hangfire (storage em memória em dev; Postgres em prod).
 // O envio de e-mail (forgot/verify) é enfileirado e processado fora da requisição.
