@@ -89,6 +89,9 @@ dotnet run --project src/BrlHealth.Api
 - **Rate limiting** (`Microsoft.AspNetCore.RateLimiting`): teto global de
   120 req/min por IP e política estrita de **10 req/min em `/auth/*`**
   (anti-brute-force); ao exceder, `429` com header `Retry-After`.
+- **Validação server-side** ([FluentValidation](https://fluentvalidation.net)):
+  os DTOs de entrada (registro, login, reset, consentimento) passam por um
+  `ValidationFilter` que devolve `400 { errors: [...] }` antes do handler.
 
 ## Endpoints de negócio (requisitos da AV2)
 

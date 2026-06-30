@@ -2,6 +2,7 @@ using System.Text.RegularExpressions;
 using BrlHealth.Api.Data;
 using BrlHealth.Api.Services;
 using BrlHealth.Api.Services.Email;
+using BrlHealth.Api.Validation;
 
 namespace BrlHealth.Api.Endpoints;
 
@@ -33,16 +34,13 @@ public static class AuthEndpoints
                 await users.UpdatePasswordHashAsync(user.Id, PasswordHasher.Hash(body.Password));
 
             return Results.Ok(await IssueSessionAsync(user.Id, user.Name, user.Email, jwt, options, refreshTokens));
-        });
+        }).AddEndpointFilter<ValidationFilter<LoginRequest>>();
 
         // POST /auth/register — cria conta + assinatura Free e já abre sessão
         auth.MapPost("/register", async (
             RegisterRequest body, UsersRepository users, SubscriptionsRepository subscriptions,
             JwtTokenService jwt, JwtOptions options, RefreshTokensRepository refreshTokens) =>
         {
-            if (string.IsNullOrWhiteSpace(body.Email) || string.IsNullOrWhiteSpace(body.Password))
-                return Results.BadRequest(new { errors = new[] { "E-mail e senha são obrigatórios." } });
-
             if (await users.EmailExistsAsync(body.Email))
                 return Results.BadRequest(new { errors = new[] { "E-mail já cadastrado." } });
 
@@ -51,7 +49,7 @@ public static class AuthEndpoints
 
             var session = await IssueSessionAsync(id, body.Name, body.Email, jwt, options, refreshTokens);
             return Results.Created($"/users/{id}", session);
-        });
+        }).AddEndpointFilter<ValidationFilter<RegisterRequest>>();
 
         // POST /auth/refresh — rotaciona o refresh token e emite um novo access token
         auth.MapPost("/refresh", async (
@@ -112,9 +110,6 @@ public static class AuthEndpoints
             ResetRequest body, UsersRepository users,
             EmailTokensRepository emailTokens, RefreshTokensRepository refreshTokens) =>
         {
-            if (string.IsNullOrWhiteSpace(body.Token) || string.IsNullOrWhiteSpace(body.Password))
-                return Results.BadRequest(new { errors = new[] { "Link inválido ou expirado" } });
-
             var row = await emailTokens.FindActiveAsync("reset", EmailTokens.Hash(body.Token));
             if (row is null)
                 return Results.BadRequest(new { errors = new[] { "Link inválido ou expirado" } });
@@ -124,7 +119,7 @@ public static class AuthEndpoints
             await refreshTokens.RevokeAllForUserAsync(row.UserId);
 
             return Results.Ok(new { message = "Senha redefinida" });
-        });
+        }).AddEndpointFilter<ValidationFilter<ResetRequest>>();
 
         // POST /auth/verify/resend — exige sessão; gera código de 6 dígitos e envia por e-mail
         auth.MapPost("/verify/resend", async (

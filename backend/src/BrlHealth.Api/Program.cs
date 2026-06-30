@@ -3,6 +3,8 @@ using BrlHealth.Api.Data;
 using BrlHealth.Api.Endpoints;
 using BrlHealth.Api.Services;
 using BrlHealth.Api.Services.Email;
+using BrlHealth.Api.Validation;
+using FluentValidation;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Serilog;
@@ -52,6 +54,9 @@ builder.Services.AddAuthorization();
 
 // Rate limiting por IP (§7): teto global + política estrita em /auth/* (dívida DT-02).
 builder.Services.AddBrlRateLimiter();
+
+// Validação server-side declarativa (§7): valida os DTOs de entrada via ValidationFilter.
+builder.Services.AddValidatorsFromAssemblyContaining<RegisterRequestValidator>();
 
 // Health checks: liveness (sem dependências) + readiness (PostgreSQL).
 builder.Services.AddScoped<DatabaseHealthCheck>();
