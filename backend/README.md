@@ -65,6 +65,22 @@ export Resend__From="BRL Health <contato@seudominio.com>"   # opcional
 > qualquer destinatário, **verifique um domínio** em resend.com/domains e ajuste
 > `Resend:From` para um endereço desse domínio.
 
+### Pagamento (Stripe, opcional)
+
+Com `Stripe:SecretKey` definido, `/billing/stripe/checkout` cria uma Checkout
+Session e `/billing/stripe/webhook` ativa o plano quando o pagamento confirma.
+Sem chave, o checkout responde `501`. **Em dev use chaves de teste**; valide
+webhooks com a Stripe CLI (`stripe listen --forward-to localhost:5226/billing/stripe/webhook`).
+
+```bash
+export Stripe__SecretKey="sk_test_..."
+export Stripe__PublishableKey="pk_test_..."
+export Stripe__WebhookSecret="whsec_..."
+```
+
+> A chave de **produção** (idealmente restrita) é configurada por você na env de
+> prod, no deploy — nunca no repo.
+
 ### IA de cardápio (opcional)
 
 `POST /nutri/menu` gera o cardápio via `IMenuGenerator`. Sem chave, usa o
@@ -149,7 +165,10 @@ Trocam os _services_ mock do front por API real. Rotas com 🔒 exigem
 | `GET` | `/foods` · `/meals` | catálogo do cardápio (`lib/foods.ts` · `lib/meals.ts`) |
 | `GET` | `/articles` · `/articles/{id}` | conteúdo editorial (`lib/nutri-content.ts`) |
 | `GET` | `/recipes` · `/recipes/{id}` | catálogo de receitas (`RECIPES_CATALOG`, página `/receitas`) |
-| `POST` 🔒 | `/billing/checkout` | `billing.service.ts` |
+| `POST` 🔒 | `/billing/checkout` | `billing.service.ts` (mock) |
+| `GET` | `/billing/stripe/config` | chave pública do Stripe p/ o front |
+| `POST` 🔒 | `/billing/stripe/checkout` | cria a Checkout Session (Stripe) |
+| `POST` | `/billing/stripe/webhook` | webhook do Stripe (ativa o plano no pagamento) |
 | `DELETE` 🔒 | `/consultations/{id}` | cancelar (devolve crédito) |
 | `POST` | `/contact` · `/waitlist` · `/analytics/events` | contato / waitlist / analytics |
 | `GET`/`POST` 🔒 | `/nutri/water` · `/weight` · `/sleep` · `/steps` · `/measurements` · `/habits` · `/diary` | tracking diário |

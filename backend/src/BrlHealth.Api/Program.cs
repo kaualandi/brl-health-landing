@@ -4,6 +4,7 @@ using BrlHealth.Api.Endpoints;
 using BrlHealth.Api.Services;
 using BrlHealth.Api.Services.Email;
 using BrlHealth.Api.Services.Menu;
+using BrlHealth.Api.Services.Payments;
 using BrlHealth.Api.Validation;
 using FluentValidation;
 using Hangfire;
@@ -86,6 +87,16 @@ builder.Services.AddHangfire(cfg => cfg
 builder.Services.AddHangfireServer();
 builder.Services.AddScoped<IEmailQueue, HangfireEmailQueue>();
 
+// Pagamento (§7): Stripe quando há chave (Stripe:SecretKey via ambiente/secrets);
+// sem chave, gateway desabilitado (checkout responde 501). Webhook ativa a assinatura.
+var stripeOptions = builder.Configuration.GetSection("Stripe").Get<StripeOptions>() ?? new StripeOptions();
+builder.Services.AddSingleton(stripeOptions);
+builder.Services.AddSingleton<StripeWebhookProcessor>();
+if (stripeOptions.IsConfigured)
+    builder.Services.AddSingleton<IPaymentGateway, StripePaymentGateway>();
+else
+    builder.Services.AddSingleton<IPaymentGateway, DisabledPaymentGateway>();
+
 // IA de cardápio (§7): IMenuGenerator. Local (determinístico) por padrão;
 // OpenAI/ChatGPT quando OpenAI:ApiKey está definido (ambiente/secrets — nunca no código).
 var openAiOptions = builder.Configuration.GetSection("OpenAI").Get<OpenAiOptions>() ?? new OpenAiOptions();
@@ -138,7 +149,8 @@ app.MapPlans();            // GET /plans
 app.MapFoods();            // GET /foods · /meals (catálogo do cardápio)
 app.MapArticles();         // GET /articles · /articles/{id} (conteúdo editorial)
 app.MapRecipes();          // GET /recipes · /recipes/{id} (catálogo de receitas)
-app.MapBilling();          // POST /billing/checkout
+app.MapBilling();          // POST /billing/checkout (mock)
+app.MapStripe();           // /billing/stripe/config · checkout · webhook (pagamento real)
 app.MapEngagement();       // POST /contact · /waitlist · /analytics/events
 app.MapTracking();         // /nutri/water · weight · sleep · steps · measurements · habits · diary
 app.MapLgpd();             // GET /me/data-export · DELETE /me/account · POST/GET /me/consent (LGPD)
