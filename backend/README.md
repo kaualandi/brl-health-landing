@@ -58,12 +58,12 @@ definido, usa o **Resend** (`ResendEmailSender`, HTTP API); sem chave, cai no
 
 ```bash
 export Resend__ApiKey="re_..."
-export Resend__From="BRL Health <contato@seudominio.com>"   # opcional
+export Resend__From="BRL Health <nao-responda@email.kaualf.com>"   # opcional
 ```
 
-> Em modo teste o Resend só envia para o **e-mail dono da conta**. Para enviar a
-> qualquer destinatário, **verifique um domínio** em resend.com/domains e ajuste
-> `Resend:From` para um endereço desse domínio.
+> O remetente padrão usa o domínio verificado `email.kaualf.com`
+> (`nao-responda@email.kaualf.com`), então envia para **qualquer destinatário**.
+> Sobrescreva com `Resend:From` se quiser outro endereço do domínio.
 
 ### Pagamento (Stripe, opcional)
 
