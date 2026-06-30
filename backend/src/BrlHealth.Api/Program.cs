@@ -5,6 +5,7 @@ using BrlHealth.Api.Services;
 using BrlHealth.Api.Services.Email;
 using BrlHealth.Api.Validation;
 using FluentValidation;
+using Hangfire;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Serilog;
@@ -69,6 +70,16 @@ builder.Services.AddHealthChecks()
 // E-mail transacional: em dev loga no console (provedor real entra atrás do mesmo contrato).
 builder.Services.AddSingleton<IEmailSender, ConsoleEmailSender>();
 
+// Jobs em background (§7): Hangfire (storage em memória em dev; Postgres em prod).
+// O envio de e-mail (forgot/verify) é enfileirado e processado fora da requisição.
+builder.Services.AddHangfire(cfg => cfg
+    .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
+    .UseSimpleAssemblyNameTypeSerializer()
+    .UseRecommendedSerializerSettings()
+    .UseInMemoryStorage());
+builder.Services.AddHangfireServer();
+builder.Services.AddScoped<IEmailQueue, HangfireEmailQueue>();
+
 // CORS para o front Next.js (NEXT_PUBLIC_API_URL aponta para cá).
 builder.Services.AddCors(options =>
     options.AddDefaultPolicy(policy => policy
@@ -83,6 +94,10 @@ app.UseCors();
 app.UseRateLimiter();
 app.UseAuthentication();
 app.UseAuthorization();
+
+// Painel do Hangfire em dev (localhost-only por padrão) para inspecionar os jobs.
+if (app.Environment.IsDevelopment())
+    app.UseHangfireDashboard("/hangfire");
 
 // Health: liveness não roda checagens; readiness exige o banco respondendo.
 app.MapGet("/health", () => Results.Ok(new { status = "ok" }));

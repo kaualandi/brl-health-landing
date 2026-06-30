@@ -307,7 +307,10 @@
 - [x] 🚀 **LGPD:** `GET /me/data-export` (portabilidade — todos os dados do titular
   em JSON), `DELETE /me/account` (eliminação — apaga a conta e tudo em cascata) e
   `POST`/`GET /me/consent` (registro de consentimento). Tabela `consent_records`.
-- [ ] 🚀 **Jobs em background** (Hangfire/Quartz) para e-mails e geração de cardápio.
+- [~] 🚀 **Jobs em background** (Hangfire): envio de e-mail (forgot/verify) **enfileirado**
+  (`IEmailQueue`/`HangfireEmailQueue`), fora do caminho da requisição, com retry e painel
+  `/hangfire` (dev). Storage em memória em dev (Postgres em prod). _Falta o job de geração
+  de cardápio — entra junto com a IA de cardápio (usa `IMenuGenerator`)._
 - [ ] 🚀 **IA de cardápio:** geração por LLM atrás de `IMenuGenerator`
   (provider-agnostic, via HTTP), a partir do perfil + banco de alimentos (TACO/USDA).
 

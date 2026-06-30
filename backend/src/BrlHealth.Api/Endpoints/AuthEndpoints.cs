@@ -88,7 +88,7 @@ public static class AuthEndpoints
         // POST /auth/forgot — gera token de reset, envia por e-mail; resposta não revela cadastro
         auth.MapPost("/forgot", async (
             ForgotRequest body, UsersRepository users, EmailTokensRepository emailTokens,
-            IEmailSender email, IConfiguration config) =>
+            IEmailQueue emailQueue, IConfiguration config) =>
         {
             var user = await users.FindByEmailAsync(body.Email ?? "");
             if (user is not null)
@@ -98,7 +98,7 @@ public static class AuthEndpoints
 
                 var baseUrl = config["Cors:Origin"] ?? "http://localhost:3000";
                 var link = $"{baseUrl}/redefinir-senha?token={token}";
-                await email.SendAsync(user.Email, "Redefinição de senha — BRL Health",
+                emailQueue.Enqueue(user.Email, "Redefinição de senha — BRL Health",
                     $"Recebemos um pedido para redefinir sua senha. Use o link a seguir (expira em 1 hora): {link}");
             }
 
@@ -123,7 +123,7 @@ public static class AuthEndpoints
 
         // POST /auth/verify/resend — exige sessão; gera código de 6 dígitos e envia por e-mail
         auth.MapPost("/verify/resend", async (
-            HttpContext ctx, UsersRepository users, EmailTokensRepository emailTokens, IEmailSender email) =>
+            HttpContext ctx, UsersRepository users, EmailTokensRepository emailTokens, IEmailQueue emailQueue) =>
         {
             if (!ctx.TryGetUserId(out var userId))
                 return Unauthorized();
@@ -134,7 +134,7 @@ public static class AuthEndpoints
 
             var code = EmailTokens.GenerateVerificationCode();
             await emailTokens.IssueAsync(userId, "verify", EmailTokens.Hash(code), DateTime.UtcNow.AddMinutes(15));
-            await email.SendAsync(user.Email, "Seu código de verificação — BRL Health",
+            emailQueue.Enqueue(user.Email, "Seu código de verificação — BRL Health",
                 $"Seu código de verificação é {code} (expira em 15 minutos).");
 
             return Results.Ok(new { message = "Enviamos um novo código para o seu e-mail." });

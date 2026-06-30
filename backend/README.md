@@ -96,6 +96,10 @@ dotnet run --project src/BrlHealth.Api
   de ASP.NET Core, HttpClient e Npgsql. Sem coletor, usa o **console exporter**
   (spans no stdout); para exportar via OTLP, defina `Otel__Endpoint`
   (ex.: `http://localhost:4317`).
+- **Jobs em background** ([Hangfire](https://www.hangfire.io)): o envio de e-mail
+  (reset/verificação) é **enfileirado** (`IEmailQueue`) e processado por um worker,
+  com retry. Painel em `/hangfire` (dev). Storage em memória em dev — em produção,
+  trocar por `Hangfire.PostgreSql`.
 
 ## Endpoints de negócio (requisitos da AV2)
 
