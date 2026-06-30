@@ -22,6 +22,8 @@ CREATE TABLE IF NOT EXISTS nutri_profiles (
     diet         TEXT NOT NULL,
     restrictions TEXT[] NOT NULL DEFAULT '{}',
     meals_per_day INT NOT NULL DEFAULT 3,
+    water_glasses INT NOT NULL DEFAULT 8,
+    meals        JSONB NOT NULL DEFAULT '[]',
     wake_time    TEXT,
     train_time   TEXT,
     sleep_time   TEXT
