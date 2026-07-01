@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 
+import { CheckoutReturnNotice } from "@/components/checkout/checkout-return-notice";
 import { PlansBoard } from "@/components/plan/plans-board";
 
 export const metadata: Metadata = {
@@ -11,6 +12,7 @@ export const metadata: Metadata = {
 export default function PricingPage() {
   return (
     <section className="relative overflow-hidden bg-brl-dark pt-32 pb-24 md:pt-40 md:pb-28">
+      <CheckoutReturnNotice />
       <div
         aria-hidden
         className="pointer-events-none absolute inset-0 -z-10"
