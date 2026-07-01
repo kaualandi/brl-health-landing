@@ -2,13 +2,14 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import {
   ArrowLeftIcon,
   CheckCircle2Icon,
   CheckIcon,
   LockIcon,
   Loader2Icon,
+  ShieldCheckIcon,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 
@@ -19,6 +20,8 @@ import { useToast } from "@/components/ui/toast";
 import { usePlan } from "@/hooks/use-plan";
 import { getPlanById } from "@/services/plans.service";
 import {
+  createStripeCheckout,
+  getStripeConfig,
   processPayment,
   type CardPayload,
   type CheckoutResult,
@@ -68,6 +71,31 @@ export function Checkout({ planId }: { planId: string }) {
       router.replace("/precos");
     }
   }, [plan, router]);
+
+  // Stripe habilitado no backend? Se sim, usamos o checkout hospedado (redirect);
+  // senão, o form de cartão mock abaixo. Erro de rede cai no mock (fonte segura).
+  const { data: stripeConfig, isPending: configLoading } = useQuery({
+    queryKey: ["stripe-config"],
+    queryFn: getStripeConfig,
+    staleTime: 5 * 60_000,
+    retry: false,
+  });
+  const stripeEnabled = stripeConfig?.configured === true;
+
+  // Fluxo real: cria a sessão e redireciona pro ambiente seguro do Stripe.
+  const stripeMutation = useMutation<string, Error, void>({
+    mutationFn: () => createStripeCheckout(plan!.id),
+    onSuccess: (url) => {
+      window.location.assign(url);
+    },
+    onError: (error) => {
+      toast({
+        variant: "error",
+        title: "Não consegui iniciar o pagamento",
+        description: error.message,
+      });
+    },
+  });
 
   const mutation = useMutation<CheckoutResult, Error, CardPayload>({
     mutationFn: (card) => processPayment(plan!.id, card),
@@ -152,6 +180,7 @@ export function Checkout({ planId }: { planId: string }) {
   }
 
   const submitting = mutation.isPending;
+  const redirecting = stripeMutation.isPending;
 
   return (
     <div className="min-h-dvh bg-brl-dark">
@@ -215,6 +244,52 @@ export function Checkout({ planId }: { planId: string }) {
           <h2 className="font-display text-sm font-medium tracking-wide text-brl-purple uppercase">
             Pagamento
           </h2>
+
+          {configLoading ? (
+            <div className="mt-4 flex h-64 items-center justify-center rounded-2xl border border-white/5 bg-brl-card">
+              <Loader2Icon className="size-6 animate-spin text-brl-purple" />
+            </div>
+          ) : stripeEnabled ? (
+            /* Checkout hospedado do Stripe: sem coletar cartão aqui. */
+            <div className="mt-4 flex flex-col gap-5 rounded-2xl border border-white/5 bg-brl-card p-6 md:p-7">
+              <div className="flex items-start gap-3">
+                <span className="mt-0.5 flex size-9 shrink-0 items-center justify-center rounded-full bg-brl-purple/15 text-brl-purple">
+                  <ShieldCheckIcon className="size-5" />
+                </span>
+                <div>
+                  <p className="text-sm font-semibold text-foreground">
+                    Pagamento seguro pelo Stripe
+                  </p>
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    Você vai pro ambiente do Stripe pra concluir. Seu plano é
+                    liberado assim que o pagamento é confirmado.
+                  </p>
+                </div>
+              </div>
+              <Button
+                type="button"
+                size="lg"
+                disabled={redirecting}
+                onClick={() => stripeMutation.mutate()}
+                className="mt-1 h-12 w-full bg-brl-purple text-base text-white hover:bg-brl-purple/90"
+              >
+                {redirecting ? (
+                  <>
+                    <Loader2Icon className="animate-spin" />
+                    Redirecionando...
+                  </>
+                ) : (
+                  <>
+                    <LockIcon />
+                    Pagar {plan.priceLabel}/mês
+                  </>
+                )}
+              </Button>
+              <p className="text-center text-xs text-muted-foreground">
+                Use um cartão de teste do Stripe (ex.: 4242 4242 4242 4242).
+              </p>
+            </div>
+          ) : (
           <form
             onSubmit={handleSubmit}
             noValidate
@@ -308,6 +383,7 @@ export function Checkout({ planId }: { planId: string }) {
               É um checkout de demonstração — não use um cartão real.
             </p>
           </form>
+          )}
         </section>
       </main>
     </div>
