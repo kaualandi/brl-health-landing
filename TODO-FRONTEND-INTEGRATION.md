@@ -79,16 +79,28 @@ catálogo de dado estático que tenha endpoint.
   novas (não são mock→real). Backend pronto; falta UI no front.
 - **`POST /nutri/menu` (IA):** o front já calcula o cardápio igual localmente —
   ganho só com chave OpenAI no backend.
-- **Stripe Checkout real** (`/billing/stripe/{config,checkout,portal}`): **precisa o
-  usuário setar test keys** no backend; substitui o mock `/billing/checkout` (#57).
+- **Stripe Checkout real** (`/billing/stripe/{config,checkout,portal}`): **front
+  ligado** (PR #73) — o `/checkout` detecta `GET /billing/stripe/config` e, com
+  chave, redireciona pro checkout hospedado (senão mantém o mock `/billing/checkout`
+  #57). Falta só o **usuário setar as test keys** no backend pra exercer o
+  happy-path real (redirect + webhook via Stripe CLI).
+- **Export/consent LGPD** (`GET /me/data-export`, `POST/GET /me/consent`): features
+  novas (não são mock→real). Backend pronto; falta UI no front.
+- **`POST /nutri/menu` (IA):** o front já calcula o cardápio igual localmente —
+  ganho só com chave OpenAI no backend.
 - **Estado de usuário no servidor** (favorites/menu/shopping): exigiria endpoints novos.
 - **Conteúdo de UI no banco** (FAQ/legal/copy/tips): viraria um CMS — decisão de produto.
 
-### ⚠️ Validação pendente
-**Click-through no browser do app logado nunca rodou** (a extensão do Chrome não
-conectou nesta sessão). Tudo foi validado por `build` + **contratos/HTML via `curl`**.
-Recomendado testar manualmente (`localhost:3000`, demo `demo@brl.com`/`123456`) ou
-conectar a extensão. As páginas públicas de SEO foram conferidas no HTML renderizado.
+### ✅ Validação no browser (2026-07-01) — feita
+O click-through do app logado **rodou** (via chrome-devtools MCP, `localhost:3000`,
+demo `demo@brl.com`/`123456`), tudo batendo com a API real:
+- **Auth** (login demo), **hidratação de perfil** (dashboard/conta com dados do
+  servidor), **consultas** (JOIN → "Ana Prado"), **assinatura** (tier Free =
+  `/me/subscription`).
+- **Tracking write-through**: +500 ml de água persistiu no banco (`GET /nutri/water`
+  → `{"ml":500}`) e sobreviveu ao reload (hidratação servidor→UI). Console limpo.
+- **Stripe** (PR #73): com key `sk_test_` dummy a UI troca pro painel do Stripe e o
+  erro do backend cai no toast; happy-path real depende das test keys do usuário.
 
 ### Como rodar a stack de teste
 1. Postgres descartável: `docker run -d --name brl-pg -e POSTGRES_PASSWORD=devsecret -e POSTGRES_DB=brlhealth -p 5432:5432 postgres:16-alpine`
