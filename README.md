@@ -342,3 +342,11 @@ front se adapta sozinho — ver [Pagamentos (Stripe)](#pagamentos-stripe).
 Próximos passos estão em [`TODO.md`](./TODO.md); o histórico da integração
 front↔backend (o que foi ligado à API e o que ficou estático de propósito) está
 em [`TODO-FRONTEND-INTEGRATION.md`](./TODO-FRONTEND-INTEGRATION.md).
+
+## Integrantes
+- Lucas Abrahão Anes - 06009881
+- Kauã Landi Fernando - 06009262
+- Natan de Souza Sampaio - 06010668
+- Guilherme da Cunha Sequeira - 06002529
+- Murilo de Melo Mouteira - 06010561
+- Lucas Gomes Coco da Silva - 06011471
