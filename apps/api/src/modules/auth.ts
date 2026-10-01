@@ -26,7 +26,7 @@ function registerErrors(b: { name: string; email: string; password: string }) {
 export const authModule = new Elysia({ prefix: "/auth" })
   .use(rateLimit("auth", config.authRateLimit))
   .use(jwtPlugin)
-  .resolve({ as: "scoped" }, ({ jwt }) => ({
+  .resolve(({ jwt }) => ({
     async issue(user: { id: number; name: string; email: string }) {
       const refreshToken = Buffer.from(crypto.getRandomValues(new Uint8Array(32))).toString("base64url");
       await db.insert(schema.refreshTokens).values({

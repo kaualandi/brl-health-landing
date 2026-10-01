@@ -64,6 +64,16 @@ describe("POST /auth/register", () => {
 });
 
 describe("refresh e logout", () => {
+  it("guarda só o SHA-256 do refresh token", async () => {
+    const s = await signup();
+    const rows = await db
+      .select({ hash: schema.refreshTokens.tokenHash })
+      .from(schema.refreshTokens)
+      .where(eq(schema.refreshTokens.userId, Number(s.user.id)));
+    const expected = new Bun.CryptoHasher("sha256").update(s.refreshToken).digest("hex");
+    expect(rows.map((r) => r.hash)).toEqual([expected]);
+  });
+
   it("rotaciona o refresh e rejeita reuso", async () => {
     const s = await signup();
     const ok = await api("POST", "/auth/refresh", { refreshToken: s.refreshToken });
