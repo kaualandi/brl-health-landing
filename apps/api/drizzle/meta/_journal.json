@@ -8,6 +8,13 @@
       "when": 1790819964800,
       "tag": "0000_strange_wolverine",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1790823324018,
+      "tag": "0001_fix_jsonb_strings",
+      "breakpoints": true
     }
   ]
 }

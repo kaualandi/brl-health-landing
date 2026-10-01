@@ -6,7 +6,7 @@ import {
   date,
   index,
   integer,
-  jsonb,
+  customType,
   numeric,
   pgTable,
   type PgColumnBuilderBase,
@@ -14,6 +14,15 @@ import {
   timestamp,
   unique,
 } from "drizzle-orm/pg-core";
+
+// jsonb do pg-core faz JSON.stringify e o driver bun-sql serializa de novo: grava string em vez de objeto
+const jsonb = customType<{ data: unknown; driverData: unknown }>({
+  dataType: () => "jsonb",
+  toDriver: (value) => value,
+  fromDriver: (value) => (typeof value === "string" ? JSON.parse(value) : value),
+});
+const emptyArray = sql`'[]'::jsonb`;
+const emptyObject = sql`'{}'::jsonb`;
 
 const id = () => bigserial("id", { mode: "number" }).primaryKey();
 const userId = () =>
@@ -49,7 +58,7 @@ export const nutriProfiles = pgTable("nutri_profiles", {
   restrictions: textArray("restrictions"),
   mealsPerDay: integer("meals_per_day").notNull().default(3),
   waterGlasses: integer("water_glasses").notNull().default(8),
-  meals: jsonb("meals").$type<{ name: string; time: string }[]>().notNull().default([]),
+  meals: jsonb("meals").$type<{ name: string; time: string }[]>().notNull().default(emptyArray),
   wakeTime: text("wake_time"),
   trainTime: text("train_time"),
   sleepTime: text("sleep_time"),
@@ -150,7 +159,7 @@ export const articles = pgTable("articles", {
   readTime: text("read_time").notNull(),
   author: text("author").notNull(),
   goals: textArray("goals"),
-  body: jsonb("body").$type<ArticleSection[]>().notNull().default([]),
+  body: jsonb("body").$type<ArticleSection[]>().notNull().default(emptyArray),
 });
 
 // Tracking diário: um registro por (user_id, date), upsert na escrita.
@@ -176,10 +185,10 @@ export const measurements = daily("measurements", {
   thigh: num("thigh", 5, 1),
 });
 export const habitLogs = daily("habit_logs", {
-  done: jsonb("done").$type<Record<string, boolean>>().notNull().default({}),
+  done: jsonb("done").$type<Record<string, boolean>>().notNull().default(emptyObject),
 });
 export const mealLogs = daily("meal_logs", {
-  done: jsonb("done").$type<Record<string, boolean>>().notNull().default({}),
+  done: jsonb("done").$type<Record<string, boolean>>().notNull().default(emptyObject),
 });
 
 export const contactMessages = pgTable("contact_messages", {
