@@ -427,6 +427,15 @@ export function OnboardingWizard() {
     });
   }
 
+  function clearError(key: string) {
+    setErrors((prev) => {
+      if (!prev[key]) return prev;
+      const next = { ...prev };
+      delete next[key];
+      return next;
+    });
+  }
+
   function toggleRestriction(value: Restriction) {
     setData((prev) => {
       if (value === "none") return { ...prev, restrictions: ["none"] };
@@ -750,7 +759,10 @@ export function OnboardingWizard() {
                   autoComplete="email"
                   placeholder="Digite o e-mail de novo"
                   value={confirmEmail}
-                  onChange={(event) => setConfirmEmail(event.target.value)}
+                  onChange={(event) => {
+                    setConfirmEmail(event.target.value);
+                    clearError("confirmEmail");
+                  }}
                   aria-invalid={Boolean(errors.confirmEmail)}
                   className="mt-2 h-12 text-base"
                 />
@@ -793,7 +805,10 @@ export function OnboardingWizard() {
                   autoComplete="new-password"
                   placeholder="Digite a senha de novo"
                   value={confirmPassword}
-                  onChange={(event) => setConfirmPassword(event.target.value)}
+                  onChange={(event) => {
+                    setConfirmPassword(event.target.value);
+                    clearError("confirmPassword");
+                  }}
                   aria-invalid={Boolean(errors.confirmPassword)}
                   className="mt-2 h-12 text-base"
                 />
