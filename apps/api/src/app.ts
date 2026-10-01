@@ -5,6 +5,7 @@ import { config } from "./config";
 import { db } from "./db";
 import { errors } from "./lib/errors";
 import { catalogModule } from "./modules/catalog";
+import { accountModule } from "./modules/account";
 import { authModule } from "./modules/auth";
 import { engagementModule } from "./modules/engagement";
 import { billingModule } from "./modules/billing";
@@ -20,6 +21,7 @@ export const app = new Elysia()
   .use(plansModule)
   .use(billingModule)
   .use(profileModule)
+  .use(accountModule)
   .get("/health", async () => {
     await db.execute(sql`select 1`);
     return { status: "ok" };
