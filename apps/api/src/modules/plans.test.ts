@@ -12,8 +12,9 @@ const base = { current: free, hasPendingCharge: false, stripeEnabled: false };
 const checkout = (token: string, planId: string, number = OK) =>
   api("POST", "/billing/checkout", { planId, card: { holder: "A", number, expiry: "12/30", cvv: "123" } }, token);
 
+const originalStripeKey = config.stripeSecretKey;
 afterEach(() => {
-  config.stripeSecretKey = undefined;
+  config.stripeSecretKey = originalStripeKey;
 });
 
 describe("regras puras", () => {

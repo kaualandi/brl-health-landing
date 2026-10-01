@@ -20,7 +20,7 @@ export function planChangeErrors({ target, current, cardNumber, hasPendingCharge
   const errors: string[] = [];
   const upgrade = target.rank > current.rank;
   if (upgrade) {
-    const n = cardNumber ?? "";
+    const n = digits(cardNumber ?? "");
     if (!/^\d{13,}$/.test(n) || cardDeclined(n)) errors.push(DECLINED);
   }
   if (hasPendingCharge) errors.push("Há uma cobrança pendente. Regularize antes de mudar de plano.");
