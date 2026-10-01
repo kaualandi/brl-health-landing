@@ -3,6 +3,7 @@ import { sql } from "drizzle-orm";
 import { Elysia } from "elysia";
 import { config } from "./config";
 import { db } from "./db";
+import "./lib/formats";
 import { errors } from "./lib/errors";
 import { consultationsModule } from "./modules/consultations";
 import { catalogModule } from "./modules/catalog";
@@ -13,6 +14,7 @@ import { billingModule } from "./modules/billing";
 import { plansModule } from "./modules/plans";
 import { stripeModule } from "./modules/stripe";
 import { profileModule } from "./modules/profile";
+import { trackingModule } from "./modules/tracking";
 
 export const app = new Elysia()
   .use(errors)
@@ -26,6 +28,7 @@ export const app = new Elysia()
   .use(stripeModule)
   .use(profileModule)
   .use(accountModule)
+  .use(trackingModule)
   .get("/health", async () => {
     await db.execute(sql`select 1`);
     return { status: "ok" };
