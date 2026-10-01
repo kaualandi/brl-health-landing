@@ -10,7 +10,7 @@ const messageOf = (e: { message: string; schema?: unknown; summary?: string }) =
 export const errors = new Elysia({ name: "errors" }).onError({ as: "global" }, ({ code, error, set }) => {
   if (code === "VALIDATION") {
     set.status = 400;
-    return { errors: error.all.map(messageOf) };
+    return { errors: [...new Set(error.all.map(messageOf))] };
   }
   if (code === "NOT_FOUND") {
     set.status = 404;

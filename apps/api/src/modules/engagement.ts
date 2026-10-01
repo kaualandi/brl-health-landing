@@ -1,9 +1,12 @@
 import { Elysia, t } from "elysia";
 import { db, schema } from "../db";
+import { rateLimit } from "../lib/rate-limit";
 
 const email = t.String({ format: "email", error: "E-mail inválido" });
 
+// rotas públicas: limite por IP contra spam
 export const engagementModule = new Elysia()
+  .use(rateLimit("engagement", 30))
   .post(
     "/contact",
     async ({ body, status }) => {
