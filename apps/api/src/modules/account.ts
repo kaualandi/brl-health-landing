@@ -20,7 +20,7 @@ const saveToken = (userId: number, purpose: "reset" | "verify", token: string, t
   });
 
 /** Consome (uma vez só) um token válido; devolve o userId ou undefined. */
-async function consume(purpose: "reset" | "verify", token: string, userId?: number) {
+async function consume(purpose: "reset" | "verify", token: string, userId: number | null) {
   const now = new Date();
   const [row] = await db
     .update(schema.emailTokens)
@@ -31,7 +31,7 @@ async function consume(purpose: "reset" | "verify", token: string, userId?: numb
         eq(schema.emailTokens.tokenHash, sha256(token)),
         isNull(schema.emailTokens.consumedAt),
         gt(schema.emailTokens.expiresAt, now),
-        userId ? eq(schema.emailTokens.userId, userId) : undefined,
+        userId === null ? undefined : eq(schema.emailTokens.userId, userId),
       ),
     )
     .returning({ userId: schema.emailTokens.userId });
@@ -63,7 +63,7 @@ export const accountModule = new Elysia()
     "/auth/reset",
     async ({ body, status }) => {
       if (body.password.length < 6) return status(400, { errors: ["A senha deve ter ao menos 6 caracteres."] });
-      const userId = await consume("reset", body.token);
+      const userId = await consume("reset", body.token, null);
       if (!userId) return status(400, BAD_LINK);
       const passwordHash = await Bun.password.hash(body.password, { algorithm: "bcrypt" });
       await db.transaction(async (tx) => {
@@ -72,6 +72,16 @@ export const accountModule = new Elysia()
           .update(schema.refreshTokens)
           .set({ revokedAt: new Date() })
           .where(and(eq(schema.refreshTokens.userId, userId), isNull(schema.refreshTokens.revokedAt)));
+        await tx
+          .update(schema.emailTokens)
+          .set({ consumedAt: new Date() })
+          .where(
+            and(
+              eq(schema.emailTokens.userId, userId),
+              eq(schema.emailTokens.purpose, "reset"),
+              isNull(schema.emailTokens.consumedAt),
+            ),
+          );
       });
       return { message: "Senha redefinida" };
     },
