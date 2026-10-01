@@ -9,6 +9,7 @@ import { useToast } from "@/components/ui/toast";
 import { usePlan } from "@/hooks/use-plan";
 import { creditsForTier } from "@/lib/consultations-store";
 import { changePlan, getPlanById } from "@/services/plans.service";
+import { StripePortalButton } from "./stripe-portal-button";
 import { cn } from "@/lib/utils";
 import type { PlanId } from "@/types";
 
@@ -62,6 +63,7 @@ export function PlanManager() {
 
   return (
     <div className="flex flex-col gap-3">
+      <StripePortalButton />
       {ORDER.map((id) => {
         const plan = getPlanById(id);
         if (!plan) return null;
