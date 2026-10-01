@@ -14,7 +14,11 @@ produtos sob a mesma marca:
 > front consome. O `localStorage` do front funciona só como **cache**
 > (write-through pra API). Conteúdo de UI sem tabela (FAQ, textos legais, copy de
 > marketing) segue estático de propósito. Documentação de produto em
-> [`CLAUDE.md`](./CLAUDE.md); backlog da API em [`docs/tickets/`](./docs/tickets).
+> [`CLAUDE.md`](./CLAUDE.md); backlog da API nas
+> [issues do GitHub](https://github.com/kaualandi/brl-health-landing/issues).
+>
+> ⚠️ **Em construção:** a API nova está sendo reimplementada endpoint a endpoint;
+> até os tickets fecharem, os fluxos logados do front podem falhar.
 
 ---
 
@@ -98,7 +102,7 @@ Da API (`cd apps/api`): `db:generate` (gera migração a partir do `schema.ts`),
 | `NEXT_PUBLIC_API_URL`  | `http://localhost:3333`    | Base URL da API.                                    |
 
 **API** — [`apps/api/.env.example`](./apps/api/.env.example): `DATABASE_URL`,
-`JWT_SECRET` (obrigatórias), `PORT`, `CORS_ORIGIN`, `APP_URL`, `APP_TZ`
+`JWT_SECRET` (obrigatórias), `PORT`, `CORS_ORIGIN`, `TRUST_PROXY`, `APP_TZ`
 (default `America/Sao_Paulo` — define o "hoje" do tracking) e as opcionais
 `STRIPE_*`, `RESEND_API_KEY`, `EMAIL_FROM`. Nenhuma credencial fica no código.
 
@@ -155,7 +159,7 @@ turbo.json
   `NEXT_PUBLIC_SITE_URL` e `NEXT_PUBLIC_API_URL` (embutidas no build).
 - **API + banco (VPS/qualquer host Docker):** `docker compose up -d --build` com
   `.env` de produção (`JWT_SECRET` forte, `POSTGRES_PASSWORD`, `CORS_ORIGIN` = URL
-  pública do front, chaves Stripe/Resend se usar), atrás de um proxy com TLS. O
+  pública do front, `TRUST_PROXY=true` atrás do proxy, chaves Stripe/Resend se usar), atrás de um proxy com TLS. O
   webhook do Stripe aponta pra `https://<api>/billing/stripe/webhook`.
 
 > Só faça deploy de código **revisado e mergeado** no `main`.

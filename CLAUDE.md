@@ -271,4 +271,4 @@ recuperação de senha e verificação de e-mail, tema claro/escuro, página de
 receitas, favoritar conteúdos, README + variáveis de ambiente, testes, deploy/CI.
 
 **🗄️ Backend:** API **Elysia + Drizzle + PostgreSQL** em `apps/api`, reconstruída
-a partir do que o front consome (ver regras no topo e `docs/tickets/`).
+a partir do que o front consome (ver regras no topo e as issues do GitHub).

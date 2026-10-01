@@ -1,4 +1,5 @@
 import { Elysia } from "elysia";
+import { config } from "../config";
 
 // ponytail: janela fixa em memória por processo; trocar por Redis se rodar mais de uma instância.
 export const rateLimit = (name: string, max: number, windowMs = 60_000) => {
@@ -6,10 +7,11 @@ export const rateLimit = (name: string, max: number, windowMs = 60_000) => {
   return new Elysia({ name: `rate-limit:${name}`, seed: max }).onBeforeHandle(
     { as: "scoped" },
     ({ request, server, set, status }) => {
-      const ip =
-        request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ??
-        server?.requestIP(request)?.address ??
-        "unknown";
+      // x-forwarded-for só é confiável atrás de um proxy nosso (TRUST_PROXY=true).
+      const forwarded = config.trustProxy
+        ? request.headers.get("x-forwarded-for")?.split(",")[0]?.trim()
+        : undefined;
+      const ip = forwarded ?? server?.requestIP(request)?.address ?? "unknown";
       const now = Date.now();
       const hit = hits.get(ip);
       if (!hit || hit.resetAt <= now) {

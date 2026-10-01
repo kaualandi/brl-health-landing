@@ -12,7 +12,7 @@ export const config = {
   databaseUrl: required("DATABASE_URL"),
   jwtSecret,
   corsOrigin: process.env.CORS_ORIGIN ?? "http://localhost:3000",
-  appUrl: process.env.APP_URL ?? process.env.CORS_ORIGIN ?? "http://localhost:3000",
   timeZone: process.env.APP_TZ ?? "America/Sao_Paulo",
+  trustProxy: process.env.TRUST_PROXY === "true",
   authRateLimit: Number(process.env.AUTH_RATE_LIMIT ?? 10),
 };
