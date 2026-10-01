@@ -14,5 +14,6 @@ export const config = {
   corsOrigin: process.env.CORS_ORIGIN ?? "http://localhost:3000",
   timeZone: process.env.APP_TZ ?? "America/Sao_Paulo",
   trustProxy: process.env.TRUST_PROXY === "true",
+  stripeSecretKey: process.env.STRIPE_SECRET_KEY || undefined,
   authRateLimit: Number(process.env.AUTH_RATE_LIMIT ?? 10),
 };
