@@ -38,6 +38,27 @@ async function consume(purpose: "reset" | "verify", token: string, userId: numbe
   return row?.userId;
 }
 
+/** Emite um código de verificação novo (invalida os anteriores) e manda por e-mail. */
+export async function sendVerificationCode(user: { id: number; email: string }) {
+  const code = String(crypto.getRandomValues(new Uint32Array(1))[0]! % 1_000_000).padStart(6, "0");
+  await db
+    .update(schema.emailTokens)
+    .set({ consumedAt: new Date() })
+    .where(
+      and(
+        eq(schema.emailTokens.userId, user.id),
+        eq(schema.emailTokens.purpose, "verify"),
+        isNull(schema.emailTokens.consumedAt),
+      ),
+    );
+  await saveToken(user.id, "verify", code, VERIFY_TTL_MS);
+  sendEmail({
+    to: user.email,
+    subject: "Código de verificação - BRL Health",
+    text: `Seu código de verificação: ${code}\nEle vale por 15 minutos.`,
+  });
+}
+
 export const accountModule = new Elysia()
   .use(rateLimit("account", config.authRateLimit))
   .use(auth)
@@ -91,25 +112,7 @@ export const accountModule = new Elysia()
     "/auth/verify/resend",
     async ({ userId }) => {
       const [user] = await db.select().from(schema.users).where(eq(schema.users.id, userId));
-      if (user) {
-        const code = String(crypto.getRandomValues(new Uint32Array(1))[0]! % 1_000_000).padStart(6, "0");
-        await db
-          .update(schema.emailTokens)
-          .set({ consumedAt: new Date() })
-          .where(
-            and(
-              eq(schema.emailTokens.userId, userId),
-              eq(schema.emailTokens.purpose, "verify"),
-              isNull(schema.emailTokens.consumedAt),
-            ),
-          );
-        await saveToken(userId, "verify", code, VERIFY_TTL_MS);
-        sendEmail({
-          to: user.email,
-          subject: "Código de verificação - BRL Health",
-          text: `Seu código de verificação: ${code}\nEle vale por 15 minutos.`,
-        });
-      }
+      if (user) await sendVerificationCode(user);
       return { message: "Enviamos um novo código para o seu e-mail." };
     },
     { auth: true },

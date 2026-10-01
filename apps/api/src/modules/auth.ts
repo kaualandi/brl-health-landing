@@ -3,6 +3,7 @@ import { Elysia, t } from "elysia";
 import { config } from "../config";
 import { db, schema } from "../db";
 import { jwtPlugin } from "../lib/auth";
+import { sendVerificationCode } from "./account";
 import { rateLimit } from "../lib/rate-limit";
 
 const REFRESH_TTL_MS = 30 * 24 * 60 * 60 * 1000;
@@ -68,6 +69,8 @@ export const authModule = new Elysia({ prefix: "/auth" })
         return created;
       });
       if (!user) return status(400, { errors: ["E-mail já cadastrado."] });
+      // o front leva direto pra "confirme seu e-mail": o código já sai no cadastro
+      await sendVerificationCode(user);
       return status(201, await issue(user));
     },
     { body: registration },

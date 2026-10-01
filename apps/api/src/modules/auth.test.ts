@@ -4,6 +4,7 @@ import { Elysia } from "elysia";
 import { db, schema } from "../db";
 import { auth } from "../lib/auth";
 import { api } from "../test/http";
+import { sentEmails } from "../lib/email";
 import { signup } from "../test/users";
 
 const EXPIRED = "Sessão expirada. Faça login novamente.";
@@ -117,5 +118,16 @@ describe("macro auth", () => {
     const res = await get(`Bearer ${s.token}`);
     expect(res.status).toBe(200);
     expect(await res.text()).toBe(s.user.id);
+  });
+});
+
+describe("verificação no cadastro", () => {
+  it("o cadastro já envia o código e ele verifica o e-mail", async () => {
+    const s = await signup();
+    const mail = sentEmails.findLast((m) => m.to === s.email);
+    const code = mail?.text.match(/\b\d{6}\b/)?.[0];
+    expect(code).toBeDefined();
+    const res = await api("POST", "/auth/verify", { code }, s.token);
+    expect(res.status).toBe(200);
   });
 });
