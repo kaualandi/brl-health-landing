@@ -12,8 +12,8 @@ describe("today", () => {
 });
 
 describe("rateLimit", () => {
-  it("bloqueia com 429 mesmo trocando x-forwarded-for (sem TRUST_PROXY)", async () => {
-    const app = new Elysia().use(rateLimit("test", 2)).get("/", () => "ok");
+  it("bloqueia com 429 mesmo trocando x-forwarded-for (trustProxy desligado)", async () => {
+    const app = new Elysia().use(rateLimit("test", 2, 60_000, false)).get("/", () => "ok");
     const hit = (ip: string) =>
       app.handle(new Request("http://localhost/", { headers: { "x-forwarded-for": ip } }));
     expect((await hit("1.1.1.1")).status).toBe(200);
