@@ -42,6 +42,14 @@ describe("/nutri/profile", () => {
     expect(get.body).toEqual(profile);
   });
 
+  test("horário opcional vazio vira null", async () => {
+    const { token } = await signup();
+    const res = await api("PUT", "/nutri/profile", { ...profile, wakeTime: "", sleepTime: "" }, token);
+    expect(res.status).toBe(200);
+    expect(res.body.wakeTime).toBeNull();
+    expect(res.body.sleepTime).toBeNull();
+  });
+
   test("upsert: segundo PUT substitui", async () => {
     const { token } = await signup();
     await api("PUT", "/nutri/profile", profile, token);

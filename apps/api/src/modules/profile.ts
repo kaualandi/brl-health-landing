@@ -6,7 +6,8 @@ import { auth } from "../lib/auth";
 const oneOf = <T extends string>(values: readonly T[], error: string) =>
   t.Union(values.map((v) => t.Literal(v)), { error });
 const time = (label: string) => t.String({ pattern: "^([01]\\d|2[0-3]):[0-5]\\d$", error: `${label} inválido (use HH:MM).` });
-const optTime = (label: string) => t.Union([time(label), t.Null()], { error: `${label} inválido (use HH:MM).` });
+// "" (input de horário limpo no front) é aceito e salvo como null
+const optTime = (label: string) => t.Union([time(label), t.Literal(""), t.Null()], { error: `${label} inválido (use HH:MM).` });
 const optNum = (min: number, max: number, error: string) =>
   t.Union([t.Number({ minimum: min, maximum: max }), t.Null()], { error });
 
@@ -48,8 +49,15 @@ export const profileModule = new Elysia({ prefix: "/nutri/profile" })
   .put(
     "/",
     async ({ userId, body }) => {
-      const { goalWeightKg, ...rest } = body;
-      const values = { ...rest, targetKg: goalWeightKg };
+      const { goalWeightKg, wakeTime, trainTime, sleepTime, ...rest } = body;
+      const blankToNull = (v: string | null) => v || null;
+      const values = {
+        ...rest,
+        targetKg: goalWeightKg,
+        wakeTime: blankToNull(wakeTime),
+        trainTime: blankToNull(trainTime),
+        sleepTime: blankToNull(sleepTime),
+      };
       const [row] = await db
         .insert(schema.nutriProfiles)
         .values({ userId, ...values })
