@@ -65,6 +65,31 @@ describe("stripe", () => {
     expect((await api("GET", "/me/subscription", undefined, token)).body.planId).toBe("free");
   });
 
+  it("webhook ignora plano desconhecido e usuário apagado com 200", async () => {
+    config.stripeSecretKey = "sk_test_x";
+    config.stripeWebhookSecret = SECRET;
+    const { token, user } = await signup();
+    const session = (userId: string, planId: string) =>
+      event("checkout.session.completed", { id: "cs_2", object: "checkout.session", customer: "cus_2", metadata: { userId, planId } });
+    expect((await hook(session(user.id, "nope"))).status).toBe(200);
+    expect((await hook(session(user.id, "free"))).status).toBe(200);
+    expect((await hook(session("999999999", "pro"))).status).toBe(200);
+    expect((await api("GET", "/me/subscription", undefined, token)).body.planId).toBe("free");
+  });
+
+  it("checkout recusa quem já tem assinatura paga, antes de chamar o Stripe", async () => {
+    config.stripeSecretKey = "sk_test_x";
+    config.stripeWebhookSecret = SECRET;
+    const { token, user } = await signup();
+    const done = event("checkout.session.completed", {
+      id: "cs_3", object: "checkout.session", customer: "cus_3", metadata: { userId: user.id, planId: "pro" },
+    });
+    await hook(done);
+    const res = await api("POST", "/billing/stripe/checkout", { planId: "family" }, token);
+    expect(res.status).toBe(400);
+    expect(res.body.errors[0]).toContain("já tem uma assinatura paga");
+  });
+
   it("webhook sem secret responde 501", async () => {
     config.stripeSecretKey = "sk_test_x";
     config.stripeWebhookSecret = undefined;

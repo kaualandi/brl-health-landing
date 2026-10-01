@@ -33,7 +33,7 @@ export const plansModule = new Elysia()
     async ({ userId, body, status }) => {
       const [target] = await db.select().from(plans).where(eq(plans.id, body.target));
       const [cur] = await db
-        .select({ id: plans.id, rank: plans.rank, pending: subscriptions.hasPendingCharge })
+        .select({ id: plans.id, rank: plans.rank, pending: subscriptions.hasPendingCharge, customer: subscriptions.stripeCustomerId })
         .from(subscriptions)
         .innerJoin(plans, eq(plans.id, subscriptions.planId))
         .where(eq(subscriptions.userId, userId));
@@ -43,6 +43,7 @@ export const plansModule = new Elysia()
         cardNumber: body.cardNumber,
         hasPendingCharge: cur?.pending ?? false,
         stripeEnabled: !!config.stripeSecretKey,
+        stripeManaged: !!config.stripeSecretKey && !!cur?.customer && cur.rank > 0,
       });
       if (errors.length) return status(400, { errors });
       await db

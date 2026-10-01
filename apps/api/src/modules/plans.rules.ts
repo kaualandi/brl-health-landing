@@ -1,6 +1,8 @@
 export type PlanInfo = { id: string; rank: number };
 
 export const DECLINED = "Pagamento recusado pelo emissor. Tente outro cartão.";
+export const STRIPE_MANAGED =
+  "Sua assinatura é gerenciada pelo Stripe. Use o portal de pagamento para alterar ou cancelar.";
 export const digits = (value: string) => value.replace(/\D/g, "");
 
 /** Cartão aceito no mock: ≥13 dígitos e não terminado em 0000. */
@@ -12,11 +14,13 @@ type Change = {
   cardNumber?: string;
   hasPendingCharge: boolean;
   stripeEnabled: boolean;
+  stripeManaged?: boolean;
 };
 
-export function planChangeErrors({ target, current, cardNumber, hasPendingCharge, stripeEnabled }: Change) {
+export function planChangeErrors({ target, current, cardNumber, hasPendingCharge, stripeEnabled, stripeManaged }: Change) {
   if (!target) return ["Plano-alvo inexistente."];
   if (target.id === current.id) return ["Você já está neste plano."];
+  if (stripeManaged && target.rank < current.rank) return [STRIPE_MANAGED];
   const errors: string[] = [];
   const upgrade = target.rank > current.rank;
   if (upgrade) {
