@@ -15,6 +15,8 @@ export const config = {
   timeZone: process.env.APP_TZ ?? "America/Sao_Paulo",
   trustProxy: process.env.TRUST_PROXY === "true",
   stripeSecretKey: process.env.STRIPE_SECRET_KEY || undefined,
+  stripePublishableKey: process.env.STRIPE_PUBLISHABLE_KEY || undefined,
+  stripeWebhookSecret: process.env.STRIPE_WEBHOOK_SECRET || undefined,
   resendApiKey: process.env.RESEND_API_KEY,
   emailFrom: process.env.EMAIL_FROM ?? "BRL Health <nao-responda@brlhealth.com.br>",
   authRateLimit: Number(process.env.AUTH_RATE_LIMIT ?? 10),

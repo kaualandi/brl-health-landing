@@ -1,8 +1,10 @@
 import { afterEach, describe, expect, it } from "bun:test";
+import { eq } from "drizzle-orm";
 import { config } from "../config";
+import { db, schema } from "../db";
 import { api } from "../test/http";
 import { signup } from "../test/users";
-import { checkoutErrors, planChangeErrors } from "./plans.rules";
+import { STRIPE_MANAGED, checkoutErrors, planChangeErrors } from "./plans.rules";
 
 const OK = "4111111111111111";
 const DECLINED = "Pagamento recusado pelo emissor. Tente outro cartão.";
@@ -26,6 +28,7 @@ describe("regras puras", () => {
     expect(planChangeErrors({ ...base, target: pro, cardNumber: "1230000" })).toEqual([DECLINED]);
     expect(planChangeErrors({ ...base, current: pro, target: free })).toEqual([]);
     expect(planChangeErrors({ ...base, target: pro, cardNumber: OK, hasPendingCharge: true })).toHaveLength(1);
+    expect(planChangeErrors({ ...base, current: pro, target: free, stripeManaged: true })).toEqual([STRIPE_MANAGED]);
     expect(planChangeErrors({ ...base, target: pro, cardNumber: OK, stripeEnabled: true })).toEqual([
       "Para fazer upgrade, use o checkout de pagamento.",
     ]);
@@ -79,6 +82,17 @@ describe("planos e assinatura", () => {
     config.stripeSecretKey = "sk_test_x";
     const res = await api("PUT", "/me/plan", { target: "pro", cardNumber: OK }, token);
     expect(res.body.errors).toEqual(["Para fazer upgrade, use o checkout de pagamento."]);
+  });
+});
+
+describe("PUT /me/plan com assinatura Stripe", () => {
+  it("recusa downgrade quando o Stripe gerencia a cobrança", async () => {
+    const { token, user } = await signup();
+    await api("PUT", "/me/plan", { target: "pro", cardNumber: OK }, token);
+    await db.update(schema.subscriptions).set({ stripeCustomerId: "cus_x" }).where(eq(schema.subscriptions.userId, Number(user.id)));
+    config.stripeSecretKey = "sk_test_x";
+    const res = await api("PUT", "/me/plan", { target: "free" }, token);
+    expect(res.body.errors).toEqual([STRIPE_MANAGED]);
   });
 });
 

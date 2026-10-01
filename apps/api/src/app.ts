@@ -10,6 +10,7 @@ import { authModule } from "./modules/auth";
 import { engagementModule } from "./modules/engagement";
 import { billingModule } from "./modules/billing";
 import { plansModule } from "./modules/plans";
+import { stripeModule } from "./modules/stripe";
 import { profileModule } from "./modules/profile";
 
 export const app = new Elysia()
@@ -20,6 +21,7 @@ export const app = new Elysia()
   .use(engagementModule)
   .use(plansModule)
   .use(billingModule)
+  .use(stripeModule)
   .use(profileModule)
   .use(accountModule)
   .get("/health", async () => {
