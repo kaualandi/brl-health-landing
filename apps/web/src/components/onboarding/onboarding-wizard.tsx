@@ -339,6 +339,9 @@ export function OnboardingWizard() {
   const [genMsg, setGenMsg] = useState(0);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
+  // Confirmações ficam só na tela (não vão pro rascunho salvo).
+  const [confirmEmail, setConfirmEmail] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   // Indicador discreto de "rascunho salvo" (já começa visível ao retomar).
   const [draftSaved, setDraftSaved] = useState(Boolean(initialDraft));
 
@@ -424,6 +427,15 @@ export function OnboardingWizard() {
     });
   }
 
+  function clearError(key: string) {
+    setErrors((prev) => {
+      if (!prev[key]) return prev;
+      const next = { ...prev };
+      delete next[key];
+      return next;
+    });
+  }
+
   function toggleRestriction(value: Restriction) {
     setData((prev) => {
       if (value === "none") return { ...prev, restrictions: ["none"] };
@@ -496,6 +508,10 @@ export function OnboardingWizard() {
           }
         }
       }
+      if (confirmEmail.trim().toLowerCase() !== data.email.trim().toLowerCase())
+        next.confirmEmail = "Os e-mails não conferem";
+      if (confirmPassword !== data.password)
+        next.confirmPassword = "As senhas não conferem";
     }
 
     if (current.id === "body") {
@@ -736,6 +752,23 @@ export function OnboardingWizard() {
                 <FieldError>{errors.email}</FieldError>
               </div>
               <div>
+                <Label htmlFor="confirmEmail">Confirmar e-mail</Label>
+                <Input
+                  id="confirmEmail"
+                  type="email"
+                  autoComplete="email"
+                  placeholder="Digite o e-mail de novo"
+                  value={confirmEmail}
+                  onChange={(event) => {
+                    setConfirmEmail(event.target.value);
+                    clearError("confirmEmail");
+                  }}
+                  aria-invalid={Boolean(errors.confirmEmail)}
+                  className="mt-2 h-12 text-base"
+                />
+                <FieldError>{errors.confirmEmail}</FieldError>
+              </div>
+              <div>
                 <Label htmlFor="password">Senha</Label>
                 <div className="relative mt-2">
                   <Input
@@ -763,6 +796,23 @@ export function OnboardingWizard() {
                 </div>
                 <PasswordStrength value={data.password} />
                 <FieldError>{errors.password}</FieldError>
+              </div>
+              <div>
+                <Label htmlFor="confirmPassword">Confirmar senha</Label>
+                <Input
+                  id="confirmPassword"
+                  type={showPassword ? "text" : "password"}
+                  autoComplete="new-password"
+                  placeholder="Digite a senha de novo"
+                  value={confirmPassword}
+                  onChange={(event) => {
+                    setConfirmPassword(event.target.value);
+                    clearError("confirmPassword");
+                  }}
+                  aria-invalid={Boolean(errors.confirmPassword)}
+                  className="mt-2 h-12 text-base"
+                />
+                <FieldError>{errors.confirmPassword}</FieldError>
               </div>
             </div>
           ) : null}
