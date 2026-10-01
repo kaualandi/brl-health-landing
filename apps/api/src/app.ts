@@ -4,6 +4,7 @@ import { Elysia } from "elysia";
 import { config } from "./config";
 import { db } from "./db";
 import { errors } from "./lib/errors";
+import { consultationsModule } from "./modules/consultations";
 import { catalogModule } from "./modules/catalog";
 import { accountModule } from "./modules/account";
 import { authModule } from "./modules/auth";
@@ -20,6 +21,7 @@ export const app = new Elysia()
   .use(authModule)
   .use(engagementModule)
   .use(plansModule)
+  .use(consultationsModule)
   .use(billingModule)
   .use(stripeModule)
   .use(profileModule)
