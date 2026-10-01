@@ -117,4 +117,27 @@ describe("rotas", () => {
     expect(res.status).toBe(404);
     expect(res.body).toEqual({ error: "Consulta não encontrada" });
   });
+
+  it("concorrência: 1 usuário free, 3 slots -> um 201", async () => {
+    const s = await signup();
+    const D = day();
+    const res = await Promise.all(
+      ["08:00", "09:00", "10:00"].map((time) => book(s.token, { nutritionistId: "ana-prado", date: D, time })),
+    );
+    expect(res.filter((r) => r.status === 201)).toHaveLength(1);
+    expect((await api("GET", "/consultations/me", undefined, s.token)).body).toHaveLength(1);
+  });
+
+  it("concorrência: 3 usuários, mesmo slot -> um 201", async () => {
+    const users = await Promise.all([signup(), signup(), signup()]);
+    const body = { nutritionistId: "diego-martins", date: day(), time: "13:30" };
+    const res = await Promise.all(users.map((u) => book(u.token, body)));
+    expect(res.filter((r) => r.status === 201)).toHaveLength(1);
+  });
+
+  it("id enorme no DELETE não dá 500", async () => {
+    const s = await signup();
+    const res = await api("DELETE", "/consultations/99999999999999", undefined, s.token);
+    expect(res.status).toBeLessThan(500);
+  });
 });
