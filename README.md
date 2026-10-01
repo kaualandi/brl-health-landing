@@ -16,9 +16,7 @@ produtos sob a mesma marca:
 > marketing) segue estático de propósito. Documentação de produto em
 > [`CLAUDE.md`](./CLAUDE.md); backlog da API nas
 > [issues do GitHub](https://github.com/kaualandi/brl-health-landing/issues).
->
-> ⚠️ **Em construção:** a API nova está sendo reimplementada endpoint a endpoint;
-> até os tickets fecharem, os fluxos logados do front podem falhar.
+
 
 ---
 
