@@ -9,339 +9,162 @@ produtos sob a mesma marca:
 - **💪 BRL Fit — em breve.** App de treino adaptativo, hoje uma página de "em
   breve" com lista de espera.
 
-> **Status:** frontend completo e **integrado à API real** (backend .NET em
-> [`/backend`](./backend)). Todo dado com endpoint vem do servidor — auth (JWT +
-> refresh), perfil/onboarding, assinatura, consultas, tracking, LGPD e catálogos.
-> O `localStorage` funciona só como **cache** (write-through pra API). Conteúdo de
-> UI sem tabela (FAQ, textos legais, copy de marketing) segue estático de
-> propósito. Veja o histórico da integração em
-> [`TODO-FRONTEND-INTEGRATION.md`](./TODO-FRONTEND-INTEGRATION.md), o roadmap em
-> [`TODO.md`](./TODO.md) e a documentação de produto em [`CLAUDE.md`](./CLAUDE.md).
+> **Status:** monorepo **Turborepo** com o front Next.js (`apps/web`) e a API
+> **Elysia + Drizzle + PostgreSQL** (`apps/api`), reconstruída a partir do que o
+> front consome. O `localStorage` do front funciona só como **cache**
+> (write-through pra API). Conteúdo de UI sem tabela (FAQ, textos legais, copy de
+> marketing) segue estático de propósito. Documentação de produto em
+> [`CLAUDE.md`](./CLAUDE.md); backlog da API nas
+> [issues do GitHub](https://github.com/kaualandi/brl-health-landing/issues).
 >
-> Dá pra rodar o front **sozinho** (as telas montam e degradam com elegância se a
-> API estiver fora), mas os fluxos logados exigem o backend no ar — veja
-> [Rodando a stack completa](#rodando-a-stack-completa-com-backend).
+> ⚠️ **Em construção:** a API nova está sendo reimplementada endpoint a endpoint;
+> até os tickets fecharem, os fluxos logados do front podem falhar.
 
 ---
 
 ## Stack
 
+**Front (`apps/web`)**
 - **[Next.js 16](https://nextjs.org)** (App Router) + **[React 19](https://react.dev)**
-- **[Tailwind CSS 4](https://tailwindcss.com)** + **[base-ui](https://base-ui.com)** + **[shadcn](https://ui.shadcn.com)** (componentes)
-- **[TanStack Query](https://tanstack.com/query) / [Form](https://tanstack.com/form)** + **[Zod](https://zod.dev)** (dados e validação)
-- **[anime.js](https://animejs.com)** (animações), **[lucide-react](https://lucide.dev)** (ícones), **[axios](https://axios-http.com)** (HTTP)
+- **[Tailwind CSS 4](https://tailwindcss.com)** + **[base-ui](https://base-ui.com)** + **[shadcn](https://ui.shadcn.com)**
+- **[TanStack Query](https://tanstack.com/query) / [Form](https://tanstack.com/form)** + **[Zod](https://zod.dev)**, **axios**, **anime.js**, **lucide-react**
 - **[Vitest](https://vitest.dev)** (testes unitários)
 
-> ⚠️ Esta versão do Next.js tem _breaking changes_ em relação a releases
-> anteriores. Consulte os guias em `node_modules/next/dist/docs/` antes de mexer
-> no código (veja [`AGENTS.md`](./AGENTS.md)).
+**API (`apps/api`)**
+- **[Bun](https://bun.sh)** + **[Elysia](https://elysiajs.com)** (validação com `t`/TypeBox)
+- **[Drizzle ORM](https://orm.drizzle.team)** + **PostgreSQL 16** (migrações com `drizzle-kit`)
+- JWT (`@elysiajs/jwt`) + refresh token rotativo, senhas com `Bun.password` (bcrypt)
+- Stripe e Resend opcionais (sem chave, degradam com elegância)
+
+**Monorepo:** Bun workspaces + **[Turborepo](https://turborepo.com)**; Postgres e API em **docker compose**.
+
+> ⚠️ Esta versão do Next.js tem _breaking changes_. Consulte
+> `node_modules/next/dist/docs/` antes de mexer no front (ver [`AGENTS.md`](./AGENTS.md)).
 
 ---
 
 ## Pré-requisitos
 
-- **Node.js 20+** (recomendado **22 LTS** — versão usada na CI)
-- **npm** (o repositório versiona `package-lock.json`)
+- **Bun 1.3+** (gerenciador de pacotes e runtime da API)
+- **Docker** (Postgres e, opcionalmente, a API)
 
 ---
 
 ## Começando
 
 ```bash
-# 1. Instalar dependências
-npm install
+# 1. Dependências (todas as apps)
+bun install
 
-# 2. Variáveis de ambiente (opcional em dev — há defaults)
-cp .env.example .env.local
+# 2. Banco em Docker (porta 5433 no host, pra não brigar com outro Postgres)
+cp .env.example .env                    # JWT_SECRET usado pelo compose
+docker compose up -d db
 
-# 3. Subir o ambiente de desenvolvimento
-npm run dev
+# 3. API: env, migrações e seed
+cp apps/api/.env.example apps/api/.env  # ajuste JWT_SECRET (32+ caracteres)
+cd apps/api && bun run db:migrate && bun run db:seed && cd -
+
+# 4. Sobe front (:3000) e API (:3333) juntos
+bun run dev
 ```
 
-Abra [http://localhost:3000](http://localhost:3000) no navegador.
-
-Para validar uma build de produção localmente:
-
-```bash
-npm run build   # compila a aplicação
-npm run start   # serve a build em http://localhost:3000
-```
+Ou suba **banco + API** inteiros em containers: `docker compose up -d --build`
+(a API roda migrações e seed no boot) e depois só o front com `bun run dev --filter web`.
 
 ### Login demo
 
-Conta semeada pelo backend (`seed.sql`). Para entrar em `/login` e acessar o
-`/nutri`:
-
-- **E-mail:** `demo@brl.com`
-- **Senha:** `123456`
+Conta semeada (`apps/api/src/db/seed.sql`): **`demo@brl.com`** / **`123456`**.
 
 ---
 
-## Rodando a stack completa (com backend)
+## Scripts (raiz, via Turborepo)
 
-Os fluxos logados (login, perfil, tracking, consultas, assinatura) chamam a API
-.NET em [`/backend`](./backend). Para exercê-los localmente, suba **Postgres +
-backend + front** — três terminais (ou o backend em background).
+| Script              | O que faz                                                 |
+| ------------------- | --------------------------------------------------------- |
+| `bun run dev`       | Front (Next dev) + API (Bun watch) em paralelo.            |
+| `bun run build`     | Build de produção do front.                                |
+| `bun run lint`      | ESLint do front.                                           |
+| `bun run typecheck` | `tsc --noEmit` em todas as apps.                           |
+| `bun run test`      | Vitest (front) + `bun test` (API, precisa do Postgres up). |
 
-O front espera a API em `http://localhost:5226` (default do `NEXT_PUBLIC_API_URL`)
-e o backend libera **CORS** para `http://localhost:3000` (origem do `next dev`).
-
-```bash
-# 1) Postgres descartável em Docker (senha só para dev)
-docker run -d --name brl-pg \
-  -e POSTGRES_PASSWORD=devsecret -e POSTGRES_DB=brlhealth \
-  -p 5432:5432 postgres:16-alpine
-
-# 2) Schema + seed (cria a conta demo, 3 planos e 4 nutricionistas)
-docker exec -i brl-pg psql -U postgres -d brlhealth \
-  < backend/src/BrlHealth.Api/Data/schema.sql
-docker exec -i brl-pg psql -U postgres -d brlhealth \
-  < backend/src/BrlHealth.Api/Data/seed.sql
-
-# 3) Backend (.NET 10) em http://localhost:5226
-cd backend/src/BrlHealth.Api
-ConnectionStrings__Default="Host=localhost;Port=5432;Database=brlhealth;Username=postgres;Password=devsecret" \
-ASPNETCORE_URLS="http://localhost:5226" \
-ASPNETCORE_ENVIRONMENT=Development \
-dotnet run
-
-# 4) Front (noutro terminal, na raiz do repo)
-npm run dev
-```
-
-`.env.local` já aponta `NEXT_PUBLIC_API_URL=http://localhost:5226`. Detalhes de
-configuração do backend (JWT, Resend, OpenAI, Stripe) estão no
-[`backend/README.md`](./backend/README.md).
-
-> **Sem backend?** O front sobe e as páginas públicas funcionam; chamadas à API
-> falham silenciosamente (caem no cache/estado local). Só não dá pra logar de
-> verdade nem persistir dados no servidor.
-
----
-
-## Scripts
-
-| Script               | O que faz                                              |
-| -------------------- | ------------------------------------------------------ |
-| `npm run dev`        | Sobe o servidor de desenvolvimento (Next dev).         |
-| `npm run build`      | Gera a build de produção.                              |
-| `npm run start`      | Serve a build de produção.                             |
-| `npm run lint`       | Roda o ESLint (`eslint-config-next`).                  |
-| `npm run test`       | Roda os testes unitários uma vez (Vitest).             |
-| `npm run test:watch` | Roda os testes em modo _watch_.                        |
+Da API (`cd apps/api`): `db:generate` (gera migração a partir do `schema.ts`),
+`db:migrate`, `db:seed`.
 
 ---
 
 ## Variáveis de ambiente
 
-Documentadas em [`.env.example`](./.env.example). Ambas têm _defaults_ seguros
-para desenvolvimento, então não são obrigatórias localmente.
+**Front** — [`apps/web/.env.example`](./apps/web/.env.example):
 
-| Variável               | Default                    | Para quê                                             |
+| Variável               | Default                    | Para quê                                            |
 | ---------------------- | -------------------------- | --------------------------------------------------- |
 | `NEXT_PUBLIC_SITE_URL` | `https://brlhealth.com.br` | URL canônica do site (SEO: metadata, sitemap, OG).  |
-| `NEXT_PUBLIC_API_URL`  | `http://localhost:5226`    | Base URL da API .NET consumida pelo front.          |
+| `NEXT_PUBLIC_API_URL`  | `http://localhost:3333`    | Base URL da API.                                    |
 
-> Por serem `NEXT_PUBLIC_*`, são **embutidas no bundle do cliente** — não coloque
-> segredos nelas. Chaves sensíveis (Stripe secret/webhook, Resend, OpenAI, banco,
-> JWT) vivem **só no backend**, via ambiente — ver [`backend/README.md`](./backend/README.md).
-> O front só conhece a **chave pública** do Stripe, e ainda por cima buscada da
-> API (`GET /billing/stripe/config`), nunca hardcoded.
+**API** — [`apps/api/.env.example`](./apps/api/.env.example): `DATABASE_URL`,
+`JWT_SECRET` (obrigatórias), `PORT`, `CORS_ORIGIN`, `TRUST_PROXY`, `APP_TZ`
+(default `America/Sao_Paulo` — define o "hoje" do tracking) e as opcionais
+`STRIPE_*`, `RESEND_API_KEY`, `EMAIL_FROM`. Nenhuma credencial fica no código.
+
+> `NEXT_PUBLIC_*` vai pro bundle do cliente — nunca coloque segredos nelas.
 
 ---
 
 ## Pagamentos (Stripe)
 
-O checkout tem **dois modos**, decididos em tempo de execução pela resposta de
-`GET /billing/stripe/config` — o front nunca precisa saber a chave, só se o
-backend está configurado:
+O `/checkout` decide o modo pela resposta de `GET /billing/stripe/config`:
 
-| Backend | O que o `/checkout` mostra | Como o plano é ativado |
+| API | O que o `/checkout` mostra | Como o plano é ativado |
 | --- | --- | --- |
-| **Sem `Stripe:SecretKey`** (default) | Formulário de cartão **mock** ("checkout de demonstração") | `POST /billing/checkout` — o backend valida e ativa na hora (cartão terminando em `0000` → recusado). Bom para dev/demo sem conta Stripe. |
-| **Com `Stripe:SecretKey`** | Botão **"Pagamento seguro pelo Stripe"** (redireciona pro checkout hospedado) | O usuário paga na página do Stripe; o **webhook** `checkout.session.completed` é a fonte da verdade e ativa o plano. |
+| **Sem `STRIPE_SECRET_KEY`** (default) | Formulário de cartão **mock** | `POST /billing/checkout` valida e ativa (cartão terminando em `0000` → recusado). |
+| **Com `STRIPE_SECRET_KEY`** | Botão **"Pagamento seguro pelo Stripe"** | O webhook `checkout.session.completed` ativa o plano. Upgrade pelo mock fica bloqueado. |
 
-> **Sem chave = sem Stripe, e está tudo certo.** É degradação graciosa
-> intencional (o backend responde `501` nas rotas `/billing/stripe/*` e o front
-> cai no formulário mock). Você só liga o Stripe real quando **quiser** e tiver
-> chaves — nada quebra por não ter.
-
-Ao voltar do Stripe, o usuário cai em `/conta?checkout=success` (pago) ou
-`/precos?checkout=cancel` (desistiu); o front mostra um toast e limpa o parâmetro
-da URL. As URLs de retorno são configuráveis no backend (`Stripe:SuccessUrl`,
-`Stripe:CancelUrl`, `Stripe:PortalReturnUrl`).
-
-### Testando o Stripe real localmente
-
-Use **chaves de teste** (`sk_test_`/`pk_test_`) e a [Stripe CLI](https://stripe.com/docs/stripe-cli)
-para entregar o webhook na sua máquina (o Stripe não alcança `localhost` sozinho):
-
-```bash
-# 1) encaminha os eventos do Stripe pro backend local; imprime o whsec_...
-stripe listen --forward-to localhost:5226/billing/stripe/webhook
-
-# 2) suba o backend com as chaves de teste (as três via ambiente)
-cd backend/src/BrlHealth.Api
-Stripe__SecretKey="sk_test_..." \
-Stripe__PublishableKey="pk_test_..." \
-Stripe__WebhookSecret="whsec_..." \
-ConnectionStrings__Default="Host=localhost;Port=5432;Database=brlhealth;Username=postgres;Password=devsecret" \
-ASPNETCORE_URLS="http://localhost:5226" ASPNETCORE_ENVIRONMENT=Development \
-dotnet run
-```
-
-No `/checkout` o front passa a mostrar o fluxo Stripe. Pague com um cartão de
-teste (ex.: `4242 4242 4242 4242`, validade futura, CVV qualquer) → o webhook
-ativa o plano → você volta pra `/conta` com o tier atualizado. O **Customer
-Portal** (gerir/cancelar) precisa estar ativado no Dashboard do Stripe
-(Settings → Billing → Customer portal).
-
-> Detalhes de cada rota (`config`/`checkout`/`portal`/`webhook`) estão no
-> [`backend/README.md`](./backend/README.md#pagamento-stripe-opcional).
+Teste local: `stripe listen --forward-to localhost:3333/billing/stripe/webhook`
+e suba a API com `STRIPE_SECRET_KEY`, `STRIPE_PUBLISHABLE_KEY` e
+`STRIPE_WEBHOOK_SECRET` (o `whsec_` impresso). Cartão de teste `4242 4242 4242 4242`.
 
 ---
 
-## Estrutura do projeto
+## Estrutura
 
 ```
-src/
-├── app/                  # App Router (rotas)
-│   ├── (marketing)/      # site público: home, sobre, conteúdos, calculadora,
-│   │                     #   faq, precos, fit, contato, termos, privacidade, conta
-│   ├── (auth)/           # login e cadastro/onboarding
-│   ├── nutri/            # app BRL Nutri (logado): abas + perfil + compras
-│   ├── checkout/         # contratação de plano
-│   ├── layout.tsx        # layout raiz, SEO global, providers
-│   ├── manifest.ts · robots.ts · sitemap.ts · opengraph-image.tsx
-│   ├── error.tsx · not-found.tsx
-│   └── globals.css
-├── components/           # UI por domínio (ui, sections, nutri, onboarding,
-│                         #   calculator, checkout, account, content, faq, …)
-├── lib/                  # lógica pura e stores client-side
-│   ├── nutri-plan.ts     # motor de cálculo (BMR/TDEE/macros/IMC/água) — testado
-│   ├── site.ts · axios.ts · foods.ts · meals.ts · …
-├── services/             # camada de acesso à API (axios) + hidratação de cache
-├── hooks/                # hooks de UI e de dados (TanStack Query)
-├── providers/            # providers globais (Query, toasts, …)
-└── types/                # tipos compartilhados
-```
-
----
-
-## Testes
-
-Os testes unitários cobrem o motor de cálculo nutricional
-([`src/lib/nutri-plan.ts`](./src/lib/nutri-plan.ts)) com **Vitest** em ambiente
-`node` (funções puras).
-
-```bash
-npm run test         # roda uma vez (usado na CI)
-npm run test:watch   # modo watch durante o desenvolvimento
+apps/
+├── web/                 # Next.js (App Router)
+│   └── src/{app,components,lib,services,hooks,providers,types}
+└── api/                 # Elysia
+    ├── src/
+    │   ├── app.ts       # composição dos módulos (exportado pros testes)
+    │   ├── index.ts     # listen
+    │   ├── config.ts    # env validado
+    │   ├── db/          # schema.ts (Drizzle), migrate.ts, seed.ts/.sql
+    │   ├── lib/         # auth (JWT macro), errors, rate-limit, date
+    │   └── modules/     # um arquivo de rotas por domínio (+ *.test.ts)
+    └── drizzle/         # migrações geradas
+docker-compose.yml       # db (+ api)
+turbo.json
 ```
 
 ---
 
 ## CI
 
-O workflow [`.github/workflows/ci.yml`](./.github/workflows/ci.yml) roda em todo
-`push` e `pull_request` para `main`, no Node 22:
-
-1. `npm ci`
-2. `npm run lint`
-3. `npx tsc --noEmit`
-4. `npm run test`
-5. `npm run build`
+[`.github/workflows/ci.yml`](./.github/workflows/ci.yml): Bun + serviço Postgres →
+`bun install` → migrações/seed → `lint` → `typecheck` → `test` → `build`.
 
 ---
 
 ## Deploy
 
-Duas formas suportadas: **Vercel** (só o front, backend hospedado à parte) ou
-uma **VPS** rodando a stack inteira (front + backend + Postgres).
+- **Front (Vercel):** importe o repo com **Root Directory = `apps/web`**; defina
+  `NEXT_PUBLIC_SITE_URL` e `NEXT_PUBLIC_API_URL` (embutidas no build).
+- **API + banco (VPS/qualquer host Docker):** `docker compose up -d --build` com
+  `.env` de produção (`JWT_SECRET` forte, `POSTGRES_PASSWORD`, `CORS_ORIGIN` = URL
+  pública do front, `TRUST_PROXY=true` atrás do proxy, chaves Stripe/Resend se usar), atrás de um proxy com TLS. O
+  webhook do Stripe aponta pra `https://<api>/billing/stripe/webhook`.
 
-### Opção A — Vercel (front)
-
-A Vercel detecta o framework Next.js automaticamente — não há build customizado.
-
-1. Importe o repositório na Vercel (framework **Next.js** é auto-detectado).
-2. Configure as variáveis de ambiente do projeto:
-   - `NEXT_PUBLIC_SITE_URL` → domínio de produção (ex.: `https://brlhealth.com.br`).
-   - `NEXT_PUBLIC_API_URL` → **URL pública** da API (a VPS/servidor do backend).
-3. Cada Pull Request ganha um **preview deploy** automático; o merge em `main`
-   publica em produção.
-
-O [`vercel.json`](./vercel.json) apenas fixa o framework; o resto é convenção.
-
-### Opção B — VPS (stack completa)
-
-Servidor único (Ubuntu, por exemplo) com **Postgres**, o **backend .NET** e o
-**front Next** atrás de um reverse proxy (nginx) com TLS. Sugestão de topologia:
-`app.seudominio.com` → front (`:3000`) e `api.seudominio.com` → backend (`:5226`).
-
-**Pré-requisitos na VPS:** Node 22+, .NET SDK 10, PostgreSQL, nginx e (para o
-webhook do Stripe) um domínio com HTTPS.
-
-**1) Banco.** Postgres gerenciado ou na própria VPS; rode `schema.sql` + `seed.sql`
-(ver [`backend/README.md`](./backend/README.md)) e crie um usuário dedicado.
-
-**2) Backend.** Publique e rode como serviço (`systemd`), com **tudo sensível via
-ambiente** — nunca no repo:
-
-```bash
-cd backend/src/BrlHealth.Api
-dotnet publish -c Release -o /var/www/brl-api
-```
-
-```ini
-# /etc/systemd/system/brl-api.service
-[Service]
-WorkingDirectory=/var/www/brl-api
-ExecStart=/usr/bin/dotnet /var/www/brl-api/BrlHealth.Api.dll
-Environment=ASPNETCORE_URLS=http://127.0.0.1:5226
-Environment=ConnectionStrings__Default=Host=localhost;Port=5432;Database=brlhealth;Username=brl;Password=<forte>
-Environment=Jwt__Secret=<segredo-forte-32+-bytes>
-Environment=Cors__Origin=https://app.seudominio.com
-# opcionais (só se for usar): Stripe__*, Resend__ApiKey, OpenAI__ApiKey
-Restart=always
-[Install]
-WantedBy=multi-user.target
-```
-
-`sudo systemctl enable --now brl-api`. **`Cors__Origin` deve ser a URL pública do
-front**, senão o navegador bloqueia as chamadas.
-
-**3) Front.** ⚠️ `NEXT_PUBLIC_API_URL` é **embutido em tempo de build** — defina-o
-**antes** do `npm run build`, apontando pra URL pública da API:
-
-```bash
-npm ci
-NEXT_PUBLIC_API_URL=https://api.seudominio.com \
-NEXT_PUBLIC_SITE_URL=https://app.seudominio.com \
-npm run build
-npm run start   # serve em 127.0.0.1:3000 (rode via systemd/PM2, igual ao backend)
-```
-
-**4) Reverse proxy + TLS.** nginx encaminhando cada subdomínio pro processo local
-(`proxy_pass http://127.0.0.1:3000` e `:5226`), com certificado (Let's Encrypt).
-
-**5) Stripe em produção (se for usar).** Exponha o webhook publicamente e
-registre-o no Dashboard do Stripe apontando para
-`https://api.seudominio.com/billing/stripe/webhook`; use o `whsec_` desse endpoint
-em `Stripe__WebhookSecret`. Ajuste `Stripe__SuccessUrl`/`CancelUrl`/`PortalReturnUrl`
-para os domínios de produção. **Sem chaves, o backend cai no checkout mock** e o
-front se adapta sozinho — ver [Pagamentos (Stripe)](#pagamentos-stripe).
-
-> Só faça deploy de código **revisado e mergeado** no `main`. Rebuild do front é
-> obrigatório sempre que uma variável `NEXT_PUBLIC_*` muda (ela é congelada no
-> bundle).
+> Só faça deploy de código **revisado e mergeado** no `main`.
 
 ---
-
-## Roadmap
-
-Próximos passos estão em [`TODO.md`](./TODO.md); o histórico da integração
-front↔backend (o que foi ligado à API e o que ficou estático de propósito) está
-em [`TODO-FRONTEND-INTEGRATION.md`](./TODO-FRONTEND-INTEGRATION.md).
 
 ## Integrantes
 - Lucas Abrahão Anes - 06009881

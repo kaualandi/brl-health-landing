@@ -6,41 +6,28 @@
   virar slides. Explica cada tela e cada funcionalidade, em PT-BR.
 -->
 
-# ⚙️ Backend (AV2) — regras de desenvolvimento — OBRIGATÓRIO
+# ⚙️ Backend — stack e regras
 
-> **Sim, o backend segue a avaliação AV2** (`AV2 Avaliação.pdf`). Estas regras são
-> **vinculantes** para qualquer trabalho no backend e sobrepõem qualquer suposição
-> de stack feita no `TODO.md` antigo. O checklist completo, item a item (incluindo
-> os **20 artefatos SDD**), está no **`TODO-BACKEND.md`**.
+> Trabalho da disciplina de **backend**, reaproveitando este front. A API antiga
+> (.NET/Dapper da AV2) foi removida — está preservada na tag git `av2-dotnet-final`
+> (`git show av2-dotnet-final:backend/...` pra consultar regras de negócio antigas).
 
-**Stack (não negociável — exigida pela AV2):**
-- Minimal API em **C# (.NET)** + **Dapper** (micro-ORM). **Não** usar EF Core como
-  ORM principal.
-- Banco **PostgreSQL** (Npgsql) — trocável, registrar como ADR.
-- Backend autocontido em **`/backend`** (monorepo): `/backend/src`,
-  `/backend/tests`, `/backend/docs`, `/backend/release_checklist_final.md`.
-- ⚠️ O corretor automático da AV2 roda **apontando para `/backend`**; todos os
-  caminhos literais do PDF (`/src`, `/tests`, `/docs`, raiz) são relativos a essa raiz.
+**Stack:**
+- Monorepo **Turborepo** + **Bun workspaces**: `apps/web` (Next) e `apps/api`.
+- API em **Elysia** (Bun), validação com `t` (TypeBox) do próprio Elysia.
+- **Drizzle ORM** sobre **PostgreSQL 16**; schema em `apps/api/src/db/schema.ts`,
+  migrações via `drizzle-kit generate` (nunca editar migração já commitada).
+- Postgres (e a API) em **docker compose** na raiz.
 
-**Requisitos de código (valem nota — ver `TODO-BACKEND.md §3`):**
-1. **≥2 endpoints de regra de negócio** (não CRUD simples de 1 tabela).
-2. **≥1 endpoint com JOIN** (`INNER`/`LEFT JOIN`) entre 2+ tabelas.
-3. **≥1 endpoint com 3+ validações de negócio** antes de gravar → `400 Bad Request`
-   com mensagem específica.
-4. **Todas** as queries parametrizadas com `@Parametro` — proibido concatenar ou
-   interpolar string em SQL.
-5. **Sem credenciais hardcoded** em `.cs` (item 18 da AV2): connection string só via
-   `builder.Configuration` / `Environment.GetEnvironmentVariable` / user-secrets.
-   Nunca `Password=`, `Pwd=`, `User Id=` ou `ConnectionString=` com valor literal.
-
-**20 artefatos SDD (a maior parte da nota):** produzir **todos** os documentos em
-`/backend/docs` (+ testes em `/backend/tests`, `release_checklist_final.md` na raiz
-de `/backend`) respeitando **os caminhos e literais exatos** do PDF — ver
-`TODO-BACKEND.md §6`. Conteúdo específico do BRL Health, não genérico.
-
-**Insumos do professor:** os itens **03, 04 e 08** usam material fornecido no
-enunciado (3 cenários, trecho de código C#, 12 tickets). Usar exatamente esses — não
-inventar fora do que foi dado.
+**Regras:**
+1. **O contrato é o front.** Shapes de request/response seguem `apps/web/src/services`
+   e `apps/web/src/types`; erro sempre `{ error }` ou `{ errors: string[] }` (400).
+2. Queries só pelo Drizzle (query builder ou `` sql`...` ``), sempre parametrizadas —
+   proibido concatenar string em SQL.
+3. **Sem credenciais no código** — tudo via env (`apps/api/src/config.ts`).
+4. "Hoje" vem de `lib/date.ts` (`APP_TZ`, default `America/Sao_Paulo`), nunca UTC.
+5. Toda rota nova tem teste de contrato (`bun test`, via `app.handle`).
+6. Convenções detalhadas da API em **`docs/_patterns.md`**.
 
 ---
 
@@ -267,8 +254,8 @@ tier; há caminho de erro (cartão recusado).
 - **Tailwind CSS 4** + **base-ui** + **shadcn** (componentes)
 - **TanStack Query/Form** + **Zod** (dados e validação)
 - **anime.js** (animações), **lucide-react** (ícones), **axios** (HTTP)
-- Persistência atual: **localStorage/sessionStorage** (mock) — pronta pra trocar
-  por API real (cada serviço mock já marca o endpoint previsto).
+- API: **Elysia** (Bun) + **Drizzle ORM** + **PostgreSQL** (docker compose), em
+  monorepo **Turborepo** (`apps/web` + `apps/api`). O `localStorage` do front é só cache.
 
 ---
 
@@ -283,11 +270,5 @@ assinatura e SEO.
 recuperação de senha e verificação de e-mail, tema claro/escuro, página de
 receitas, favoritar conteúdos, README + variáveis de ambiente, testes, deploy/CI.
 
-**🗄️ Última fase (backend — AV2):**
-Minimal API em **C# (.NET) + Dapper** sobre **PostgreSQL**, autocontida em
-`/backend` (ver as regras vinculantes no topo deste arquivo). A entrega da AV2 =
-requisitos de código (endpoints de negócio com JOIN + validações, queries
-parametrizadas) + **20 artefatos SDD**. A visão de produção (autenticação real,
-pagamento via Stripe, e-mail transacional, cardápio por **IA de verdade**, LGPD)
-fica **pós-AV2**. O checklist completo e o mapa _mocks → endpoints_ estão no
-**`TODO-BACKEND.md`**.
+**🗄️ Backend:** API **Elysia + Drizzle + PostgreSQL** em `apps/api`, reconstruída
+a partir do que o front consome (ver regras no topo e as issues do GitHub).

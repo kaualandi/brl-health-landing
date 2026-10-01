@@ -1,0 +1,38 @@
+name: brl-health
+
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: brl
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-brl}
+      POSTGRES_DB: brlhealth
+    ports:
+      - "${DB_PORT:-5433}:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U brl -d brlhealth"]
+      interval: 2s
+      retries: 20
+
+  api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    environment:
+      DATABASE_URL: postgres://brl:${POSTGRES_PASSWORD:-brl}@db:5432/brlhealth
+      JWT_SECRET: ${JWT_SECRET:?defina JWT_SECRET no .env da raiz}
+      CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:3000}
+      RESEND_API_KEY: ${RESEND_API_KEY:-}
+      STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY:-}
+      STRIPE_PUBLISHABLE_KEY: ${STRIPE_PUBLISHABLE_KEY:-}
+      STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET:-}
+    ports:
+      - "3333:3333"
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  pgdata:
