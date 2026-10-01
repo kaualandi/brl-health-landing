@@ -4,8 +4,8 @@ import { rateLimit } from "../lib/rate-limit";
 
 const email = t.String({ format: "email", error: "E-mail inválido" });
 
-// rotas públicas: limite por IP contra spam
-export const engagementModule = new Elysia()
+// rotas públicas: limite por IP contra spam; analytics tem cota própria (page_view por rota)
+const forms = new Elysia()
   .use(rateLimit("engagement", 30))
   .post(
     "/contact",
@@ -40,7 +40,10 @@ export const engagementModule = new Elysia()
         source: t.Optional(t.Union([t.Literal("fit"), t.Literal("newsletter")], { error: "Origem inválida" })),
       }),
     },
-  )
+  );
+
+const analytics = new Elysia()
+  .use(rateLimit("analytics", 120))
   .post(
     "/analytics/events",
     async ({ body, status }) => {
@@ -54,3 +57,5 @@ export const engagementModule = new Elysia()
       }),
     },
   );
+
+export const engagementModule = new Elysia().use(forms).use(analytics);
