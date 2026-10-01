@@ -9,6 +9,7 @@ import { authModule } from "./modules/auth";
 import { engagementModule } from "./modules/engagement";
 import { billingModule } from "./modules/billing";
 import { plansModule } from "./modules/plans";
+import { profileModule } from "./modules/profile";
 
 export const app = new Elysia()
   .use(errors)
@@ -18,6 +19,7 @@ export const app = new Elysia()
   .use(engagementModule)
   .use(plansModule)
   .use(billingModule)
+  .use(profileModule)
   .get("/health", async () => {
     await db.execute(sql`select 1`);
     return { status: "ok" };
