@@ -13,7 +13,7 @@ const toRecipe = ({ prepTime, protein, carbs, fat, ...r }: typeof recipes.$infer
 });
 
 export const catalogModule = new Elysia()
-  .get("/foods", () => db.select().from(foods).orderBy(asc(foods.id)))
+  .get("/foods", () => db.select().from(foods).orderBy(asc(foods.role), asc(foods.id)))
   .get("/nutritionists", () => db.select().from(nutritionists).orderBy(asc(nutritionists.id)))
   .get("/articles", () => db.select(articleCols).from(articles).orderBy(asc(articles.id)))
   .get(
@@ -24,7 +24,7 @@ export const catalogModule = new Elysia()
     },
     idParam,
   )
-  .get("/recipes", async () => (await db.select().from(recipes).orderBy(asc(recipes.id))).map(toRecipe))
+  .get("/recipes", async () => (await db.select().from(recipes).orderBy(asc(recipes.category), asc(recipes.id))).map(toRecipe))
   .get(
     "/recipes/:id",
     async ({ params, status }) => {
