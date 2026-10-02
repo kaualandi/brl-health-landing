@@ -18,6 +18,7 @@ import { useToast } from "@/components/ui/toast";
 import { useAuth } from "@/hooks/use-auth";
 import { computeNutriPlan } from "@/lib/nutri-plan";
 import { goalLabel } from "@/lib/nutri-options";
+import { clearFitSessions } from "@/services/fit-sessions.service";
 import { deleteAccount } from "@/services/account.service";
 import {
   clearNutriProfile,
@@ -104,7 +105,8 @@ export function AccountView() {
       });
       return;
     }
-    // logout() já limpa perfil, tracking, consultas e a sessão.
+    // logout() limpa perfil, tracking, consultas e a sessão; treinos do Fit são só desta conta.
+    if (user) clearFitSessions(user.id);
     logout();
     toast({ title: "Conta excluída", description: "Sentiremos sua falta. 💜" });
     router.push("/");

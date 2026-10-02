@@ -11,6 +11,7 @@ import { GenerateButton, PlanTab, ProgressTab } from "@/components/fit/fit-tab-p
 import { UserMenu } from "@/components/layout/user-menu";
 import { useAuth } from "@/hooks/use-auth";
 import { useFitPlan } from "@/hooks/use-fit-plan";
+import { useFitSync } from "@/hooks/use-fit-sync";
 import { useFitProfile } from "@/hooks/use-fit-profile";
 import { FIT_TABS, nextTabIndex, parseFitTab, weekdayInSaoPaulo, type FitTab } from "@/lib/fit-week";
 import { cn } from "@/lib/utils";
@@ -113,6 +114,7 @@ export function FitApp() {
   const plan = useFitPlan();
   const router = useRouter();
   const { tab, change } = useTab();
+  useFitSync();
   const [weekday] = useState(() => weekdayInSaoPaulo());
 
   useEffect(() => {

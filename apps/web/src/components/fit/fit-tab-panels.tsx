@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Loader2Icon, PencilIcon, RefreshCwIcon } from "lucide-react";
 import { useRef, useState } from "react";
 
+import { FitHistory } from "@/components/fit/fit-history";
 import { FitPlanPreview } from "@/components/fit/fit-plan-preview";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/toast";
@@ -74,16 +75,9 @@ export function PlanTab({ plan }: { plan: FitPlan }) {
 
 export function ProgressTab() {
   return (
-    <section aria-label="Progresso" className="pt-8 md:pt-12">
-      <div className="flex flex-col items-center gap-3 rounded-2xl border border-dashed border-foreground/15 bg-card p-10 text-center">
-        <span aria-hidden className="text-5xl">
-          📈
-        </span>
-        <h2 className="font-display text-xl font-bold">Sua evolução vai aparecer aqui</h2>
-        <p className="max-w-sm text-sm text-muted-foreground">
-          Seus treinos aparecem aqui quando você registrar o primeiro. Cargas, repetições e constância num só lugar.
-        </p>
-      </div>
+    <section aria-label="Progresso" className="flex flex-col gap-4 pt-8 md:pt-12">
+      <h2 className="font-display text-2xl font-extrabold tracking-tight md:text-3xl">Seus treinos</h2>
+      <FitHistory />
     </section>
   );
 }
