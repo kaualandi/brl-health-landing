@@ -100,7 +100,7 @@ function buildDay(ctx: Ctx, kind: DayKind, occurrence: number, index: number): P
   };
 }
 
-const isUsable = (c: Candidate, p: PlanProfile, have: Set<string>) =>
+export const isUsable = (c: Candidate, p: PlanProfile, have: Set<string>) =>
   c.equipments.length > 0 &&
   c.equipments.every((e) => have.has(e)) &&
   !NOT_STRENGTH.test(c.name) &&

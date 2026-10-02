@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { BedIcon, FootprintsIcon, TimerIcon } from "lucide-react";
 
+import { SwapButton } from "@/components/fit/fit-swap";
 import { ExerciseGif } from "@/components/fit/exercise-parts";
 import type { FitPlan, FitPlanDay } from "@/lib/fit-plan";
 import { sentenceCase } from "@/lib/exercises";
@@ -30,10 +31,10 @@ function Workout({ day }: { day: FitPlanDay }) {
       <p className="mt-1 text-sm text-muted-foreground">Foco: {day.focus.join(" · ")}</p>
       <ol className="mt-5 flex flex-col gap-3">
         {day.exercises.map((e) => (
-          <li key={e.order}>
+          <li key={e.order} className="flex items-center gap-1">
             <Link
               href={`/fit/exercicios/${e.exercise.id}?aba=hoje`}
-              className="flex items-center gap-3 rounded-xl border border-foreground/5 p-2 outline-none transition-colors hover:border-brl-purple/50 focus-visible:ring-3 focus-visible:ring-ring/50"
+              className="flex min-w-0 flex-1 items-center gap-3 rounded-xl border border-foreground/5 p-2 outline-none transition-colors hover:border-brl-purple/50 focus-visible:ring-3 focus-visible:ring-ring/50"
             >
               <ExerciseGif src={e.exercise.gifUrl} name={e.exercise.name} className="size-16 w-16 shrink-0" />
               <span className="min-w-0 flex-1">
@@ -46,6 +47,7 @@ function Workout({ day }: { day: FitPlanDay }) {
                 {e.sets}×{e.reps}
               </span>
             </Link>
+            <SwapButton day={day.index} item={e} />
           </li>
         ))}
       </ol>
