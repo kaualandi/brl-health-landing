@@ -28,11 +28,9 @@ const SECTIONS = [
   ["Limitações", LimitationsStep],
 ] as const;
 
-function useSaveAndGenerate(data: FitForm) {
+function useGeneratePlan() {
   const toast = useToast();
-  const [saving, setSaving] = useState(false);
   const [pending, setPending] = useState(false);
-
   const generate = async () => {
     try {
       await generateFitPlan();
@@ -43,27 +41,53 @@ function useSaveAndGenerate(data: FitForm) {
       setPending(true);
     }
   };
+  return { pending, generate };
+}
 
-  const retry = async () => {
+function useSaveAndGenerate(data: FitForm) {
+  const toast = useToast();
+  const { pending, generate } = useGeneratePlan();
+  const [saving, setSaving] = useState(false);
+  const busy = async (work: () => Promise<void>) => {
     setSaving(true);
-    await generate();
+    await work();
     setSaving(false);
   };
+  const save = () =>
+    busy(async () => {
+      const profile = toFitProfile(data);
+      if (!profile) return toast({ variant: "error", title: "Confere os campos", description: fitFormError(data, "all") ?? undefined });
+      try {
+        await saveFitProfile(profile);
+      } catch (e) {
+        return toast({ variant: "error", title: "Não foi possível salvar", description: (e as Error).message });
+      }
+      await generate();
+    });
+  return { saving, pending, save, retry: () => busy(generate) };
+}
 
-  const save = async () => {
-    const profile = toFitProfile(data);
-    if (!profile) return toast({ variant: "error", title: "Confere os campos", description: fitFormError(data, "all") ?? undefined });
-    setSaving(true);
-    try {
-      await saveFitProfile(profile);
-    } catch (e) {
-      toast({ variant: "error", title: "Não foi possível salvar", description: (e as Error).message });
-      return setSaving(false);
-    }
-    await generate();
-    setSaving(false);
-  };
-  return { saving, pending, save, retry };
+type ActionsProps = { error: string | null; saving: boolean; pending: boolean; save: () => void; retry: () => void };
+
+function Actions({ error, saving, pending, save, retry }: ActionsProps) {
+  return (
+    <>
+      {error ? (
+        <p role="alert" className="text-sm text-destructive">
+          {error}
+        </p>
+      ) : null}
+      <Button type="button" className="h-12" onClick={save} disabled={saving}>
+        {saving ? <Loader2Icon aria-hidden className="animate-spin" /> : <SaveIcon aria-hidden />}
+        Salvar alterações
+      </Button>
+      {pending ? (
+        <Button type="button" variant="outline" className="h-12" disabled={saving} onClick={retry}>
+          Tentar gerar de novo
+        </Button>
+      ) : null}
+    </>
+  );
 }
 
 function EditorForm({ initial }: { initial: FitProfile }) {
@@ -86,20 +110,7 @@ function EditorForm({ initial }: { initial: FitProfile }) {
             <Body data={data} update={update} patch={patch} />
           </section>
         ))}
-        {error ? (
-          <p role="alert" className="text-sm text-destructive">
-            {error}
-          </p>
-        ) : null}
-        <Button type="button" className="h-12" onClick={save} disabled={saving}>
-          {saving ? <Loader2Icon aria-hidden className="animate-spin" /> : <SaveIcon aria-hidden />}
-          Salvar alterações
-        </Button>
-        {pending ? (
-          <Button type="button" variant="outline" className="h-12" disabled={saving} onClick={() => void retry()}>
-            Tentar gerar de novo
-          </Button>
-        ) : null}
+        <Actions error={error} saving={saving} pending={pending} save={save} retry={retry} />
       </main>
     </div>
   );

@@ -19,7 +19,15 @@ export const ADVANCED_ONLY = /planche|muscle[- ]?up|one[- ]arm|single[- ]arm|arc
 export const OLYMPIC = /clean|snatch|jerk|high pull/i;
 
 // Exige barra fixa, paralelas ou argolas: fora do plano em casa.
-export const NEEDS_BAR = /pull[- ]?up|chin[- ]?up|muscle[- ]?up|\bdips?\b|hanging|rings?\b|inverted row/i;
+export const NEEDS_BAR = /pull[- ]?up|chin[- ]?up|muscle[- ]?up|\bdips?\b|hanging|rings?\b|inverted row|\bchin\b|parallel bars/i;
+
+// Mesmo padrão de movimento: no máximo 2 por dia.
+export const PATTERNS = [/push[- ]?up/i, /squat/i, /lunge|split squat/i, /plank/i, /curl/i, /dip\b/i, /row/i, /raise/i, /press/i, /fly|flye/i];
+export const PATTERN_CAP = 2;
+
+export function patternsOf(name: string): number[] {
+  return PATTERNS.flatMap((p, i) => (p.test(name) ? [i] : []));
+}
 
 export type Avoid = "hard" | "soft" | "ok";
 

@@ -128,10 +128,16 @@ describe("regras de nome", () => {
   });
 
   test("em casa, sem barra fixa/paralelas/argolas", () => {
-    const pool = ["pull-up", "chin-up", "chest dip", "hanging leg raise", "rings row"].map((n) => mk(n, "latissimus dorsi")).concat(mk("pushdown", "latissimus dorsi"));
+    const pool = ["pull-up", "chin-up", "chest dip", "hanging leg raise", "rings row", "side-to-side chin", "side hip (on parallel bars)", "vertical leg raise (on parallel bars)"].map((n) => mk(n, "latissimus dorsi")).concat(mk("pushdown", "latissimus dorsi"));
     const home = names({ ...bw, location: "home" }, pool);
     expect(home).toEqual(["pushdown"]);
     expect(names({ ...bw, location: "gym" }, pool).length).toBeGreaterThan(1);
+  });
+
+  test("variedade: no máximo 2 variações do mesmo padrão por dia", () => {
+    const pool = [...Array.from({ length: 6 }, (_, i) => mk(`push-up v${i}`, "pectorals")), ...Array.from({ length: 4 }, (_, i) => mk(`bench ${i}`, "pectorals"))];
+    const plan = generatePlan({ ...bw, daysPerWeek: 2, sessionMinutes: 60 }, pool, 1);
+    for (const d of plan.days) expect(d.exercises.filter((e) => /push-up/.test(e.exerciseId)).length).toBeLessThanOrEqual(2);
   });
 
   test("joelho evita agachamento sobre os joelhos e lunge de deslizamento", () => {

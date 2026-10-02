@@ -1,4 +1,4 @@
-import { ADVANCED_ONLY, avoidLevel, NEEDS_BAR, NOT_STRENGTH, OLYMPIC } from "./fit-plan.rules";
+import { ADVANCED_ONLY, avoidLevel, NEEDS_BAR, NOT_STRENGTH, OLYMPIC, PATTERN_CAP, PATTERNS, patternsOf } from "./fit-plan.rules";
 import { chooseSplit, dayTargets, KIND_TITLE, type DayKind } from "./fit-plan.splits";
 
 export type PlanProfile = {
@@ -53,19 +53,20 @@ const TOP = 6;
 const GROUP_ORDER = (a: Candidate, b: Candidate) =>
   b.secondaryMuscles.length - a.secondaryMuscles.length || a.id.localeCompare(b.id);
 
-function pool(all: Candidate[], muscle: string, used: Set<string>, limitations: string[], soft: boolean) {
+function pool(all: Candidate[], muscle: string, used: Set<string>, limitations: string[], soft: boolean, dayCount: number[]) {
   return all.filter((c) => {
+    if (patternsOf(c.name).some((i) => dayCount[i] >= PATTERN_CAP)) return false;
     if (used.has(c.id) || used.has(c.name.toLowerCase()) || !c.targetMuscles.includes(muscle)) return false;
     const level = avoidLevel(c.name, limitations);
     return level === "ok" || (soft && level === "soft");
   });
 }
 
-function pick(all: Candidate[], muscles: string[], used: Set<string>, limitations: string[], rand: () => number) {
+function pick(all: Candidate[], muscles: string[], ctx: Ctx, dayCount: number[]) {
   for (const soft of [false, true]) {
     for (const m of muscles) {
-      const options = pool(all, m, used, limitations, soft).sort(GROUP_ORDER).slice(0, TOP);
-      if (options.length) return options[Math.floor(rand() * options.length)];
+      const options = pool(ctx.usable, m, ctx.used, ctx.limitations, soft, dayCount).sort(GROUP_ORDER).slice(0, TOP);
+      if (options.length) return options[Math.floor(ctx.rand() * options.length)];
     }
   }
   return undefined;
@@ -76,12 +77,14 @@ type Ctx = { usable: Candidate[]; used: Set<string>; limitations: string[]; rand
 function buildDay(ctx: Ctx, kind: DayKind, occurrence: number, index: number): PlanDay {
   const targets = dayTargets(kind, occurrence);
   const picked: Candidate[] = [];
+  const dayCount = Array<number>(PATTERNS.length).fill(0);
   for (let i = 0; i < ctx.count; i++) {
     const order = [...targets.slice(i % targets.length), ...targets.slice(0, i % targets.length)];
-    const found = pick(ctx.usable, order, ctx.used, ctx.limitations, ctx.rand);
+    const found = pick(ctx.usable, order, ctx, dayCount);
     if (!found) break;
     ctx.used.add(found.id).add(found.name.toLowerCase());
     picked.push(found);
+    for (const i of patternsOf(found.name)) dayCount[i]++;
   }
   picked.sort((a, b) => b.secondaryMuscles.length - a.secondaryMuscles.length);
   return {
