@@ -184,3 +184,8 @@ mantida (exposta em `GET /exercises/filters`).
 No docker compose os GIFs ficam no volume `media` da API: rode a importação dentro do container
 (`docker compose exec api bun run db:import-exercises --media`). Importado no host, o compose usa o
 GIF original do ExerciseDB como reserva.
+
+As traduções (nome e passo a passo em PT-BR) são geradas por IA e versionadas em
+`apps/api/src/db/data/exercises-pt.json`, revisáveis por PR. A importação já as aplica; para
+reaplicar só elas (idempotente): `bun run db:translate` em `apps/api`. A API devolve o PT e cai
+pro inglês quando não há tradução (`nameEn` traz o nome original).

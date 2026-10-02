@@ -2,6 +2,7 @@ import { mkdir } from "node:fs/promises";
 import { eq, inArray, sql } from "drizzle-orm";
 import { config } from "../config";
 import { db, schema } from ".";
+import { applyTranslations } from "./apply-translations";
 import { fetchExercises, fetchRetry, mapExercise } from "./import-exercises.lib";
 
 const { exercises } = schema;
@@ -65,5 +66,6 @@ for await (const page of fetchExercises({ limit })) {
   ids.push(...page.map((e) => e.exerciseId));
   console.log(`importados ${count}`);
 }
+await applyTranslations();
 const failed = withMedia ? await downloadMedia(ids) : 0;
 process.exit(failed > 0 ? 1 : 0);

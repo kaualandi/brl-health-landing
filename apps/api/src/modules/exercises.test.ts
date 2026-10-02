@@ -52,7 +52,7 @@ describe("GET /exercises", () => {
     expect(body.hasMore).toBe(false);
     const item = body.items[0];
     expect(Object.keys(item).sort()).toEqual(
-      ["bodyParts", "equipments", "gifUrl", "id", "instructions", "name", "secondaryMuscles", "targetMuscles"],
+      ["bodyParts", "equipments", "gifUrl", "id", "instructions", "name", "nameEn", "secondaryMuscles", "targetMuscles"],
     );
     expect(item.bodyParts[0]).toEqual({ value: "chest", label: "Peito" });
   });
