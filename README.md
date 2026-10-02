@@ -180,3 +180,7 @@ exploração, por isso importamos o conteúdo uma vez (`bun run db:import-exerci
 `apps/api`) e o servimos pela nossa API. O código do projeto deles é AGPL-3.0; o conteúdo
 importado segue os termos de uso do ExerciseDB e a atribuição "Dados e GIFs: ExerciseDB" deve ser
 mantida (exposta em `GET /exercises/filters`).
+
+No docker compose os GIFs ficam no volume `media` da API: rode a importação dentro do container
+(`docker compose exec api bun run db:import-exercises --media`). Importado no host, o compose usa o
+GIF original do ExerciseDB como reserva.
