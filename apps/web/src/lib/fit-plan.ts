@@ -12,3 +12,6 @@ export type FitPlanExercise = {
 export type FitPlanDay = { index: number; name: string; focus: string[]; exercises: FitPlanExercise[] };
 
 export type FitPlan = { generatedAt: string; split: string; days: FitPlanDay[] };
+
+/** Espelha GET /fit/plan/days/:day/exercises/:order/alternatives. */
+export type FitAlternative = FitPlanExercise["exercise"];

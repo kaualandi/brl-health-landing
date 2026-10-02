@@ -1,5 +1,5 @@
 import { api } from "@/lib/axios";
-import type { FitPlan } from "@/lib/fit-plan";
+import type { FitAlternative, FitPlan } from "@/lib/fit-plan";
 import type { User } from "@/types";
 
 const KEY = "brl.fit.plan";
@@ -87,4 +87,18 @@ export function resetFitPlanHydration(): void {
   epoch++;
   hydratedUserId = null;
   hydrating = null;
+}
+
+const swapPath = (day: number, order: number) => `/fit/plan/days/${day}/exercises/${order}`;
+
+export async function getSwapAlternatives(day: number, order: number): Promise<FitAlternative[]> {
+  const { data } = await api.get<FitAlternative[]>(`${swapPath(day, order)}/alternatives`);
+  return data;
+}
+
+/** PUT da troca; o plano atualizado vai pro cache (sem recarregar). */
+export async function swapFitExercise(day: number, order: number, exerciseId: string): Promise<FitPlan> {
+  const { data } = await api.put<FitPlan>(swapPath(day, order), { exerciseId });
+  writeCache(data);
+  return data;
 }

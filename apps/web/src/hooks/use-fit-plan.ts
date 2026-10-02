@@ -1,11 +1,13 @@
 "use client";
 
+import { useQuery } from "@tanstack/react-query";
 import { useEffect, useState, useSyncExternalStore } from "react";
 
 import { useAuth } from "@/hooks/use-auth";
 import {
   ensureFitPlanHydrated,
   getFitPlanServerSnapshot,
+  getSwapAlternatives,
   getFitPlanSnapshot,
   isFitPlanHydrated,
   subscribeFitPlan,
@@ -22,4 +24,13 @@ export function useFitPlan() {
   }, [user]);
 
   return user && isFitPlanHydrated(user) ? cached : undefined;
+}
+
+/** Alternativas de troca (sempre frescas: dependem do que está no dia agora). */
+export function useSwapAlternatives(day: number, order: number, exerciseId: string) {
+  return useQuery({
+    queryKey: ["fit-swap", day, order, exerciseId],
+    queryFn: () => getSwapAlternatives(day, order),
+    gcTime: 0,
+  });
 }
