@@ -22,6 +22,17 @@ describe("createSession", () => {
   });
 });
 
+describe("createSession com progressão", () => {
+  it("usa carga, reps e séries sugeridos (deload tira uma série)", () => {
+    const prog = { a: { weightKg: 25, reps: 8, sets: 1, reason: "deload" as const }, b: { weightKg: null, reps: 13, sets: 1, reason: "up" as const } };
+    const s = createSession(day, { a: 40 }, new Date(), "c2", prog);
+    expect(s.sets).toHaveLength(2);
+    expect(s.sets[0]).toMatchObject({ exerciseId: "a", weightKg: 25, reps: 8 });
+    expect(s.sets[1]).toMatchObject({ exerciseId: "b", weightKg: null, reps: 13 });
+    expect(s.exercises[0].sets).toBe(1);
+  });
+});
+
 describe("parse", () => {
   it("aceita vírgula e limita", () => {
     expect(parseWeight("22,5")).toBe(22.5);

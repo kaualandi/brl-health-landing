@@ -1,5 +1,6 @@
 "use client";
 
+import { useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ArrowLeftIcon, Loader2Icon, SaveIcon } from "lucide-react";
@@ -30,10 +31,12 @@ const SECTIONS = [
 
 function useGeneratePlan() {
   const toast = useToast();
+  const qc = useQueryClient();
   const [pending, setPending] = useState(false);
   const generate = async () => {
     try {
       await generateFitPlan();
+      void qc.invalidateQueries({ queryKey: ["fit-progression"] });
       setPending(false);
       toast({ variant: "success", title: "Plano atualizado", description: "Seu perfil foi salvo e a semana de treino refeita." });
     } catch (e) {

@@ -1,5 +1,6 @@
 "use client";
 
+import { useQueryClient } from "@tanstack/react-query";
 import { ArrowLeftRightIcon, Loader2Icon } from "lucide-react";
 import { useRef, useState } from "react";
 
@@ -37,6 +38,7 @@ function Option({ alt, busy, onPick }: { alt: FitAlternative; busy: boolean; onP
 
 function Alternatives({ target, onDone }: { target: Target; onDone: () => void }) {
   const toast = useToast();
+  const qc = useQueryClient();
   const [busy, setBusy] = useState(false);
   const { day, item } = target;
   const query = useSwapAlternatives(day, item.order, item.exercise.id);
@@ -45,6 +47,7 @@ function Alternatives({ target, onDone }: { target: Target; onDone: () => void }
     setBusy(true);
     try {
       await swapFitExercise(day, item.order, alt.id);
+      void qc.invalidateQueries({ queryKey: ["fit-progression"] });
       toast({ variant: "success", title: "Exercício trocado", description: sentenceCase(alt.name) });
       onDone();
     } catch (e) {

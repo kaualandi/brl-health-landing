@@ -1,4 +1,5 @@
 import { api } from "@/lib/axios";
+import type { Progression } from "@/lib/fit-progression";
 import {
   dequeue,
   enqueue,
@@ -121,4 +122,9 @@ export async function getHistory(limit = 30): Promise<SessionSummary[]> {
 export async function getLastLoads(uid: string): Promise<Loads> {
   const base = await api.get<Loads>("/fit/sessions/last-loads").then((r) => r.data, () => ({}) as Loads);
   return overlayLoads(base, loadQueue(uid));
+}
+
+export async function getProgression(): Promise<Progression> {
+  const { data } = await api.get<Progression>("/fit/progression");
+  return data;
 }
