@@ -12,6 +12,8 @@ import {
   type AuthState,
 } from "@/lib/auth-store";
 import { logoutUser } from "@/services/auth.service";
+import { clearFitDraft } from "@/lib/fit-draft";
+import { clearFitProfile, resetFitProfileHydration } from "@/services/fit.service";
 import { clearConsultations } from "@/lib/consultations-store";
 import { resetConsultationsHydration } from "@/services/consultations.service";
 import {
@@ -51,6 +53,9 @@ function logout(): void {
   clearConsultations();
   resetConsultationsHydration();
   resetTracking();
+  clearFitProfile();
+  clearFitDraft();
+  resetFitProfileHydration();
 }
 
 /** Hook de sessão. SSR-safe — devolve `loading` no primeiro paint. */
