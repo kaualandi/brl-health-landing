@@ -109,7 +109,7 @@ export const fitPlanExercises = pgTable(
     order: integer("position").notNull(),
     exerciseId: text("exercise_id")
       .notNull()
-      .references(() => exercises.id),
+      .references(() => exercises.id, { onDelete: "cascade" }),
     sets: integer("sets").notNull(),
     repsMin: integer("reps_min").notNull(),
     repsMax: integer("reps_max").notNull(),

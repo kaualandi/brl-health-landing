@@ -1,10 +1,11 @@
-import { ADVANCED_ONLY, avoidLevel, NOT_STRENGTH } from "./fit-plan.rules";
+import { ADVANCED_ONLY, avoidLevel, NEEDS_BAR, NOT_STRENGTH, OLYMPIC } from "./fit-plan.rules";
 import { chooseSplit, dayTargets, KIND_TITLE, type DayKind } from "./fit-plan.splits";
 
 export type PlanProfile = {
   goal: string;
   level: string;
   daysPerWeek: number;
+  location?: string;
   equipment: string[];
   sessionMinutes: number;
   limitations: string[];
@@ -91,16 +92,18 @@ function buildDay(ctx: Ctx, kind: DayKind, occurrence: number, index: number): P
   };
 }
 
-const isUsable = (c: Candidate, have: Set<string>, level: string) =>
+const isUsable = (c: Candidate, p: PlanProfile, have: Set<string>) =>
   c.equipments.length > 0 &&
   c.equipments.every((e) => have.has(e)) &&
   !NOT_STRENGTH.test(c.name) &&
-  (level === "advanced" || !ADVANCED_ONLY.test(c.name));
+  (p.level === "advanced" || !ADVANCED_ONLY.test(c.name)) &&
+  (p.level !== "beginner" || !OLYMPIC.test(c.name)) &&
+  (p.location === "gym" || !NEEDS_BAR.test(c.name));
 
 /** Gera a semana. Puro: mesmo perfil + candidatos + seed => mesmo plano. */
 export function generatePlan(profile: PlanProfile, candidates: Candidate[], seed: number): GeneratedPlan {
   const have = new Set(profile.equipment);
-  const usable = candidates.filter((c) => isUsable(c, have, profile.level)).sort((a, b) => a.id.localeCompare(b.id));
+  const usable = candidates.filter((c) => isUsable(c, profile, have)).sort((a, b) => a.id.localeCompare(b.id));
   const split = chooseSplit(profile.daysPerWeek, profile.level);
   const ctx: Ctx = {
     usable,

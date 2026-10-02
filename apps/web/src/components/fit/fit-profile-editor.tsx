@@ -28,14 +28,10 @@ const SECTIONS = [
   ["Limitações", LimitationsStep],
 ] as const;
 
-function EditorForm({ initial }: { initial: FitProfile }) {
+function useSaveAndGenerate(data: FitForm) {
   const toast = useToast();
-  const [data, setData] = useState<FitForm>(initial);
   const [saving, setSaving] = useState(false);
   const [pending, setPending] = useState(false);
-  const update: StepProps["update"] = (key, value) => setData((d) => ({ ...d, [key]: value }));
-  const patch: StepProps["patch"] = (changes) => setData((d) => ({ ...d, ...changes }));
-  const error = fitFormError(data, "all");
 
   const generate = async () => {
     try {
@@ -43,13 +39,8 @@ function EditorForm({ initial }: { initial: FitProfile }) {
       setPending(false);
       toast({ variant: "success", title: "Plano atualizado", description: "Seu perfil foi salvo e a semana de treino refeita." });
     } catch (e) {
-      toast({
-        variant: "error",
-        title: "Perfil salvo, mas o plano não foi gerado",
-        description: (e as Error).message,
-      });
+      toast({ variant: "error", title: "Perfil salvo, mas o plano não foi gerado", description: (e as Error).message });
       setPending(true);
-      return;
     }
   };
 
@@ -61,7 +52,7 @@ function EditorForm({ initial }: { initial: FitProfile }) {
 
   const save = async () => {
     const profile = toFitProfile(data);
-    if (!profile) return toast({ variant: "error", title: "Confere os campos", description: error ?? undefined });
+    if (!profile) return toast({ variant: "error", title: "Confere os campos", description: fitFormError(data, "all") ?? undefined });
     setSaving(true);
     try {
       await saveFitProfile(profile);
@@ -72,6 +63,15 @@ function EditorForm({ initial }: { initial: FitProfile }) {
     await generate();
     setSaving(false);
   };
+  return { saving, pending, save, retry };
+}
+
+function EditorForm({ initial }: { initial: FitProfile }) {
+  const [data, setData] = useState<FitForm>(initial);
+  const { saving, pending, save, retry } = useSaveAndGenerate(data);
+  const update: StepProps["update"] = (key, value) => setData((d) => ({ ...d, [key]: value }));
+  const patch: StepProps["patch"] = (changes) => setData((d) => ({ ...d, ...changes }));
+  const error = fitFormError(data, "all");
 
   return (
     <div className="min-h-dvh bg-brl-dark">

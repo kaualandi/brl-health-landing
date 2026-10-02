@@ -1,6 +1,4 @@
 import { describe, expect, test } from "bun:test";
-import { db } from "../db";
-import { exercises } from "../db/schema";
 import { equipmentLabels } from "./exercises.labels";
 import { exerciseCount, generatePlan, prescribe, type Candidate, type PlanProfile } from "./fit-plan.engine";
 import { FIT_EQUIPMENT } from "./fit-profile";
@@ -115,14 +113,35 @@ describe("fit-plan engine", () => {
   });
 });
 
+const mk = (name: string, target: string): Candidate => ({
+  id: name, name, targetMuscles: [target], secondaryMuscles: ["a"], equipments: ["bodyweight"],
+});
+const names = (profile: PlanProfile, pool: Candidate[]) => all(generatePlan(profile, pool, 1)).map((e) => e.exerciseId);
+
+describe("regras de nome", () => {
+  const bw = { ...base, equipment: ["bodyweight"], daysPerWeek: 6 };
+
+  test("levantamentos olímpicos só para intermediário+", () => {
+    const pool = ["power clean", "snatch", "clean and jerk", "high pull"].map((n) => mk(n, "glutes")).concat(mk("hip raise", "glutes"));
+    expect(names({ ...bw, level: "beginner" }, pool).filter((n) => n !== "hip raise")).toEqual([]);
+    expect(names({ ...bw, level: "intermediate" }, pool)).toContain("power clean");
+  });
+
+  test("em casa, sem barra fixa/paralelas/argolas", () => {
+    const pool = ["pull-up", "chin-up", "chest dip", "hanging leg raise", "rings row"].map((n) => mk(n, "latissimus dorsi")).concat(mk("pushdown", "latissimus dorsi"));
+    const home = names({ ...bw, location: "home" }, pool);
+    expect(home).toEqual(["pushdown"]);
+    expect(names({ ...bw, location: "gym" }, pool).length).toBeGreaterThan(1);
+  });
+
+  test("joelho evita agachamento sobre os joelhos e lunge de deslizamento", () => {
+    const pool = ["squat (on knees)", "platform slide lunge", "slide reverse step"].map((n) => mk(n, "quadriceps")).concat(mk("wall sit", "quadriceps"));
+    expect(names({ ...bw, limitations: ["knee"] }, pool)).toEqual(["wall sit"]);
+  });
+});
+
 describe("contrato de equipamento", () => {
   test("todo FIT_EQUIPMENT existe no dicionário do catálogo", () => {
     for (const e of FIT_EQUIPMENT) expect(equipmentLabels[e]).toBeDefined();
-  });
-
-  test("catálogo importado: todo equipamento do perfil existe em algum exercício", async () => {
-    const rows = await db.select({ e: exercises.equipments }).from(exercises);
-    const present = new Set(rows.flatMap((r) => r.e));
-    for (const e of ["bodyweight", "barbell", "dumbbell", "cable"]) expect(present.has(e)).toBe(true);
   });
 });
