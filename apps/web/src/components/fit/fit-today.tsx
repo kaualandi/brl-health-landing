@@ -2,6 +2,8 @@ import Link from "next/link";
 import { BedIcon, FootprintsIcon, TimerIcon } from "lucide-react";
 
 import { SwapButton } from "@/components/fit/fit-swap";
+import { FitUnsynced } from "@/components/fit/fit-unsynced";
+import { StartWorkoutButton } from "@/components/fit/fit-start-button";
 import { ExerciseGif } from "@/components/fit/exercise-parts";
 import type { FitPlan, FitPlanDay } from "@/lib/fit-plan";
 import { sentenceCase } from "@/lib/exercises";
@@ -51,6 +53,7 @@ function Workout({ day }: { day: FitPlanDay }) {
           </li>
         ))}
       </ol>
+      <StartWorkoutButton />
     </div>
   );
 }
@@ -61,6 +64,7 @@ export function FitToday({ plan, weekday }: { plan: FitPlan; weekday: number }) 
   return (
     <section aria-label="Treino de hoje" className="pt-8 md:pt-12">
       <p className="mb-4 text-xs font-medium tracking-wide text-brl-purple uppercase">Hoje</p>
+      <FitUnsynced />
       {day ? <Workout day={day} /> : <Rest />}
     </section>
   );

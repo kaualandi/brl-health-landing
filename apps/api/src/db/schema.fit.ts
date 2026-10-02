@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { bigint, foreignKey, integer, pgTable, primaryKey, text, timestamp } from "drizzle-orm/pg-core";
+import { bigint, bigserial, boolean, date, foreignKey, index, integer, numeric, pgTable, primaryKey, text, timestamp, unique, uuid } from "drizzle-orm/pg-core";
 import { exercises, users } from "./schema";
 
 const textArray = (name: string) => text(name).array().notNull().default(sql`'{}'`);
@@ -57,4 +57,40 @@ export const fitPlanExercises = pgTable(
     primaryKey({ columns: [t.userId, t.dayIndex, t.order] }),
     foreignKey({ columns: [t.userId, t.dayIndex], foreignColumns: [fitPlanDays.userId, fitPlanDays.dayIndex] }).onDelete("cascade"),
   ],
+);
+
+export const fitSessions = pgTable(
+  "fit_sessions",
+  {
+    id: bigserial("id", { mode: "number" }).primaryKey(),
+    userId: bigint("user_id", { mode: "number" })
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    clientId: uuid("client_id").notNull(),
+    date: date("date", { mode: "string" }).notNull(),
+    dayIndex: integer("day_index").notNull(),
+    dayName: text("day_name").notNull(),
+    startedAt: timestamp("started_at", { withTimezone: true }).notNull(),
+    finishedAt: timestamp("finished_at", { withTimezone: true }),
+    durationSeconds: integer("duration_seconds"),
+  },
+  (t) => [unique("fit_sessions_user_client_uq").on(t.userId, t.clientId), index("fit_sessions_user_date_idx").on(t.userId, t.date)],
+);
+
+export const fitSessionSets = pgTable(
+  "fit_session_sets",
+  {
+    sessionId: bigint("session_id", { mode: "number" })
+      .notNull()
+      .references(() => fitSessions.id, { onDelete: "cascade" }),
+    exerciseId: text("exercise_id")
+      .notNull()
+      .references(() => exercises.id, { onDelete: "cascade" }),
+    exerciseOrder: integer("exercise_order").notNull(),
+    setNumber: integer("set_number").notNull(),
+    weightKg: numeric("weight_kg", { precision: 6, scale: 2, mode: "number" }),
+    reps: integer("reps").notNull(),
+    done: boolean("done").notNull(),
+  },
+  (t) => [primaryKey({ columns: [t.sessionId, t.exerciseOrder, t.setNumber] })],
 );
