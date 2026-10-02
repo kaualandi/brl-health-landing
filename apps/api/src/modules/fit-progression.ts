@@ -1,8 +1,8 @@
 import { and, desc, eq, inArray } from "drizzle-orm";
 import { Elysia } from "elysia";
 import { db, schema } from "../db";
-import { auth } from "../lib/auth";
 import { today } from "../lib/date";
+import { tier } from "../lib/plan";
 import { stepFor, suggest, trainingWeek, type Entry, type Suggestion } from "./fit-progression.rules";
 
 const { fitSessions, fitSessionSets, fitPlanExercises, exercises } = schema;
@@ -39,9 +39,11 @@ async function histories(userId: number, ids: string[]) {
   return out;
 }
 
-export const fitProgressionModule = new Elysia({ prefix: "/fit/progression" }).use(auth).get(
+export const fitProgressionModule = new Elysia({ prefix: "/fit/progression" }).use(tier).get(
   "/",
-  async ({ userId }) => {
+  async ({ userId, paid }) => {
+    // Free: sem progressão automática (200 locked, o front cai na última carga)
+    if (!paid) return { locked: true, deload: false, week: 0, exercises: {} as Record<string, Suggestion> };
     const plan = await planExercises(userId);
     const [dates, hist] = await Promise.all([
       db.selectDistinct({ date: fitSessions.date }).from(fitSessions).where(eq(fitSessions.userId, userId)),
@@ -53,7 +55,7 @@ export const fitProgressionModule = new Elysia({ prefix: "/fit/progression" }).u
       const entries = [...(hist.get(p.id)?.values() ?? [])].filter((e) => !inDeload(e.date));
       result[p.id] = suggest(entries.slice(0, 2), p, stepFor(p.equipments), deload);
     }
-    return { deload, week, exercises: result };
+    return { locked: false, deload, week, exercises: result };
   },
-  { auth: true },
+  { tier: true },
 );

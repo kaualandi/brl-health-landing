@@ -3,6 +3,7 @@
 import { useQuery } from "@tanstack/react-query";
 
 import { useAuth } from "@/hooks/use-auth";
+import { usePlan } from "@/hooks/use-plan";
 import { getProgression } from "@/services/fit-sessions.service";
 
 export const fitProgressionQuery = (uid: string | undefined) => ({
@@ -13,5 +14,8 @@ export const fitProgressionQuery = (uid: string | undefined) => ({
 /** Sugestão de carga/reps/séries por exercício (undefined enquanto carrega ou sem rede). */
 export function useFitProgression() {
   const { user } = useAuth();
-  return useQuery({ ...fitProgressionQuery(user?.id), enabled: !!user, retry: false }).data;
+  const { tier } = usePlan();
+  const query = fitProgressionQuery(user?.id);
+  // tier na chave: trocar de plano refaz a consulta na hora
+  return useQuery({ ...query, queryKey: [...query.queryKey, tier], enabled: !!user, retry: false }).data;
 }

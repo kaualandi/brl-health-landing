@@ -25,7 +25,7 @@ const PITCH: Partial<Record<PlanTier, Pitch>> = {
   free: {
     eyebrow: "Dá pra ir além",
     title: "Treino e nutrição jogando junto",
-    text: "No BRL Pro os apps se integram, a IA monta seu dia e o histórico fica ilimitado. Prefere com a galera? Tem o Family também.",
+    text: "No BRL Pro o Fit sugere a próxima carga sozinho e o treino ajusta a meta do seu dia no Nutri.",
     price: "R$ 29,90/mês",
     cta: "Conhecer o Pro",
     gradient: "from-brl-purple/20",
@@ -34,9 +34,9 @@ const PITCH: Partial<Record<PlanTier, Pitch>> = {
     accentText: "text-brl-purple",
   },
   pro: {
-    eyebrow: "Leve pra todo mundo",
-    title: "Toda a família no mesmo ritmo",
-    text: "Até 4 pessoas no BRL Family, com dashboard familiar e metas compartilhadas. Sai só R$ 12,47 por pessoa.",
+    eyebrow: "Mais acompanhamento",
+    title: "Mais consultas com nutricionista",
+    text: "Tudo do Pro e 8 consultas com nutricionista no plano, pra quem quer acompanhamento mais de perto.",
     price: "R$ 49,90/mês",
     cta: "Ver o Family",
     gradient: "from-brl-orange/20",

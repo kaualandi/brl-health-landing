@@ -1,3 +1,4 @@
+import { db, schema } from "../db";
 import { api } from "./http";
 
 /** Cria um usuário novo (e-mail único) via /auth/register e devolve a sessão + credenciais. */
@@ -13,4 +14,9 @@ export async function signup() {
     email: string;
     password: string;
   };
+}
+
+/** Troca o plano direto no banco (usuário novo nasce free). */
+export async function setPlan(userId: string | number, planId: "pro" | "family") {
+  await db.insert(schema.subscriptions).values({ userId: Number(userId), planId }).onConflictDoUpdate({ target: schema.subscriptions.userId, set: { planId } });
 }
