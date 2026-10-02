@@ -17,6 +17,7 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/toast";
 import { useFitProfile } from "@/hooks/use-fit-profile";
 import { fitFormError, toFitProfile, type FitForm, type FitProfile } from "@/lib/fit-profile";
+import { generateFitPlan } from "@/services/fit-plan.service";
 import { saveFitProfile } from "@/services/fit.service";
 
 const SECTIONS = [
@@ -27,27 +28,74 @@ const SECTIONS = [
   ["Limitações", LimitationsStep],
 ] as const;
 
-function EditorForm({ initial }: { initial: FitProfile }) {
+function useGeneratePlan() {
   const toast = useToast();
-  const [data, setData] = useState<FitForm>(initial);
+  const [pending, setPending] = useState(false);
+  const generate = async () => {
+    try {
+      await generateFitPlan();
+      setPending(false);
+      toast({ variant: "success", title: "Plano atualizado", description: "Seu perfil foi salvo e a semana de treino refeita." });
+    } catch (e) {
+      toast({ variant: "error", title: "Perfil salvo, mas o plano não foi gerado", description: (e as Error).message });
+      setPending(true);
+    }
+  };
+  return { pending, generate };
+}
+
+function useSaveAndGenerate(data: FitForm) {
+  const toast = useToast();
+  const { pending, generate } = useGeneratePlan();
   const [saving, setSaving] = useState(false);
+  const busy = async (work: () => Promise<void>) => {
+    setSaving(true);
+    await work();
+    setSaving(false);
+  };
+  const save = () =>
+    busy(async () => {
+      const profile = toFitProfile(data);
+      if (!profile) return toast({ variant: "error", title: "Confere os campos", description: fitFormError(data, "all") ?? undefined });
+      try {
+        await saveFitProfile(profile);
+      } catch (e) {
+        return toast({ variant: "error", title: "Não foi possível salvar", description: (e as Error).message });
+      }
+      await generate();
+    });
+  return { saving, pending, save, retry: () => busy(generate) };
+}
+
+type ActionsProps = { error: string | null; saving: boolean; pending: boolean; save: () => void; retry: () => void };
+
+function Actions({ error, saving, pending, save, retry }: ActionsProps) {
+  return (
+    <>
+      {error ? (
+        <p role="alert" className="text-sm text-destructive">
+          {error}
+        </p>
+      ) : null}
+      <Button type="button" className="h-12" onClick={save} disabled={saving}>
+        {saving ? <Loader2Icon aria-hidden className="animate-spin" /> : <SaveIcon aria-hidden />}
+        Salvar alterações
+      </Button>
+      {pending ? (
+        <Button type="button" variant="outline" className="h-12" disabled={saving} onClick={retry}>
+          Tentar gerar de novo
+        </Button>
+      ) : null}
+    </>
+  );
+}
+
+function EditorForm({ initial }: { initial: FitProfile }) {
+  const [data, setData] = useState<FitForm>(initial);
+  const { saving, pending, save, retry } = useSaveAndGenerate(data);
   const update: StepProps["update"] = (key, value) => setData((d) => ({ ...d, [key]: value }));
   const patch: StepProps["patch"] = (changes) => setData((d) => ({ ...d, ...changes }));
   const error = fitFormError(data, "all");
-
-  const save = async () => {
-    const profile = toFitProfile(data);
-    if (!profile) return toast({ variant: "error", title: "Confere os campos", description: error ?? undefined });
-    setSaving(true);
-    try {
-      await saveFitProfile(profile);
-      toast({ variant: "success", title: "Perfil de treino salvo" });
-    } catch (e) {
-      toast({ variant: "error", title: "Não foi possível salvar", description: (e as Error).message });
-    } finally {
-      setSaving(false);
-    }
-  };
 
   return (
     <div className="min-h-dvh bg-brl-dark">
@@ -62,15 +110,7 @@ function EditorForm({ initial }: { initial: FitProfile }) {
             <Body data={data} update={update} patch={patch} />
           </section>
         ))}
-        {error ? (
-          <p role="alert" className="text-sm text-destructive">
-            {error}
-          </p>
-        ) : null}
-        <Button type="button" className="h-12" onClick={save} disabled={saving}>
-          {saving ? <Loader2Icon aria-hidden className="animate-spin" /> : <SaveIcon aria-hidden />}
-          Salvar alterações
-        </Button>
+        <Actions error={error} saving={saving} pending={pending} save={save} retry={retry} />
       </main>
     </div>
   );

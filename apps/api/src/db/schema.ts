@@ -9,6 +9,7 @@ import {
   customType,
   numeric,
   pgTable,
+  primaryKey,
   type PgColumnBuilderBase,
   text,
   timestamp,
@@ -62,19 +63,6 @@ export const nutriProfiles = pgTable("nutri_profiles", {
   wakeTime: text("wake_time"),
   trainTime: text("train_time"),
   sleepTime: text("sleep_time"),
-});
-
-export const fitProfiles = pgTable("fit_profiles", {
-  userId: bigint("user_id", { mode: "number" })
-    .primaryKey()
-    .references(() => users.id, { onDelete: "cascade" }),
-  goal: text("goal").notNull(),
-  level: text("level").notNull(),
-  daysPerWeek: integer("days_per_week").notNull(),
-  location: text("location").notNull(),
-  equipment: textArray("equipment"),
-  sessionMinutes: integer("session_minutes").notNull(),
-  limitations: textArray("limitations"),
 });
 
 export const plans = pgTable("plans", {
@@ -267,3 +255,5 @@ export const exercises = pgTable(
   },
   (t) => [index("ix_exercises_name").on(t.name)],
 );
+
+export * from "./schema.fit";
