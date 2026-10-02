@@ -13,15 +13,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/components/ui/toast";
 import { useAuth } from "@/hooks/use-auth";
+import { safeNext } from "@/lib/safe-next";
 import { cn } from "@/lib/utils";
 import { loginUser } from "@/services/auth.service";
 import type { AuthResponse } from "@/types";
-
-/** Só aceita caminhos internos — evita open redirect via `?next=`. */
-function safeNext(value: string | null): string {
-  if (value && value.startsWith("/") && !value.startsWith("//")) return value;
-  return "/nutri";
-}
 
 const loginSchema = z.object({
   email: z.string().email("E-mail inválido"),

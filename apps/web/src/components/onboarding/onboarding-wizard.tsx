@@ -62,8 +62,14 @@ import {
   saveOnboardingDraft,
   type WizardData,
 } from "@/lib/onboarding-draft";
+import { safeNext } from "@/lib/safe-next";
 import { cn } from "@/lib/utils";
 import type { NutriProfile, Restriction } from "@/types";
+
+/** Destino pós-cadastro: `?next=` interno (ex.: /fit/comecar) ou /nutri. */
+function nextPath(): string {
+  return safeNext(new URLSearchParams(window.location.search).get("next"));
+}
 
 const INITIAL: WizardData = {
   name: "",
@@ -363,7 +369,7 @@ export function OnboardingWizard() {
   // handleSubmit (depois da animação) — por isso ignoramos enquanto generating.
   useEffect(() => {
     if (isAuthenticated && existingProfile && !generating) {
-      router.replace("/nutri");
+      router.replace(nextPath());
     }
   }, [isAuthenticated, existingProfile, router, generating]);
 
@@ -640,7 +646,7 @@ export function OnboardingWizard() {
       })();
       await Promise.all([work, minDelay]);
       clearOnboardingDraft();
-      router.push("/nutri");
+      router.push(nextPath());
     } catch (error) {
       setGenerating(false);
       setSubmitError(

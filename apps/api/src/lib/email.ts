@@ -1,11 +1,12 @@
 import { config } from "../config";
 
-type Email = { to: string; subject: string; text: string };
+type Email = { to: string; subject: string; text: string; html?: string };
 
 /** Caixa de saída em memória, só nos testes (NODE_ENV=test) e sem chave do Resend. */
 export const sentEmails: Email[] = [];
 
-async function deliver(mail: Email) {
+/** Envio aguardável (lança em falha); `sendEmail` é a versão fire-and-forget. */
+export async function deliver(mail: Email) {
   if (!config.resendApiKey) {
     if (process.env.NODE_ENV === "test") sentEmails.push(mail);
     else console.log(`[email] ${mail.to} | ${mail.subject}\n${mail.text}`);

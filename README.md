@@ -6,8 +6,8 @@ produtos sob a mesma marca:
 - **🥗 BRL Nutri — ativo.** App de nutrição personalizada: monta o cardápio em
   nível de alimento, calcula calorias e macros, e acompanha a evolução (peso,
   água, medidas, sono, passos, hábitos).
-- **💪 BRL Fit — em breve.** App de treino adaptativo, hoje uma página de "em
-  breve" com lista de espera.
+- **💪 BRL Fit — ativo.** App de treino: plano gerado pelo perfil, 1.500
+  exercícios em PT com GIF, registro com timer (offline) e progresso.
 
 > **Status:** monorepo **Turborepo** com o front Next.js (`apps/web`) e a API
 > **Elysia + Drizzle + PostgreSQL** (`apps/api`), reconstruída a partir do que o
@@ -122,6 +122,25 @@ e suba a API com `STRIPE_SECRET_KEY`, `STRIPE_PUBLISHABLE_KEY` e
 `STRIPE_WEBHOOK_SECRET` (o `whsec_` impresso). Cartão de teste `4242 4242 4242 4242`.
 
 ---
+
+## E-mail de lançamento do BRL Fit
+
+Aviso único para a lista de espera (`waitlist` com `source = fit`; newsletter fica de
+fora). Idempotente: cada envio bem-sucedido grava `launch_notified_at`, então reexecutar
+não reenvia e, se falhar no meio, rodar de novo continua de onde parou. Envia em lotes de
+10 com pausa de 2 s.
+
+```bash
+cd apps/api
+bun run db:migrate                    # garante a coluna launch_notified_at
+bun run fit:launch-email --dry-run    # só lista quem receberia (não envia nem marca)
+RESEND_API_KEY=... bun run fit:launch-email   # envio real (aborta sem a chave)
+```
+
+**Antes de enviar, defina `WEB_URL` com a URL pública do site** (o link do e-mail é
+`<WEB_URL>/fit`; sem ela cai em `CORS_ORIGIN`). O script pega um advisory lock do
+Postgres: uma segunda execução simultânea aborta. A entrega é *at-least-once*: se o
+processo cair entre o envio e a marcação, aquele único e-mail pode duplicar na reexecução.
 
 ## Estrutura
 

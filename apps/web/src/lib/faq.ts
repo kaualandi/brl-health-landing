@@ -27,7 +27,7 @@ export const FAQ: FaqCategory[] = [
       },
       {
         q: "O BRL Fit já está disponível?",
-        a: "Ainda não — está chegando. Você pode entrar na lista de espera na página do BRL Fit pra ser avisado no lançamento.",
+        a: "Sim! Crie sua conta grátis, monte seu perfil de treino e receba um plano com exercícios em português, registro de séries e acompanhamento de progresso. Progressão automática de carga e o ajuste da meta do Nutri pelo treino são do plano Pro.",
       },
     ],
   },
