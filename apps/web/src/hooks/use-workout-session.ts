@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 import { useToast } from "@/components/ui/toast";
+import { useInvalidateFitStats } from "@/hooks/use-fit-stats";
 import { useFitPlan } from "@/hooks/use-fit-plan";
 import { createSession, skipRest, toPayload, type ActiveSession } from "@/lib/fit-session";
 import { weekdayInSaoPaulo, workoutForWeekday } from "@/lib/fit-week";
@@ -63,6 +64,7 @@ export function useWorkoutActions(uid: string | undefined, session: ActiveSessio
   const router = useRouter();
   const qc = useQueryClient();
   const toast = useToast();
+  const invalidateStats = useInvalidateFitStats();
   const [busy, setBusy] = useState(false);
   useEffect(() => {
     if (uid && session && !busy) saveActive(uid, session);
@@ -72,6 +74,7 @@ export function useWorkoutActions(uid: string | undefined, session: ActiveSessio
     if (!uid || !session) return;
     setBusy(true);
     const { left, rejected } = await submitSession(uid, toPayload(session, new Date()));
+    invalidateStats();
     if (rejected) toast({ variant: "error", title: "Treino não enviado", description: `O servidor recusou: ${rejected} — ficou em não sincronizados.` });
     else if (left > 0) toast({ variant: "info", title: "Treino salvo no aparelho", description: "Sem conexão agora: enviamos assim que a rede voltar." });
     await qc.invalidateQueries({ queryKey: ["fit-progression"] });

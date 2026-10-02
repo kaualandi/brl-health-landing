@@ -48,7 +48,7 @@ export function loadActive(uid: string) {
 export const saveActive = (uid: string, s: ActiveSession | null) => write(activeKey(uid), s);
 export const loadQueue = (uid: string) => read<SessionPayload[]>(queueKey(uid), []);
 
-/** Exclusão de conta: apaga só o treino em andamento e as filas deste usuário. */
+/** Exclusão de conta: apaga o treino em andamento e as filas (pendentes e recusados) deste usuário. */
 export function clearFitSessions(uid: string): void {
   write(activeKey(uid), null);
   write(queueKey(uid), null);
