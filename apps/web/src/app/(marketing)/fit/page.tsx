@@ -72,7 +72,7 @@ const FEATURES = [
 
 export default function FitPage() {
   return (
-    <div className="bg-brl-dark">
+    <div className="bg-background">
       {/* Hero */}
       <section className="relative overflow-hidden pt-32 pb-20 md:pt-40 md:pb-28">
         <div
