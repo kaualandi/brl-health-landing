@@ -73,6 +73,7 @@ export const fitSessions = pgTable(
     startedAt: timestamp("started_at", { withTimezone: true }).notNull(),
     finishedAt: timestamp("finished_at", { withTimezone: true }),
     durationSeconds: integer("duration_seconds"),
+    kcal: integer("kcal"),
   },
   (t) => [unique("fit_sessions_user_client_uq").on(t.userId, t.clientId), index("fit_sessions_user_date_idx").on(t.userId, t.date)],
 );

@@ -23,6 +23,7 @@ export type SessionSummary = {
   durationSeconds: number | null;
   setsDone: number;
   volumeKg: number;
+  kcal: number | null;
 };
 
 function read<T>(key: string, fallback: T): T {

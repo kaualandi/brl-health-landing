@@ -3,6 +3,7 @@ import { Elysia, t } from "elysia";
 import { db, schema } from "../db";
 import { auth } from "../lib/auth";
 import { today } from "../lib/date";
+import { sessionKcal } from "../lib/energy";
 
 const { fitSessions, fitSessionSets, exercises } = schema;
 
@@ -39,6 +40,7 @@ const summaryCols = {
   startedAt: fitSessions.startedAt,
   finishedAt: fitSessions.finishedAt,
   durationSeconds: fitSessions.durationSeconds,
+  kcal: fitSessions.kcal,
   setsDone: sql<number>`count(*) filter (where ${fitSessionSets.done})::int`,
   volumeKg: sql<number>`coalesce(sum(${fitSessionSets.weightKg} * ${fitSessionSets.reps}) filter (where ${fitSessionSets.done}), 0)::float8`,
 };
@@ -95,6 +97,9 @@ async function saveSession(userId: number, b: Body) {
     await tx.execute(sql`select pg_advisory_xact_lock(hashtext(${`fitsession:${userId}:${b.clientId}`}))`);
     const [dup] = await tx.select({ id: fitSessions.id }).from(fitSessions).where(and(eq(fitSessions.userId, userId), eq(fitSessions.clientId, b.clientId)));
     if (dup) return dup.id;
+    const [prof] = await tx.select({ w: schema.nutriProfiles.weightKg }).from(schema.nutriProfiles).where(eq(schema.nutriProfiles.userId, userId));
+    const durationSeconds = Math.round((finishedAt.getTime() - startedAt.getTime()) / 1000);
+    const setsDone = b.sets.filter((s) => s.done).length;
     const [row] = await tx
       .insert(fitSessions)
       .values({
@@ -105,7 +110,8 @@ async function saveSession(userId: number, b: Body) {
         dayName: b.dayName.trim(),
         startedAt,
         finishedAt,
-        durationSeconds: Math.round((finishedAt.getTime() - startedAt.getTime()) / 1000),
+        durationSeconds,
+        kcal: sessionKcal(prof?.w ?? null, setsDone, durationSeconds),
       })
       .returning({ id: fitSessions.id });
     await tx.insert(fitSessionSets).values(b.sets.map((s) => ({ ...s, sessionId: row.id })));

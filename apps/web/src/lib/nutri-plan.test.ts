@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  applyWorkoutBonus,
   computeNutriPlan,
   estimateWeeksToGoal,
   macroKcal,
@@ -56,6 +57,14 @@ describe("computeNutriPlan — TDEE escala com a atividade", () => {
 
     expect(sedentary.tdee).toBe(2136);
     expect(athlete.tdee).toBe(3382);
+  });
+
+  it("trava os 5 fatores de atividade (espelhados em apps/api/src/lib/energy.ts)", () => {
+    const factors = { sedentary: 1.2, light: 1.375, moderate: 1.55, active: 1.725, athlete: 1.9 };
+    for (const [activity, f] of Object.entries(factors)) {
+      const { tdee } = computeNutriPlan(makeProfile({ activity: activity as ActivityLevel }));
+      expect(tdee).toBe(Math.round(1780 * f));
+    }
   });
 
   it("aumenta o TDEE de forma monotônica entre os níveis", () => {
@@ -225,5 +234,25 @@ describe("estimateWeeksToGoal", () => {
     // Objetivo "health": alvo ~= TDEE, então o delta diário é ínfimo.
     const plan = computeNutriPlan(makeProfile({ goal: "health" }));
     expect(estimateWeeksToGoal(plan, 80, 78)).toBeNull();
+  });
+});
+
+describe("applyWorkoutBonus", () => {
+  const base = computeNutriPlan(makeProfile());
+  it("sem bônus devolve o plano igual", () => {
+    expect(applyWorkoutBonus(base, 0)).toBe(base);
+  });
+  it("soma kcal e carbo, mantém proteína/gordura", () => {
+    const p = applyWorkoutBonus(base, 400);
+    expect(p.targetCalories).toBe(base.targetCalories + 400);
+    expect(p.carbs).toBe(base.carbs + 100);
+    expect([p.protein, p.fat]).toEqual([base.protein, base.fat]);
+  });
+  it("a soma das refeições fecha na meta com bônus quebrado", () => {
+    const sum = (p: NutriPlan) => p.meals.reduce((a, m) => a + m.kcal, 0);
+    for (const bonus of [410, 333, 57]) {
+      const p = applyWorkoutBonus(base, bonus);
+      expect(sum(p)).toBe(p.targetCalories);
+    }
   });
 });
