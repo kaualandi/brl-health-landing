@@ -167,10 +167,15 @@ export function applyWorkoutBonus(plan: NutriPlan, bonusKcal: number): NutriPlan
   if (bonusKcal <= 0) return plan;
   const targetCalories = plan.targetCalories + bonusKcal;
   const ratio = targetCalories / plan.targetCalories;
+  const meals = plan.meals.map((m) => ({ ...m, kcal: Math.round((m.kcal * ratio) / 5) * 5 }));
+  // o arredondamento pode descasar: o resto vai pra maior refeição (soma = meta)
+  const rest = targetCalories - meals.reduce((sum, m) => sum + m.kcal, 0);
+  const big = meals.reduce((bi, m, i) => (m.kcal > meals[bi].kcal ? i : bi), 0);
+  if (meals.length) meals[big].kcal += rest;
   return {
     ...plan,
     targetCalories,
     carbs: plan.carbs + Math.round(bonusKcal / 4),
-    meals: plan.meals.map((m) => ({ ...m, kcal: Math.round((m.kcal * ratio) / 5) * 5 })),
+    meals,
   };
 }

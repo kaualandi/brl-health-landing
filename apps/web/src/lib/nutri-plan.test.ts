@@ -248,4 +248,11 @@ describe("applyWorkoutBonus", () => {
     expect(p.carbs).toBe(base.carbs + 100);
     expect([p.protein, p.fat]).toEqual([base.protein, base.fat]);
   });
+  it("a soma das refeições fecha na meta com bônus quebrado", () => {
+    const sum = (p: NutriPlan) => p.meals.reduce((a, m) => a + m.kcal, 0);
+    for (const bonus of [410, 333, 57]) {
+      const p = applyWorkoutBonus(base, bonus);
+      expect(sum(p)).toBe(p.targetCalories);
+    }
+  });
 });

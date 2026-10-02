@@ -1,4 +1,4 @@
-import { and, count, eq, sum } from "drizzle-orm";
+import { and, count, eq, isNotNull, sum } from "drizzle-orm";
 import { Elysia } from "elysia";
 import { db, schema } from "../db";
 import { auth } from "../lib/auth";
@@ -15,7 +15,7 @@ export const nutriEnergyModule = new Elysia({ prefix: "/nutri/today-energy" }).u
     const [agg] = await db
       .select({ n: count(), kcal: sum(fitSessions.kcal) })
       .from(fitSessions)
-      .where(and(eq(fitSessions.userId, userId), eq(fitSessions.date, date)));
+      .where(and(eq(fitSessions.userId, userId), eq(fitSessions.date, date), isNotNull(fitSessions.kcal)));
     const workoutKcal = Number(agg.kcal ?? 0);
     const [profile] = await db.select().from(nutriProfiles).where(eq(nutriProfiles.userId, userId));
     const [fit] = await db.select({ d: fitProfiles.daysPerWeek }).from(fitProfiles).where(eq(fitProfiles.userId, userId));

@@ -308,7 +308,7 @@ function InicioTab({ profile }: { profile: NutriProfile }) {
       {/* Resumo do plano */}
       <section className="pt-10 md:pt-14">
         <SectionTitle eyebrow="Seu resumo" title="O plano da sua semana" />
-        <PlanSummary plan={plan} />
+        <PlanSummary plan={plan} bonusKcal={energy?.bonusKcal} />
         <div className="mt-5 empty:hidden">
           <WorkoutTodayCard energy={energy} />
         </div>

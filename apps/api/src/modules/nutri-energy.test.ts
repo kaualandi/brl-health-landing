@@ -36,6 +36,13 @@ describe("GET /nutri/today-energy", () => {
     expect(res.body).toEqual({ date: today(), workoutKcal: 400, bonusKcal: 400, sessions: 2 });
   });
 
+  test("sessão sem kcal não conta", async () => {
+    const { token, user: u } = await user("sedentary");
+    await session(u.id, null);
+    const res = await api("GET", "/nutri/today-energy", undefined, token);
+    expect(res.body).toEqual({ date: today(), workoutKcal: 0, bonusKcal: 0, sessions: 0 });
+  });
+
   test("muito ativo que treina leve: bônus 0, mas o treino aparece", async () => {
     const { token, user: u } = await user("athlete");
     await session(u.id, 300);

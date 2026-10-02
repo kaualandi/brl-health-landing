@@ -60,7 +60,7 @@ function Stat({
   );
 }
 
-export function PlanSummary({ plan }: { plan: NutriPlan }) {
+export function PlanSummary({ plan, bonusKcal = 0 }: { plan: NutriPlan; bonusKcal?: number }) {
   const macros = macroKcal(plan);
 
   const rows: MacroRow[] = [
@@ -97,12 +97,14 @@ export function PlanSummary({ plan }: { plan: NutriPlan }) {
       <div className="grid gap-5 @3xl:grid-cols-[1fr_1.1fr]">
         <div className="flex flex-col justify-center rounded-2xl border border-brl-purple/30 bg-gradient-to-br from-brl-purple/15 to-transparent p-6 text-center sm:p-8">
           <p className="text-xs font-medium tracking-wide text-brl-purple uppercase">
-            Sua meta diária
+            {bonusKcal > 0 ? "Meta de hoje" : "Sua meta diária"}
           </p>
           <p className="mt-3 font-display text-5xl font-extrabold tracking-tight text-foreground sm:text-6xl">
             <AnimatedCounter to={plan.targetCalories} />
           </p>
-          <p className="mt-1 text-sm text-muted-foreground">kcal por dia</p>
+          <p className="mt-1 text-sm text-muted-foreground">
+            {bonusKcal > 0 ? `kcal · inclui +${bonusKcal} do treino de hoje` : "kcal por dia"}
+          </p>
           <p className="mt-4 text-xs text-muted-foreground">
             Gasto estimado (TDEE):{" "}
             <span className="font-medium text-foreground">
