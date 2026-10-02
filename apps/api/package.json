@@ -9,7 +9,8 @@
     "test": "bun test",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "bun src/db/migrate.ts",
-    "db:seed": "bun src/db/seed.ts"
+    "db:seed": "bun src/db/seed.ts",
+    "db:import-exercises": "bun src/db/import-exercises.ts"
   },
   "dependencies": {
     "@elysiajs/cors": "^1.4.2",

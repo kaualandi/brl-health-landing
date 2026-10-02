@@ -23,12 +23,16 @@ services:
     environment:
       DATABASE_URL: postgres://brl:${POSTGRES_PASSWORD:-brl}@db:5432/brlhealth
       JWT_SECRET: ${JWT_SECRET:?defina JWT_SECRET no .env da raiz}
+      MEDIA_DIR: /app/apps/api/storage/media
+      PUBLIC_URL: ${PUBLIC_URL:-http://localhost:3333}
       TRUST_PROXY: ${TRUST_PROXY:-false}
       CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:3000}
       RESEND_API_KEY: ${RESEND_API_KEY:-}
       STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY:-}
       STRIPE_PUBLISHABLE_KEY: ${STRIPE_PUBLISHABLE_KEY:-}
       STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET:-}
+    volumes:
+      - media:/app/apps/api/storage
     ports:
       - "3333:3333"
     depends_on:
@@ -37,3 +41,4 @@ services:
 
 volumes:
   pgdata:
+  media:

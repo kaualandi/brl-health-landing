@@ -6,6 +6,7 @@ import { db } from "./db";
 import "./lib/formats";
 import { errors } from "./lib/errors";
 import { consultationsModule } from "./modules/consultations";
+import { exercisesModule } from "./modules/exercises";
 import { catalogModule } from "./modules/catalog";
 import { accountModule } from "./modules/account";
 import { authModule } from "./modules/auth";
@@ -20,6 +21,7 @@ export const app = new Elysia()
   .use(errors)
   .use(cors({ origin: config.corsOrigin }))
   .use(catalogModule)
+  .use(exercisesModule)
   .use(authModule)
   .use(engagementModule)
   .use(plansModule)

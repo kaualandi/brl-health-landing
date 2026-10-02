@@ -236,3 +236,19 @@ export const emailTokens = pgTable(
   },
   (t) => [index("ix_email_tokens_lookup").on(t.purpose, t.tokenHash)],
 );
+
+export const exercises = pgTable(
+  "exercises",
+  {
+    id: text("id").primaryKey(),
+    name: text("name").notNull(),
+    gifUrl: text("gif_url").notNull(),
+    mediaPath: text("media_path"),
+    bodyParts: textArray("body_parts"),
+    targetMuscles: textArray("target_muscles"),
+    secondaryMuscles: textArray("secondary_muscles"),
+    equipments: textArray("equipments"),
+    instructions: textArray("instructions"),
+  },
+  (t) => [index("ix_exercises_name").on(t.name)],
+);
