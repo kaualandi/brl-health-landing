@@ -32,7 +32,7 @@ function Chip({ selected, onClick, children }: { selected: boolean; onClick: () 
       className={cn(
         "min-h-11 min-w-14 rounded-xl border px-4 text-sm font-semibold outline-none transition-colors",
         "focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50",
-        selected ? "border-brl-purple/60 bg-brl-purple/15 text-foreground" : "border-white/10 text-muted-foreground hover:border-brl-purple/40",
+        selected ? "border-brl-purple/60 bg-brl-purple/15 text-foreground" : "border-foreground/10 text-muted-foreground hover:border-brl-purple/40",
       )}
     >
       {children}

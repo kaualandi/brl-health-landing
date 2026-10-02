@@ -23,7 +23,7 @@ export function fitSummaryRows(p: FitProfile): [string, string][] {
 
 export function FitSummary({ profile, onEdit }: { profile: FitProfile; onEdit?: (label: string) => void }) {
   return (
-    <dl className="divide-y divide-white/8 rounded-2xl border border-white/8 bg-brl-card">
+    <dl className="divide-y divide-foreground/8 rounded-2xl border border-foreground/8 bg-card">
       {fitSummaryRows(profile).map(([label, value]) => (
         <div key={label} className="flex items-start justify-between gap-4 p-4">
           <div>

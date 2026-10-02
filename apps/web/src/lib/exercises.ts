@@ -40,6 +40,11 @@ export function buildExerciseSearch(query: ExerciseQuery, extra: Record<string, 
   return sp.toString();
 }
 
+/** Query da biblioteca; embutida na aba do app, preserva `aba=biblioteca`. */
+export function librarySearch(query: ExerciseQuery, embedded: boolean): string {
+  return [embedded ? "aba=biblioteca" : "", buildExerciseSearch(query)].filter(Boolean).join("&");
+}
+
 /** Sentence case: só a primeira letra maiúscula. */
 export function sentenceCase(s: string): string {
   return s.charAt(0).toUpperCase() + s.slice(1);

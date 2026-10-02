@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
   ChevronDownIcon,
+  DumbbellIcon,
   LogOutIcon,
   PencilIcon,
   SaladIcon,
@@ -62,7 +63,7 @@ export function UserMenu({ user }: { user: User }) {
         onClick={() => setOpen((v) => !v)}
         aria-haspopup="menu"
         aria-expanded={open}
-        className="flex items-center gap-2 rounded-full border border-white/10 bg-white/5 py-1 pr-2 pl-1 text-sm font-medium text-foreground transition-colors outline-none hover:bg-white/10 focus-visible:ring-3 focus-visible:ring-ring/50"
+        className="flex items-center gap-2 rounded-full border border-foreground/10 bg-foreground/5 py-1 pr-2 pl-1 text-sm font-medium text-foreground transition-colors outline-none hover:bg-foreground/10 focus-visible:ring-3 focus-visible:ring-ring/50"
       >
         <span
           aria-hidden
@@ -82,9 +83,9 @@ export function UserMenu({ user }: { user: User }) {
       {open ? (
         <div
           role="menu"
-          className="absolute right-0 z-50 mt-2 w-56 overflow-hidden rounded-xl border border-white/10 bg-brl-card shadow-2xl shadow-black/40"
+          className="absolute right-0 z-50 mt-2 w-56 overflow-hidden rounded-xl border border-foreground/10 bg-card shadow-2xl shadow-black/40"
         >
-          <div className="border-b border-white/5 px-4 py-3">
+          <div className="border-b border-foreground/5 px-4 py-3">
             <p className="truncate text-sm font-semibold text-foreground">
               {user.name}
             </p>
@@ -97,16 +98,25 @@ export function UserMenu({ user }: { user: User }) {
               href="/nutri"
               role="menuitem"
               onClick={() => setOpen(false)}
-              className="flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm text-foreground/90 transition-colors hover:bg-white/5"
+              className="flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm text-foreground/90 transition-colors hover:bg-foreground/5"
             >
               <SaladIcon className="size-4 text-brl-purple" />
-              Meu Nutri
+              BRL Nutri
+            </Link>
+            <Link
+              href="/fit/app"
+              role="menuitem"
+              onClick={() => setOpen(false)}
+              className="flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm text-foreground/90 transition-colors hover:bg-foreground/5"
+            >
+              <DumbbellIcon className="size-4 text-brl-orange" />
+              BRL Fit
             </Link>
             <Link
               href="/nutri/perfil"
               role="menuitem"
               onClick={() => setOpen(false)}
-              className="flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm text-foreground/90 transition-colors hover:bg-white/5"
+              className="flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm text-foreground/90 transition-colors hover:bg-foreground/5"
             >
               <PencilIcon className="size-4 text-brl-purple" />
               Editar perfil
@@ -115,7 +125,7 @@ export function UserMenu({ user }: { user: User }) {
               href="/conta"
               role="menuitem"
               onClick={() => setOpen(false)}
-              className="flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm text-foreground/90 transition-colors hover:bg-white/5"
+              className="flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm text-foreground/90 transition-colors hover:bg-foreground/5"
             >
               <UserIcon className="size-4 text-brl-purple" />
               Minha conta

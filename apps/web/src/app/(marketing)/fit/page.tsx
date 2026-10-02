@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 
 import { AnimatedSection } from "@/components/animations/animated-section";
+import { OpenFitCta } from "@/components/fit/open-fit-cta";
 import { WaitlistForm } from "@/components/forms/waitlist-form";
 import { Button } from "@/components/ui/button";
 import { SITE_NAME } from "@/lib/site";
@@ -84,6 +85,7 @@ export default function FitPage() {
             vem mais rápido.
           </p>
 
+          <OpenFitCta />
           <div className="mx-auto mt-9 max-w-md">
             <WaitlistForm source="fit" cta="Entrar na lista" />
             <p className="mt-3 text-xs text-muted-foreground">

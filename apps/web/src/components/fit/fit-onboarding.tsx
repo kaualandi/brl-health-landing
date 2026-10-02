@@ -63,7 +63,7 @@ function initialState(userId: string, saved: FitProfile | null): WizardInit {
 
 function Loader() {
   return (
-    <div className="flex min-h-dvh items-center justify-center bg-brl-dark">
+    <div className="flex min-h-dvh items-center justify-center bg-background">
       <Loader2Icon className="size-6 animate-spin text-brl-purple" aria-label="Carregando" />
     </div>
   );
@@ -78,6 +78,9 @@ function Success({ plan }: { plan: FitPlan }) {
       </div>
       <p className="text-sm text-muted-foreground">Essa é a sua semana de treino, montada a partir do seu perfil.</p>
       <FitPlanPreview plan={plan} />
+      <Button render={<Link href="/fit/app" />} nativeButton={false} className="h-12">
+        Abrir o BRL Fit
+      </Button>
       <Button render={<Link href="/fit/perfil" />} nativeButton={false} variant="outline" className="h-12">
         Editar perfil
       </Button>
@@ -161,9 +164,9 @@ function Wizard({ userId, saved }: { userId: string; saved: FitProfile | null })
   const w = useWizardState(userId, saved);
   const { saving, done, submit } = useSave(w.data, w.setError);
   return (
-    <div className="flex min-h-dvh flex-col bg-brl-dark">
+    <div className="flex min-h-dvh flex-col bg-background">
       <header className="mx-auto flex w-full max-w-2xl items-center justify-between px-4 pt-6 md:px-6">
-        <Link href="/fit" className="font-display text-lg font-extrabold tracking-tight" aria-label="BRL Fit">
+        <Link href="/fit/app" className="font-display text-lg font-extrabold tracking-tight" aria-label="BRL Fit">
           <span className="text-brl-purple">BRL</span> Fit
         </Link>
         {done || saving ? null : (
