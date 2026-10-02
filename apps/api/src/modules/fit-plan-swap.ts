@@ -5,6 +5,7 @@ import { auth } from "../lib/auth";
 import { exerciseMedia } from "./exercises";
 import { equipmentLabels, label, muscleLabels } from "./exercises.labels";
 import { loadPlan } from "./fit-plan";
+import { withEquipment } from "./fit-plan.engine";
 import { alternativesFor } from "./fit-plan.swap";
 
 const { fitPlanExercises: items, fitProfiles, exercises } = schema;
@@ -14,7 +15,8 @@ type Reader = Pick<typeof db, "select">;
 
 /** Alternativas válidas pro exercício do plano; null se perfil/dia/ordem não existem. */
 async function swapOptions(rd: Reader, userId: number, day: number, order: number) {
-  const [profile] = await rd.select().from(fitProfiles).where(eq(fitProfiles.userId, userId));
+  const [row] = await rd.select().from(fitProfiles).where(eq(fitProfiles.userId, userId));
+  const profile = row && withEquipment(row);
   const dayRows = await rd
     .select({ order: items.order, exercise: exercises })
     .from(items)

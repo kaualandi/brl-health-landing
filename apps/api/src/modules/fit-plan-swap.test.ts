@@ -24,6 +24,8 @@ const fixtures = [
   mk("mid", ["dumbbell"], ["forearms"]),
   mk("none", ["dumbbell"]),
   mk("barbell", ["barbell"]),
+  mk("bwcur", ["bodyweight"]),
+  mk("bwalt", ["bodyweight"]),
 ];
 const id = (key: string) => `fx-${tag}-${key}`;
 const profile = { goal: "health", level: "beginner", daysPerWeek: 3, location: "home", equipment: ["dumbbell"], sessionMinutes: 45, limitations: [] };
@@ -63,6 +65,19 @@ describe("troca de exercício", () => {
     expect(res.status).toBe(200);
     expect(res.body.map((e: { id: string }) => e.id)).toEqual([id("best"), id("mid"), id("none")]);
     expect(res.body[0]).toMatchObject({ name: expect.any(String), gifUrl: expect.any(String), equipments: [{ value: "dumbbell" }] });
+  });
+
+  test("academia sem equipamento: alternativas só de peso corporal (#191)", async () => {
+    const s = await signup();
+    const userId = Number(s.user.id);
+    await api("PUT", "/fit/profile", { ...profile, location: "gym", equipment: [] }, s.token);
+    await db.insert(schema.fitPlans).values({ userId, seed: 1, split: "Full body A/B/C" });
+    await db.insert(schema.fitPlanDays).values({ userId, dayIndex: 0, name: "Treino A", focus: [muscle] });
+    await db.insert(schema.fitPlanExercises).values({ userId, dayIndex: 0, order: 1, exerciseId: id("bwcur"), sets: 3, repsMin: 10, repsMax: 12, restSeconds: 60 });
+    const res = await api("GET", alt(0, 1), undefined, s.token);
+    expect(res.status).toBe(200);
+    expect(res.body.map((e: { id: string }) => e.id)).toEqual([id("bwalt")]);
+    expect(res.body[0].equipments).toEqual([{ value: "bodyweight", label: "Peso corporal" }]);
   });
 
   test("404 para dia/ordem inexistente", async () => {
