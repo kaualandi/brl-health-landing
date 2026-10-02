@@ -1,0 +1,1 @@
+ALTER TABLE "waitlist" ADD COLUMN "launch_notified_at" timestamp with time zone;

@@ -5,12 +5,7 @@ import { Loader2Icon } from "lucide-react";
 import { useEffect, type ReactNode } from "react";
 
 import { useAuth } from "@/hooks/use-auth";
-
-/** Só aceita caminhos internos — evita open redirect via `?next=`. */
-function safeNext(value: string | null): string {
-  if (value && value.startsWith("/") && !value.startsWith("//")) return value;
-  return "/nutri";
-}
+import { safeNext } from "@/lib/safe-next";
 
 /**
  * Inverso do RequireAuth: tira de telas de entrada (login) quem JÁ está logado.

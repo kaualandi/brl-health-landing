@@ -12,6 +12,7 @@ const port = Number(process.env.PORT ?? 3333);
 export const config = {
   port,
   publicUrl: (process.env.PUBLIC_URL ?? `http://localhost:${port}`).replace(/\/+$/, ""),
+  webUrl: (process.env.WEB_URL ?? process.env.CORS_ORIGIN ?? "http://localhost:3000").replace(/\/+$/, ""),
   databaseUrl: required("DATABASE_URL"),
   jwtSecret,
   corsOrigin: process.env.CORS_ORIGIN ?? "http://localhost:3000",

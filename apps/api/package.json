@@ -11,7 +11,8 @@
     "db:migrate": "bun src/db/migrate.ts",
     "db:seed": "bun src/db/seed.ts",
     "db:import-exercises": "bun src/db/import-exercises.ts",
-    "db:translate": "bun src/db/apply-translations.ts"
+    "db:translate": "bun src/db/apply-translations.ts",
+    "fit:launch-email": "bun src/scripts/fit-launch-email.ts"
   },
   "dependencies": {
     "@elysiajs/cors": "^1.4.2",

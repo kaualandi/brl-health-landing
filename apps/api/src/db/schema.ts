@@ -205,6 +205,7 @@ export const waitlist = pgTable("waitlist", {
   id: id(),
   email: text("email").notNull().unique(),
   source: text("source").notNull().default("fit"),
+  launchNotifiedAt: timestamp("launch_notified_at", { withTimezone: true }),
   createdAt: createdAt(),
 });
 

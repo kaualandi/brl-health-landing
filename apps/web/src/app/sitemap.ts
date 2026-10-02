@@ -19,7 +19,7 @@ const STATIC_ROUTES: StaticRoute[] = [
   { path: "/calculadora", priority: 0.8, changeFrequency: "monthly" },
   { path: "/conteudos", priority: 0.7, changeFrequency: "weekly" },
   { path: "/receitas", priority: 0.7, changeFrequency: "weekly" },
-  { path: "/fit", priority: 0.6, changeFrequency: "monthly" },
+  { path: "/fit", priority: 0.8, changeFrequency: "monthly" },
   { path: "/sobre", priority: 0.6, changeFrequency: "monthly" },
   { path: "/faq", priority: 0.5, changeFrequency: "monthly" },
   { path: "/contato", priority: 0.4, changeFrequency: "yearly" },

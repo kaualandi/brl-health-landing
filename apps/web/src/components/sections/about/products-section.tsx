@@ -71,7 +71,7 @@ export function ProductsSection() {
       <div className="mt-12 grid gap-6 md:grid-cols-2">
         <AboutProductCard
           title="BRL Fit"
-          description="Treinos adaptativos que aprendem o seu ritmo. Do iniciante ao avançado, com IA que ajusta o plano conforme você evolui."
+          description="Treinos adaptativos que aprendem o seu ritmo. Do iniciante ao avançado, com plano gerado pelo seu perfil e progressão de carga conforme você evolui."
           Icon={DumbbellIcon}
           accent="orange"
         />
