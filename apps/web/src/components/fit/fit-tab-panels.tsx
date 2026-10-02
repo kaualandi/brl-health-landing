@@ -1,5 +1,6 @@
 "use client";
 
+import { useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
 import { Loader2Icon, PencilIcon, RefreshCwIcon } from "lucide-react";
 import { useRef, useState } from "react";
@@ -14,11 +15,13 @@ import { generateFitPlan } from "@/services/fit-plan.service";
 /** Gera (ou refaz) o plano a partir do perfil, com toast de erro. */
 export function useGenerate() {
   const toast = useToast();
+  const qc = useQueryClient();
   const [busy, setBusy] = useState(false);
   const run = async () => {
     setBusy(true);
     try {
       await generateFitPlan();
+      void qc.invalidateQueries({ queryKey: ["fit-progression"] });
     } catch (e) {
       toast({ variant: "error", title: "Não foi possível gerar o plano", description: (e as Error).message });
     }

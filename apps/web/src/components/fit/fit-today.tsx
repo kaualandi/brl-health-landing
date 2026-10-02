@@ -5,6 +5,9 @@ import { SwapButton } from "@/components/fit/fit-swap";
 import { FitUnsynced } from "@/components/fit/fit-unsynced";
 import { StartWorkoutButton } from "@/components/fit/fit-start-button";
 import { ExerciseGif } from "@/components/fit/exercise-parts";
+import { DeloadBanner, NextHint } from "@/components/fit/fit-progression";
+import { useFitProgression } from "@/hooks/use-fit-progression";
+import type { ProgressionItem } from "@/lib/fit-progression";
 import type { FitPlan, FitPlanDay, FitPlanExercise } from "@/lib/fit-plan";
 import { sentenceCase } from "@/lib/exercises";
 import { workoutForWeekday } from "@/lib/fit-week";
@@ -26,37 +29,42 @@ function Rest() {
   );
 }
 
-function ExerciseRow({ day, item }: { day: number; item: FitPlanExercise }) {
+function ExerciseRow({ day, item, next }: { day: number; item: FitPlanExercise; next?: ProgressionItem }) {
   return (
-    <li className="flex items-center gap-1">
-      <Link
-        href={`/fit/exercicios/${item.exercise.id}?aba=hoje`}
-        className="flex min-w-0 flex-1 items-center gap-3 rounded-xl border border-foreground/5 p-2 outline-none transition-colors hover:border-brl-purple/50 focus-visible:ring-3 focus-visible:ring-ring/50"
-      >
-        <ExerciseGif src={item.exercise.gifUrl} name={item.exercise.name} className="size-16 w-16 shrink-0" />
-        <span className="min-w-0 flex-1">
-          <span className="block truncate text-sm font-semibold">{sentenceCase(item.exercise.name)}</span>
-          <span className="mt-0.5 flex items-center gap-1.5 text-xs text-muted-foreground">
-            <TimerIcon aria-hidden className="size-3.5" /> Descanso de {item.restSeconds}s
+    <li>
+      <div className="flex items-center gap-1">
+        <Link
+          href={`/fit/exercicios/${item.exercise.id}?aba=hoje`}
+          className="flex min-w-0 flex-1 items-center gap-3 rounded-xl border border-foreground/5 p-2 outline-none transition-colors hover:border-brl-purple/50 focus-visible:ring-3 focus-visible:ring-ring/50"
+        >
+          <ExerciseGif src={item.exercise.gifUrl} name={item.exercise.name} className="size-16 w-16 shrink-0" />
+          <span className="min-w-0 flex-1">
+            <span className="block truncate text-sm font-semibold">{sentenceCase(item.exercise.name)}</span>
+            <span className="mt-0.5 flex items-center gap-1.5 text-xs text-muted-foreground">
+              <TimerIcon aria-hidden className="size-3.5" /> Descanso de {item.restSeconds}s
+            </span>
           </span>
-        </span>
-        <span className="shrink-0 text-sm font-bold tabular-nums text-brl-purple">
-          {item.sets}×{item.reps}
-        </span>
-      </Link>
-      <SwapButton day={day} item={item} />
+          <span className="shrink-0 text-sm font-bold tabular-nums text-brl-purple">
+            {next?.reason === "deload" ? next.sets : item.sets}×{item.reps}
+          </span>
+        </Link>
+        <SwapButton day={day} item={item} />
+      </div>
+      <NextHint item={next} />
     </li>
   );
 }
 
 function Workout({ day }: { day: FitPlanDay }) {
+  const prog = useFitProgression();
   return (
     <div className="rounded-2xl border border-foreground/10 bg-card p-5 md:p-6">
       <h2 className="font-display text-2xl font-extrabold tracking-tight">{day.name}</h2>
       <p className="mt-1 text-sm text-muted-foreground">Foco: {day.focus.join(" · ")}</p>
+      {prog?.deload ? <DeloadBanner week={prog.week} /> : null}
       <ol className="mt-5 flex flex-col gap-3">
         {day.exercises.map((e) => (
-          <ExerciseRow key={e.order} day={day.index} item={e} />
+          <ExerciseRow key={e.order} day={day.index} item={e} next={prog?.exercises[e.exercise.id]} />
         ))}
       </ol>
       <StartWorkoutButton />

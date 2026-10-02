@@ -1,4 +1,5 @@
 import type { FitPlanDay } from "@/lib/fit-plan";
+import type { Progression } from "@/lib/fit-progression";
 
 export type SessionSet = {
   exerciseId: string;
@@ -46,15 +47,16 @@ export type Loads = Record<string, number>;
 
 const repsMin = (reps: string) => Number.parseInt(reps, 10) || 0;
 
-/** Sessão nova: séries pré-preenchidas com reps = mínimo da faixa e a última carga conhecida. */
-export function createSession(day: FitPlanDay, loads: Loads, now: Date, clientId: string): ActiveSession {
+/** Sessão nova: séries pré-preenchidas com a sugestão da progressão; senão última carga e reps = mínimo da faixa. */
+export function createSession(day: FitPlanDay, loads: Loads, now: Date, clientId: string, prog: Progression["exercises"] = {}): ActiveSession {
+  const count = (e: FitPlanDay["exercises"][number]) => prog[e.exercise.id]?.sets ?? e.sets;
   const sets = day.exercises.flatMap((e) =>
-    Array.from({ length: e.sets }, (_, i) => ({
+    Array.from({ length: count(e) }, (_, i) => ({
       exerciseId: e.exercise.id,
       exerciseOrder: e.order,
       setNumber: i + 1,
-      weightKg: loads[e.exercise.id] ?? null,
-      reps: repsMin(e.reps),
+      weightKg: prog[e.exercise.id]?.weightKg ?? loads[e.exercise.id] ?? null,
+      reps: prog[e.exercise.id]?.reps ?? repsMin(e.reps),
       done: false,
     })),
   );
@@ -63,7 +65,7 @@ export function createSession(day: FitPlanDay, loads: Loads, now: Date, clientId
     exerciseId: e.exercise.id,
     name: e.exercise.name,
     gifUrl: e.exercise.gifUrl,
-    sets: e.sets,
+    sets: count(e),
     reps: e.reps,
     restSeconds: e.restSeconds,
   }));
