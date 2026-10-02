@@ -53,7 +53,6 @@ export function Products(): ReactNode {
             accent="green"
             features={[
               "Diário alimentar que aprende com você",
-              "Metas ajustadas pelo seu treino do dia",
               "Cardápio calculado a partir do seu perfil",
               "Treino do BRL Fit ajusta a meta (Pro)",
             ]}
