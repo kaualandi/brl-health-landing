@@ -55,7 +55,7 @@ const GROUP_ORDER = (a: Candidate, b: Candidate) =>
 
 type DayState = { count: number[]; ids: Set<string> };
 // [soft permitido, cap de padrão aplicado, repetir exercício de outro dia]
-const RELAX: [boolean, boolean, boolean][] = [[false, true, false], [true, true, false], [true, false, false], [true, false, true]];
+const RELAX: [boolean, boolean, boolean][] = [[false, true, false], [true, true, false], [true, true, true], [true, false, true]];
 
 function pool(ctx: Ctx, muscle: string, day: DayState, [soft, capped, reuse]: [boolean, boolean, boolean]) {
   return ctx.usable.filter((c) => {
