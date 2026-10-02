@@ -72,6 +72,16 @@ describe("/fit/plan", () => {
     expect((await api("GET", "/fit/plan", undefined, token)).body).toEqual(gen.body);
   });
 
+  test("academia sem equipamento marcado gera plano só de peso corporal (#191)", async () => {
+    const { token } = await signup();
+    await api("PUT", "/fit/profile", { ...gym, equipment: [] }, token);
+    const gen = await api("POST", "/fit/plan/generate", undefined, token);
+    expect(gen.status).toBe(200);
+    const all = gen.body.days.flatMap((d: any) => d.exercises);
+    expect(all.length).toBeGreaterThan(0);
+    for (const e of all) expect(e.exercise.equipments).toEqual([{ value: "bodyweight", label: "Peso corporal" }]);
+  });
+
   test("regenerar substitui o plano; PUT do perfil não mexe nele", async () => {
     const { token } = await signup();
     await api("PUT", "/fit/profile", home, token);

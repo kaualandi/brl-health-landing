@@ -2,7 +2,7 @@ import { arrayContained, asc, eq, sql } from "drizzle-orm";
 import { Elysia } from "elysia";
 import { db, schema } from "../db";
 import { auth } from "../lib/auth";
-import { generatePlan, type Candidate, type GeneratedPlan } from "./fit-plan.engine";
+import { generatePlan, withEquipment, type Candidate, type GeneratedPlan } from "./fit-plan.engine";
 import { equipmentLabels, label, muscleLabels } from "./exercises.labels";
 import { exerciseMedia } from "./exercises";
 
@@ -12,8 +12,9 @@ const hash = (text: string) => [...text].reduce((h, ch) => Math.imul(h ^ ch.char
 
 /** Gera e persiste (substituindo) o plano; seed nova a cada geração. Null se não há perfil. */
 export async function regeneratePlan(userId: number) {
-  const [profile] = await db.select().from(schema.fitProfiles).where(eq(schema.fitProfiles.userId, userId));
-  if (!profile) return null;
+  const [row] = await db.select().from(schema.fitProfiles).where(eq(schema.fitProfiles.userId, userId));
+  if (!row) return null;
+  const profile = withEquipment(row);
   const [prev] = await db.select({ seed: fitPlans.seed }).from(fitPlans).where(eq(fitPlans.userId, userId));
   const seed = hash(`${userId}:${prev?.seed ?? 0}`);
   const candidates: Candidate[] = await db

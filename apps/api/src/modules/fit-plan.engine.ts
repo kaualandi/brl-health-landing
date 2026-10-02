@@ -100,6 +100,12 @@ function buildDay(ctx: Ctx, kind: DayKind, occurrence: number, index: number): P
   };
 }
 
+/** Sem equipamento marcado = só peso corporal (array vazio quebraria o arrayContained). */
+export const withEquipment = <P extends { equipment: string[] }>(p: P): P => ({
+  ...p,
+  equipment: p.equipment.length ? p.equipment : ["bodyweight"],
+});
+
 export const isUsable = (c: Candidate, p: PlanProfile, have: Set<string>) =>
   c.equipments.length > 0 &&
   c.equipments.every((e) => have.has(e)) &&
