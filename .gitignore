@@ -44,3 +44,6 @@ next-env.d.ts
 
 # turborepo
 .turbo
+
+# api media (GIFs importados)
+apps/api/storage/

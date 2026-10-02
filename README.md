@@ -171,3 +171,12 @@ turbo.json
 - Guilherme da Cunha Sequeira - 06002529
 - Murilo de Melo Mouteira - 06010561
 - Lucas Gomes Coco da Silva - 06011471
+
+## Créditos
+
+O catálogo de exercícios (nomes, instruções e GIFs) vem do
+[ExerciseDB](https://github.com/ExerciseDB/exercisedb-api). Os endpoints gratuitos são só para
+exploração, por isso importamos o conteúdo uma vez (`bun run db:import-exercises --media` em
+`apps/api`) e o servimos pela nossa API. O código do projeto deles é AGPL-3.0; o conteúdo
+importado segue os termos de uso do ExerciseDB e a atribuição "Dados e GIFs: ExerciseDB" deve ser
+mantida (exposta em `GET /exercises/filters`).
