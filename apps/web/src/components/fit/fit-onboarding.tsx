@@ -12,6 +12,8 @@ import {
   RoutineStep,
   type StepProps,
 } from "@/components/fit/fit-steps";
+import { FitGenerating } from "@/components/fit/fit-generating";
+import { FitPlanPreview } from "@/components/fit/fit-plan-preview";
 import { FitSummary } from "@/components/fit/fit-summary";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/toast";
@@ -26,6 +28,8 @@ import {
   type FitForm,
   type FitProfile,
 } from "@/lib/fit-profile";
+import type { FitPlan } from "@/lib/fit-plan";
+import { generateFitPlan } from "@/services/fit-plan.service";
 import { saveFitProfile } from "@/services/fit.service";
 import { getNutriProfile } from "@/services/nutri.service";
 
@@ -65,15 +69,15 @@ function Loader() {
   );
 }
 
-function Success({ profile }: { profile: FitProfile }) {
+function Success({ plan }: { plan: FitPlan }) {
   return (
     <div className="flex flex-col gap-6" role="status">
       <div className="flex items-center gap-3">
         <CheckCircle2Icon aria-hidden className="size-8 text-emerald-400" />
-        <h1 className="font-display text-2xl font-extrabold tracking-tight">Perfil salvo</h1>
+        <h1 className="font-display text-2xl font-extrabold tracking-tight">Seu plano está pronto</h1>
       </div>
-      <p className="text-sm text-muted-foreground">Seu plano de treino será montado a partir destas respostas.</p>
-      <FitSummary profile={profile} />
+      <p className="text-sm text-muted-foreground">Essa é a sua semana de treino, montada a partir do seu perfil.</p>
+      <FitPlanPreview plan={plan} />
       <Button render={<Link href="/fit/perfil" />} nativeButton={false} variant="outline" className="h-12">
         Editar perfil
       </Button>
@@ -100,19 +104,25 @@ function useWizardState(userId: string, saved: FitProfile | null) {
   return { step, data, error, setError, go, update, patch, next, nutriNote: fromNutri && step === 0 };
 }
 
+const prefersReducedMotion = () => window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
 function useSave(data: FitForm, setError: (e: string | null) => void) {
   const toast = useToast();
   const [saving, setSaving] = useState(false);
-  const [done, setDone] = useState<FitProfile | null>(null);
+  const [done, setDone] = useState<FitPlan | null>(null);
   const submit = async () => {
     const profile = toFitProfile(data);
     if (!profile) return setError(fitFormError(data, "all"));
     setSaving(true);
     try {
-      setDone(await saveFitProfile(profile));
+      await saveFitProfile(profile);
       clearFitDraft();
+      // Segura a tela de "gerando" por um tempo mínimo pra a animação respirar.
+      const minDelay = new Promise((resolve) => setTimeout(resolve, prefersReducedMotion() ? 500 : 2000));
+      const [plan] = await Promise.all([generateFitPlan(), minDelay]);
+      setDone(plan);
     } catch (e) {
-      toast({ variant: "error", title: "Não foi possível salvar", description: (e as Error).message });
+      toast({ variant: "error", title: "Não foi possível gerar o plano", description: (e as Error).message });
     } finally {
       setSaving(false);
     }
@@ -156,16 +166,18 @@ function Wizard({ userId, saved }: { userId: string; saved: FitProfile | null })
         <Link href="/fit" className="font-display text-lg font-extrabold tracking-tight" aria-label="BRL Fit">
           <span className="text-brl-purple">BRL</span> Fit
         </Link>
-        {done ? null : (
+        {done || saving ? null : (
           <span className="text-xs font-medium text-muted-foreground tabular-nums">
             Passo {w.step + 1} de {REVIEW + 1}
           </span>
         )}
       </header>
-      {done ? null : <Progress value={((w.step + 1) / (REVIEW + 1)) * 100} />}
+      {done || saving ? null : <Progress value={((w.step + 1) / (REVIEW + 1)) * 100} />}
       <main className="mx-auto flex w-full max-w-2xl flex-1 flex-col px-4 py-8 md:px-6 md:py-10">
         {done ? (
-          <Success profile={done} />
+          <Success plan={done} />
+        ) : saving ? (
+          <FitGenerating />
         ) : (
           <>
             <StepBody w={w} />

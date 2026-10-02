@@ -10,11 +10,14 @@ const FILE = /^[A-Za-z0-9_-]+\.gif$/;
 const labelAll = (dict: Record<string, string>, values: string[]) => values.map((v) => label(dict, v));
 const byLabel = (a: { label: string }, b: { label: string }) => a.label.localeCompare(b.label, "pt-BR");
 
+export const exerciseMedia = (e: typeof exercises.$inferSelect) =>
+  e.mediaPath && existsSync(`${config.mediaDir}/exercises/${e.mediaPath}`) ? `${config.publicUrl}/media/exercises/${e.mediaPath}` : e.gifUrl;
+
 const toItem = (e: typeof exercises.$inferSelect) => ({
   id: e.id,
   name: e.namePt ?? e.name,
   nameEn: e.name,
-  gifUrl: e.mediaPath && existsSync(`${config.mediaDir}/exercises/${e.mediaPath}`) ? `${config.publicUrl}/media/exercises/${e.mediaPath}` : e.gifUrl,
+  gifUrl: exerciseMedia(e),
   bodyParts: labelAll(bodyPartLabels, e.bodyParts),
   targetMuscles: labelAll(muscleLabels, e.targetMuscles),
   secondaryMuscles: labelAll(muscleLabels, e.secondaryMuscles),

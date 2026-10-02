@@ -4,11 +4,13 @@ import {
   bigserial,
   boolean,
   date,
+  foreignKey,
   index,
   integer,
   customType,
   numeric,
   pgTable,
+  primaryKey,
   type PgColumnBuilderBase,
   text,
   timestamp,
@@ -76,6 +78,48 @@ export const fitProfiles = pgTable("fit_profiles", {
   sessionMinutes: integer("session_minutes").notNull(),
   limitations: textArray("limitations"),
 });
+
+export const fitPlans = pgTable("fit_plans", {
+  userId: bigint("user_id", { mode: "number" })
+    .primaryKey()
+    .references(() => users.id, { onDelete: "cascade" }),
+  seed: bigint("seed", { mode: "number" }).notNull(),
+  split: text("split").notNull(),
+  generatedAt: timestamp("generated_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+export const fitPlanDays = pgTable(
+  "fit_plan_days",
+  {
+    userId: bigint("user_id", { mode: "number" })
+      .notNull()
+      .references(() => fitPlans.userId, { onDelete: "cascade" }),
+    dayIndex: integer("day_index").notNull(),
+    name: text("name").notNull(),
+    focus: textArray("focus"),
+  },
+  (t) => [primaryKey({ columns: [t.userId, t.dayIndex] })],
+);
+
+export const fitPlanExercises = pgTable(
+  "fit_plan_exercises",
+  {
+    userId: bigint("user_id", { mode: "number" }).notNull(),
+    dayIndex: integer("day_index").notNull(),
+    order: integer("position").notNull(),
+    exerciseId: text("exercise_id")
+      .notNull()
+      .references(() => exercises.id),
+    sets: integer("sets").notNull(),
+    repsMin: integer("reps_min").notNull(),
+    repsMax: integer("reps_max").notNull(),
+    restSeconds: integer("rest_seconds").notNull(),
+  },
+  (t) => [
+    primaryKey({ columns: [t.userId, t.dayIndex, t.order] }),
+    foreignKey({ columns: [t.userId, t.dayIndex], foreignColumns: [fitPlanDays.userId, fitPlanDays.dayIndex] }).onDelete("cascade"),
+  ],
+);
 
 export const plans = pgTable("plans", {
   id: text("id").primaryKey(),

@@ -13,6 +13,7 @@ import {
 } from "@/lib/auth-store";
 import { logoutUser } from "@/services/auth.service";
 import { clearFitDraft } from "@/lib/fit-draft";
+import { clearFitPlan, resetFitPlanHydration } from "@/services/fit-plan.service";
 import { clearFitProfile, resetFitProfileHydration } from "@/services/fit.service";
 import { clearConsultations } from "@/lib/consultations-store";
 import { resetConsultationsHydration } from "@/services/consultations.service";
@@ -56,6 +57,8 @@ function logout(): void {
   clearFitProfile();
   clearFitDraft();
   resetFitProfileHydration();
+  clearFitPlan();
+  resetFitPlanHydration();
 }
 
 /** Hook de sessão. SSR-safe — devolve `loading` no primeiro paint. */

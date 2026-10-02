@@ -17,6 +17,7 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/toast";
 import { useFitProfile } from "@/hooks/use-fit-profile";
 import { fitFormError, toFitProfile, type FitForm, type FitProfile } from "@/lib/fit-profile";
+import { generateFitPlan } from "@/services/fit-plan.service";
 import { saveFitProfile } from "@/services/fit.service";
 
 const SECTIONS = [
@@ -31,9 +32,32 @@ function EditorForm({ initial }: { initial: FitProfile }) {
   const toast = useToast();
   const [data, setData] = useState<FitForm>(initial);
   const [saving, setSaving] = useState(false);
+  const [pending, setPending] = useState(false);
   const update: StepProps["update"] = (key, value) => setData((d) => ({ ...d, [key]: value }));
   const patch: StepProps["patch"] = (changes) => setData((d) => ({ ...d, ...changes }));
   const error = fitFormError(data, "all");
+
+  const generate = async () => {
+    try {
+      await generateFitPlan();
+      setPending(false);
+      toast({ variant: "success", title: "Plano atualizado", description: "Seu perfil foi salvo e a semana de treino refeita." });
+    } catch (e) {
+      toast({
+        variant: "error",
+        title: "Perfil salvo, mas o plano não foi gerado",
+        description: (e as Error).message,
+      });
+      setPending(true);
+      return;
+    }
+  };
+
+  const retry = async () => {
+    setSaving(true);
+    await generate();
+    setSaving(false);
+  };
 
   const save = async () => {
     const profile = toFitProfile(data);
@@ -41,12 +65,12 @@ function EditorForm({ initial }: { initial: FitProfile }) {
     setSaving(true);
     try {
       await saveFitProfile(profile);
-      toast({ variant: "success", title: "Perfil de treino salvo" });
     } catch (e) {
       toast({ variant: "error", title: "Não foi possível salvar", description: (e as Error).message });
-    } finally {
-      setSaving(false);
+      return setSaving(false);
     }
+    await generate();
+    setSaving(false);
   };
 
   return (
@@ -71,6 +95,11 @@ function EditorForm({ initial }: { initial: FitProfile }) {
           {saving ? <Loader2Icon aria-hidden className="animate-spin" /> : <SaveIcon aria-hidden />}
           Salvar alterações
         </Button>
+        {pending ? (
+          <Button type="button" variant="outline" className="h-12" disabled={saving} onClick={() => void retry()}>
+            Tentar gerar de novo
+          </Button>
+        ) : null}
       </main>
     </div>
   );
