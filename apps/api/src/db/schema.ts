@@ -64,6 +64,19 @@ export const nutriProfiles = pgTable("nutri_profiles", {
   sleepTime: text("sleep_time"),
 });
 
+export const fitProfiles = pgTable("fit_profiles", {
+  userId: bigint("user_id", { mode: "number" })
+    .primaryKey()
+    .references(() => users.id, { onDelete: "cascade" }),
+  goal: text("goal").notNull(),
+  level: text("level").notNull(),
+  daysPerWeek: integer("days_per_week").notNull(),
+  location: text("location").notNull(),
+  equipment: textArray("equipment"),
+  sessionMinutes: integer("session_minutes").notNull(),
+  limitations: textArray("limitations"),
+});
+
 export const plans = pgTable("plans", {
   id: text("id").primaryKey(),
   name: text("name").notNull(),

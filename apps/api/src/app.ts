@@ -14,6 +14,7 @@ import { engagementModule } from "./modules/engagement";
 import { billingModule } from "./modules/billing";
 import { plansModule } from "./modules/plans";
 import { stripeModule } from "./modules/stripe";
+import { fitProfileModule } from "./modules/fit-profile";
 import { profileModule } from "./modules/profile";
 import { trackingModule } from "./modules/tracking";
 
@@ -29,6 +30,7 @@ export const app = new Elysia()
   .use(billingModule)
   .use(stripeModule)
   .use(profileModule)
+  .use(fitProfileModule)
   .use(accountModule)
   .use(trackingModule)
   .get("/health", async () => {
