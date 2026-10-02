@@ -3,7 +3,7 @@ import { inArray } from "drizzle-orm";
 import { db, schema } from "../db";
 import { today } from "../lib/date";
 import { api } from "../test/http";
-import { signup } from "../test/users";
+import { setPlan, signup } from "../test/users";
 import { stepFor, suggest, trainingWeek, type Entry } from "./fit-progression.rules";
 
 const rx = { sets: 3, repsMin: 8, repsMax: 10 };
@@ -64,9 +64,10 @@ const fx = ["up", "hold", "down", "new"].map((k) => ({
   targetMuscles: ["pectorals"], secondaryMuscles: [] as string[], equipments: ["barbell"], instructions: [] as string[],
 }));
 
-async function userWithPlan() {
+async function userWithPlan(plan: "free" | "pro" | "family" = "pro") {
   const u = await signup();
   const userId = Number(u.user.id);
+  if (plan !== "free") await setPlan(userId, plan);
   await db.insert(schema.fitPlans).values({ userId, seed: 1, split: "Teste" });
   await db.insert(schema.fitPlanDays).values({ userId, dayIndex: 0, name: "Treino A", focus: ["pectorals"] });
   await db.insert(schema.fitPlanExercises).values(fx.map((f, i) => ({ userId, dayIndex: 0, order: i + 1, exerciseId: f.id, sets: 3, repsMin: 8, repsMax: 10, restSeconds: 60 })));
@@ -92,7 +93,7 @@ describe("GET /fit/progression", () => {
     await log(userId, { up: [10, 10, 10], hold: [10, 9, 9], down: [6, 8, 8] });
     const res = await api("GET", "/fit/progression", undefined, token);
     expect(res.status).toBe(200);
-    expect(res.body).toMatchObject({ deload: false, week: 1 });
+    expect(res.body).toMatchObject({ locked: false, deload: false, week: 1 });
     const e = res.body.exercises;
     expect(e[fx[0].id]).toEqual({ weightKg: 42.5, reps: 8, sets: 3, reason: "up" });
     expect(e[fx[1].id]).toEqual({ weightKg: 40, reps: 10, sets: 3, reason: "hold" });
@@ -110,5 +111,17 @@ describe("GET /fit/progression", () => {
     const res = await api("GET", "/fit/progression", undefined, token);
     expect(res.body).toMatchObject({ deload: true, week: 5 });
     expect(res.body.exercises[fx[0].id]).toEqual({ weightKg: 25, reps: 8, sets: 2, reason: "deload" });
+  });
+
+  test("free: 200 locked, sem sugestões; family: igual ao pro", async () => {
+    const free = await userWithPlan("free");
+    await log(free.userId, { up: [10, 10, 10] });
+    const locked = await api("GET", "/fit/progression", undefined, free.token);
+    expect(locked).toMatchObject({ status: 200, body: { locked: true, deload: false, exercises: {} } });
+    const fam = await userWithPlan("family");
+    await log(fam.userId, { up: [10, 10, 10] });
+    const res = await api("GET", "/fit/progression", undefined, fam.token);
+    expect(res.body.locked).toBe(false);
+    expect(res.body.exercises[fx[0].id].reason).toBe("up");
   });
 });

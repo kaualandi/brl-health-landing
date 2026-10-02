@@ -6,6 +6,7 @@ import { FitUnsynced } from "@/components/fit/fit-unsynced";
 import { StartWorkoutButton } from "@/components/fit/fit-start-button";
 import { ExerciseGif } from "@/components/fit/exercise-parts";
 import { DeloadBanner, NextHint } from "@/components/fit/fit-progression";
+import { ProInvite } from "@/components/plan/pro-invite";
 import { useFitProgression } from "@/hooks/use-fit-progression";
 import type { ProgressionItem } from "@/lib/fit-progression";
 import type { FitPlan, FitPlanDay, FitPlanExercise } from "@/lib/fit-plan";
@@ -61,6 +62,11 @@ function Workout({ day }: { day: FitPlanDay }) {
     <div className="rounded-2xl border border-foreground/10 bg-card p-5 md:p-6">
       <h2 className="font-display text-2xl font-extrabold tracking-tight">{day.name}</h2>
       <p className="mt-1 text-sm text-muted-foreground">Foco: {day.focus.join(" · ")}</p>
+      {prog?.locked ? (
+        <ProInvite place="fit-progression">
+          Progressão automática é Pro: o app sugere a próxima carga e avisa a semana de deload.
+        </ProInvite>
+      ) : null}
       {prog?.deload ? <DeloadBanner week={prog.week} /> : null}
       <ol className="mt-5 flex flex-col gap-3">
         {day.exercises.map((e) => (

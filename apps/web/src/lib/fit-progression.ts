@@ -1,7 +1,7 @@
 /** Espelha GET /fit/progression. */
 export type ProgressionReason = "up" | "hold" | "down" | "deload" | "new";
 export type ProgressionItem = { weightKg: number | null; reps: number; sets: number; reason: ProgressionReason };
-export type Progression = { deload: boolean; week: number; exercises: Record<string, ProgressionItem> };
+export type Progression = { locked?: boolean; deload: boolean; week: number; exercises: Record<string, ProgressionItem> };
 
 const kg = (n: number) => `${n.toLocaleString("pt-BR", { maximumFractionDigits: 2 })} kg`;
 

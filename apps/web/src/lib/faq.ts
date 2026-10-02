@@ -57,7 +57,7 @@ export const FAQ: FaqCategory[] = [
     items: [
       {
         q: "Quais são os planos?",
-        a: "Free (grátis), BRL Pro (R$ 29,90/mês) com Fit e Nutri integrados e IA, e BRL Family (R$ 49,90/mês) pra até 4 pessoas com dashboard familiar.",
+        a: "Free (grátis), BRL Pro (R$ 29,90/mês) com progressão automática no Fit e treino ajustando a meta do Nutri, e BRL Family (R$ 49,90/mês) com tudo do Pro e 8 consultas com nutricionista. O Free já inclui o Nutri e o Fit básicos e 1 consulta.",
       },
       {
         q: "Consigo trocar de plano ou cancelar?",

@@ -35,9 +35,8 @@ export function Products(): ReactNode {
             accent="orange"
             features={[
               "Planos adaptativos por objetivo",
-              "Progressão inteligente sem platôs",
-              "Integração em tempo real com o Nutri",
-              "IA personalizada",
+              "Progressão automática de carga (Pro)",
+              "Treino ajusta a meta do Nutri (Pro)",
             ]}
             cta={{ href: "/fit", label: "Conhecer o BRL Fit" }}
           />
@@ -55,8 +54,8 @@ export function Products(): ReactNode {
             features={[
               "Diário alimentar que aprende com você",
               "Metas ajustadas pelo seu treino do dia",
-              "Sugestões de refeição com IA",
-              "Integração nativa com o BRL Fit",
+              "Cardápio calculado a partir do seu perfil",
+              "Treino do BRL Fit ajusta a meta (Pro)",
             ]}
             cta={{ href: "/cadastro", label: "Conhecer o BRL Nutri" }}
           />
