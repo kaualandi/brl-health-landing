@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useExerciseFilters, useExerciseList } from "@/hooks/use-exercises";
-import { buildExerciseSearch, parseExerciseQuery, type Exercise, type ExerciseQuery, type Option } from "@/lib/exercises";
+import { buildExerciseSearch, parseExerciseQuery, sentenceCase, type Exercise, type ExerciseQuery, type Option } from "@/lib/exercises";
 
 const FIELD = "min-h-11 w-full rounded-xl border border-foreground/10 bg-card px-3 text-sm text-foreground outline-none focus-visible:ring-3 focus-visible:ring-ring/50";
 
@@ -38,7 +38,7 @@ function ExerciseCard({ ex, href }: { ex: Exercise; href: string }) {
         className="flex h-full flex-col gap-3 rounded-2xl border border-foreground/5 bg-card p-3 outline-none transition-colors hover:border-brl-purple/50 focus-visible:ring-3 focus-visible:ring-ring/50"
       >
         <ExerciseGif src={ex.gifUrl} name={ex.name} />
-        <h2 className="font-display text-base font-bold capitalize leading-tight">{ex.name}</h2>
+        <h2 className="font-display text-base font-bold leading-tight">{sentenceCase(ex.name)}</h2>
         <div className="flex flex-wrap gap-1.5">
           <Chips items={ex.targetMuscles.slice(0, 2)} />
           <Chips items={ex.equipments.slice(0, 1)} tone="orange" />
@@ -105,7 +105,7 @@ export function ExerciseLibrary() {
             Buscar
             <span className="relative">
               <SearchIcon aria-hidden className="absolute left-3 top-1/2 size-4 -translate-y-1/2" />
-              <input type="search" className={`${FIELD} pl-9`} value={text} placeholder="Ex.: squat" onChange={(e) => setText(e.target.value)} />
+              <input type="search" className={`${FIELD} pl-9`} value={text} placeholder="Ex.: agachamento" onChange={(e) => setText(e.target.value)} />
             </span>
           </label>
           <Select label="Grupo muscular" value={query.bodyPart} options={filters.data?.bodyParts ?? []} onChange={(v) => apply({ ...query, bodyPart: v })} />

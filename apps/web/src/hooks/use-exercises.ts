@@ -1,6 +1,6 @@
 "use client";
 
-import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
+import { keepPreviousData, useInfiniteQuery, useQuery } from "@tanstack/react-query";
 
 import { PAGE_SIZE, type ExerciseQuery } from "@/lib/exercises";
 import { fetchExercise, fetchExerciseFilters, fetchExercises } from "@/services/exercises.service";
@@ -18,6 +18,7 @@ export function useExerciseList(query: ExerciseQuery) {
     queryKey: ["exercises", query],
     queryFn: ({ pageParam }) => fetchExercises(query, pageParam),
     initialPageParam: 0,
+    placeholderData: keepPreviousData,
     getNextPageParam: (last, all) => (last.hasMore ? all.length * PAGE_SIZE : undefined),
     staleTime: 1000 * 60 * 60,
   });

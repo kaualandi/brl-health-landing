@@ -9,7 +9,7 @@ import { Attribution, Chips, ExerciseGif } from "@/components/fit/exercise-parts
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { useExercise } from "@/hooks/use-exercises";
-import { buildExerciseSearch, parseExerciseQuery, type Exercise } from "@/lib/exercises";
+import { buildExerciseSearch, parseExerciseQuery, sentenceCase, type Exercise } from "@/lib/exercises";
 
 function BackLink() {
   const qs = buildExerciseSearch(parseExerciseQuery(useSearchParams()));
@@ -35,7 +35,7 @@ function Group({ title, items, tone }: { title: string; items: Exercise["targetM
 function Body({ ex }: { ex: Exercise }) {
   return (
     <>
-      <h1 className="font-display text-2xl font-extrabold capitalize tracking-tight md:text-3xl">{ex.name}</h1>
+      <h1 className="font-display text-2xl font-extrabold tracking-tight md:text-3xl">{sentenceCase(ex.name)}</h1>
       <div className="grid gap-6 md:grid-cols-2">
         <ExerciseGif src={ex.gifUrl} name={ex.name} eager />
         <div className="flex flex-col gap-5">
@@ -67,7 +67,12 @@ export function ExerciseDetail({ id }: { id: string }) {
         <Suspense>
           <BackLink />
         </Suspense>
-        {q.isPending ? <Loader2Icon aria-label="Carregando" className="mx-auto size-8 animate-spin" /> : null}
+        {q.isPending ? (
+          <div role="status" className="mx-auto">
+            <Loader2Icon aria-hidden className="size-8 animate-spin" />
+            <span className="sr-only">Carregando exercício…</span>
+          </div>
+        ) : null}
         {notFound ? (
           <EmptyState className="bg-card" icon="🤷" title="Exercício não encontrado" description="Ele pode ter saído do catálogo." action={<Link href="/fit/exercicios" className="inline-flex min-h-11 items-center rounded-lg bg-primary px-4 text-sm font-medium text-primary-foreground">Ver biblioteca</Link>} />
         ) : q.isError ? (

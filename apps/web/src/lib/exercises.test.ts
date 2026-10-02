@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { buildExerciseSearch, parseExerciseQuery } from "./exercises";
+import { buildExerciseSearch, parseExerciseQuery, sentenceCase } from "./exercises";
 
 describe("exercise query", () => {
   it("parse lê os searchParams e apara a busca", () => {
@@ -11,5 +11,11 @@ describe("exercise query", () => {
   it("build omite vazios e inclui extras", () => {
     const s = buildExerciseSearch({ q: "", bodyPart: "legs", equipment: "" }, { limit: 24, offset: 0 });
     expect(s).toBe("bodyPart=legs&limit=24&offset=0");
+  });
+});
+
+describe("sentenceCase", () => {
+  it("maiusculiza só a primeira letra", () => {
+    expect(sentenceCase("supino reto")).toBe("Supino reto");
   });
 });

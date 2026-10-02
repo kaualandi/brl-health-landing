@@ -39,3 +39,8 @@ export function buildExerciseSearch(query: ExerciseQuery, extra: Record<string, 
   for (const [k, v] of Object.entries({ ...query, ...extra })) if (v !== "" && v != null) sp.set(k, String(v));
   return sp.toString();
 }
+
+/** Sentence case: só a primeira letra maiúscula. */
+export function sentenceCase(s: string): string {
+  return s.charAt(0).toUpperCase() + s.slice(1);
+}

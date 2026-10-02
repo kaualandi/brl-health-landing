@@ -27,7 +27,7 @@ export function Chips({ items, tone = "purple" }: { items: Option[]; tone?: "pur
           key={o.value}
           className={cn(
             "rounded-full px-2.5 py-1 text-xs font-medium",
-            tone === "purple" ? "bg-brl-purple/20 text-foreground" : "bg-brl-orange/15 text-brl-orange",
+            tone === "purple" ? "bg-brl-purple/20 text-foreground" : "bg-brl-orange/15 text-orange-700 dark:text-brl-orange",
           )}
         >
           {o.label}
