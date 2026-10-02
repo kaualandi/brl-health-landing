@@ -53,19 +53,24 @@ const TOP = 6;
 const GROUP_ORDER = (a: Candidate, b: Candidate) =>
   b.secondaryMuscles.length - a.secondaryMuscles.length || a.id.localeCompare(b.id);
 
-function pool(all: Candidate[], muscle: string, used: Set<string>, limitations: string[], soft: boolean, dayCount: number[]) {
-  return all.filter((c) => {
-    if (patternsOf(c.name).some((i) => dayCount[i] >= PATTERN_CAP)) return false;
-    if (used.has(c.id) || used.has(c.name.toLowerCase()) || !c.targetMuscles.includes(muscle)) return false;
-    const level = avoidLevel(c.name, limitations);
+type DayState = { count: number[]; ids: Set<string> };
+// [soft permitido, cap de padrão aplicado, repetir exercício de outro dia]
+const RELAX: [boolean, boolean, boolean][] = [[false, true, false], [true, true, false], [true, false, false], [true, false, true]];
+
+function pool(ctx: Ctx, muscle: string, day: DayState, [soft, capped, reuse]: [boolean, boolean, boolean]) {
+  return ctx.usable.filter((c) => {
+    if (capped && patternsOf(c.name).some((i) => day.count[i] >= PATTERN_CAP)) return false;
+    const seen = reuse ? day.ids : ctx.used;
+    if (seen.has(c.id) || seen.has(c.name.toLowerCase()) || !c.targetMuscles.includes(muscle)) return false;
+    const level = avoidLevel(c.name, ctx.limitations);
     return level === "ok" || (soft && level === "soft");
   });
 }
 
-function pick(all: Candidate[], muscles: string[], ctx: Ctx, dayCount: number[]) {
-  for (const soft of [false, true]) {
+function pick(muscles: string[], ctx: Ctx, day: DayState) {
+  for (const relax of RELAX) {
     for (const m of muscles) {
-      const options = pool(ctx.usable, m, ctx.used, ctx.limitations, soft, dayCount).sort(GROUP_ORDER).slice(0, TOP);
+      const options = pool(ctx, m, day, relax).sort(GROUP_ORDER).slice(0, TOP);
       if (options.length) return options[Math.floor(ctx.rand() * options.length)];
     }
   }
@@ -77,14 +82,14 @@ type Ctx = { usable: Candidate[]; used: Set<string>; limitations: string[]; rand
 function buildDay(ctx: Ctx, kind: DayKind, occurrence: number, index: number): PlanDay {
   const targets = dayTargets(kind, occurrence);
   const picked: Candidate[] = [];
-  const dayCount = Array<number>(PATTERNS.length).fill(0);
+  const day: DayState = { count: Array<number>(PATTERNS.length).fill(0), ids: new Set() };
   for (let i = 0; i < ctx.count; i++) {
     const order = [...targets.slice(i % targets.length), ...targets.slice(0, i % targets.length)];
-    const found = pick(ctx.usable, order, ctx, dayCount);
+    const found = pick(order, ctx, day);
     if (!found) break;
-    ctx.used.add(found.id).add(found.name.toLowerCase());
+    for (const set of [ctx.used, day.ids]) set.add(found.id).add(found.name.toLowerCase());
     picked.push(found);
-    for (const i of patternsOf(found.name)) dayCount[i]++;
+    for (const i of patternsOf(found.name)) day.count[i]++;
   }
   picked.sort((a, b) => b.secondaryMuscles.length - a.secondaryMuscles.length);
   return {

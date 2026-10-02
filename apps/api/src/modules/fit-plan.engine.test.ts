@@ -116,7 +116,7 @@ describe("fit-plan engine", () => {
 const mk = (name: string, target: string): Candidate => ({
   id: name, name, targetMuscles: [target], secondaryMuscles: ["a"], equipments: ["bodyweight"],
 });
-const names = (profile: PlanProfile, pool: Candidate[]) => all(generatePlan(profile, pool, 1)).map((e) => e.exerciseId);
+const names = (profile: PlanProfile, pool: Candidate[]) => [...new Set(all(generatePlan(profile, pool, 1)).map((e) => e.exerciseId))];
 
 describe("regras de nome", () => {
   const bw = { ...base, equipment: ["bodyweight"], daysPerWeek: 6 };
@@ -135,9 +135,24 @@ describe("regras de nome", () => {
   });
 
   test("variedade: no máximo 2 variações do mesmo padrão por dia", () => {
-    const pool = [...Array.from({ length: 6 }, (_, i) => mk(`push-up v${i}`, "pectorals")), ...Array.from({ length: 4 }, (_, i) => mk(`bench ${i}`, "pectorals"))];
+    const pool = [...Array.from({ length: 6 }, (_, i) => mk(`push-up v${i}`, "pectorals")), ...Array.from({ length: 14 }, (_, i) => mk(`bench ${i}`, "pectorals"))];
     const plan = generatePlan({ ...bw, daysPerWeek: 2, sessionMinutes: 60 }, pool, 1);
     for (const d of plan.days) expect(d.exercises.filter((e) => /push-up/.test(e.exerciseId)).length).toBeLessThanOrEqual(2);
+  });
+
+  test("cap de padrão é flexível: só flexões ainda completa o dia", () => {
+    const pool = Array.from({ length: 8 }, (_, i) => mk(`push-up v${i}`, "pectorals"));
+    const plan = generatePlan({ ...bw, daysPerWeek: 2, sessionMinutes: 45 }, pool, 1);
+    expect(plan.days.map((d) => d.exercises.length)).toEqual([5, 5]);
+  });
+
+  test("catálogo pequeno, 6 dias: todo dia fecha a meta sem repetir no mesmo dia", () => {
+    const pool = ["quadriceps", "pectorals", "latissimus dorsi", "glutes", "deltoids", "hamstrings", "biceps", "triceps", "upper back", "calves", "abdominals"].flatMap((m) => [mk(`${m} a`, m), mk(`${m} b`, m)]);
+    const plan = generatePlan({ ...bw, daysPerWeek: 6, sessionMinutes: 45 }, pool, 2);
+    for (const d of plan.days) {
+      expect(d.exercises).toHaveLength(5);
+      expect(new Set(d.exercises.map((e) => e.exerciseId)).size).toBe(5);
+    }
   });
 
   test("joelho evita agachamento sobre os joelhos e lunge de deslizamento", () => {
