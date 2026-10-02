@@ -39,7 +39,7 @@ function Alternatives({ target, onDone }: { target: Target; onDone: () => void }
   const toast = useToast();
   const [busy, setBusy] = useState(false);
   const { day, item } = target;
-  const query = useSwapAlternatives(day, item.order, item.exercise.id, true);
+  const query = useSwapAlternatives(day, item.order, item.exercise.id);
 
   async function pick(alt: FitAlternative) {
     setBusy(true);

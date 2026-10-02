@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { Loader2Icon, PencilIcon, RefreshCwIcon } from "lucide-react";
-import { useState } from "react";
+import { useRef, useState } from "react";
 
 import { FitPlanPreview } from "@/components/fit/fit-plan-preview";
 import { Button } from "@/components/ui/button";
@@ -29,21 +29,28 @@ export function useGenerate() {
 export function GenerateButton({ label, confirm }: { label: string; confirm?: string }) {
   const { busy, run } = useGenerate();
   const [asking, setAsking] = useState(false);
+  const main = useRef<HTMLButtonElement>(null);
+  const close = () => {
+    setAsking(false);
+    requestAnimationFrame(() => main.current?.focus());
+  };
   if (asking)
     return (
-      <div role="group" aria-label={confirm} className="flex flex-col gap-3 sm:flex-row sm:items-center">
-        <p className="text-sm">{confirm}</p>
-        <Button type="button" className="h-12" onClick={() => void run().then(() => setAsking(false))} disabled={busy}>
+      <div role="alertdialog" aria-labelledby="fit-regen-confirm" className="flex flex-col gap-3 sm:flex-row sm:items-center">
+        <p id="fit-regen-confirm" className="text-sm">
+          {confirm}
+        </p>
+        <Button type="button" className="h-12" onClick={() => void run().then(close)} disabled={busy}>
           {busy ? <Loader2Icon aria-hidden className="animate-spin" /> : null}
           Confirmar
         </Button>
-        <Button type="button" variant="ghost" className="h-12" onClick={() => setAsking(false)} disabled={busy}>
+        <Button type="button" variant="ghost" className="h-12" onClick={close} disabled={busy} autoFocus>
           Cancelar
         </Button>
       </div>
     );
   return (
-    <Button type="button" variant="outline" className="h-12" onClick={() => (confirm ? setAsking(true) : void run())} disabled={busy}>
+    <Button ref={main} type="button" variant="outline" className="h-12" onClick={() => (confirm ? setAsking(true) : void run())} disabled={busy}>
       {busy ? <Loader2Icon aria-hidden className="animate-spin" /> : <RefreshCwIcon aria-hidden />}
       {label}
     </Button>
@@ -61,7 +68,6 @@ export function PlanTab({ plan }: { plan: FitPlan }) {
         </Button>
         <GenerateButton label="Gerar outro plano" confirm="Gerar outro plano? Isso desfaz suas trocas." />
       </div>
-      <p className="text-xs text-muted-foreground">Gerar outro plano cria uma semana nova e desfaz as trocas de exercício.</p>
     </section>
   );
 }

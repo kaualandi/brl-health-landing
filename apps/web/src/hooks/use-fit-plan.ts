@@ -27,11 +27,10 @@ export function useFitPlan() {
 }
 
 /** Alternativas de troca (sempre frescas: dependem do que está no dia agora). */
-export function useSwapAlternatives(day: number, order: number, exerciseId: string, enabled: boolean) {
+export function useSwapAlternatives(day: number, order: number, exerciseId: string) {
   return useQuery({
     queryKey: ["fit-swap", day, order, exerciseId],
     queryFn: () => getSwapAlternatives(day, order),
-    enabled,
     gcTime: 0,
   });
 }
