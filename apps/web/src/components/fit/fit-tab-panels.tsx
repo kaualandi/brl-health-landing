@@ -5,10 +5,15 @@ import Link from "next/link";
 import { Loader2Icon, PencilIcon, RefreshCwIcon } from "lucide-react";
 import { useRef, useState } from "react";
 
+import { FitAchievements } from "@/components/fit/fit-achievements";
 import { FitHistory } from "@/components/fit/fit-history";
 import { FitPlanPreview } from "@/components/fit/fit-plan-preview";
+import { SummaryCards, WeeklyChart } from "@/components/fit/fit-progress";
+import { RecordsList } from "@/components/fit/fit-records";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/toast";
+import { useFitStats, useInvalidateFitStats } from "@/hooks/use-fit-stats";
+import { useFitSync } from "@/hooks/use-fit-sync";
 import type { FitPlan } from "@/lib/fit-plan";
 import { generateFitPlan } from "@/services/fit-plan.service";
 
@@ -77,9 +82,29 @@ export function PlanTab({ plan }: { plan: FitPlan }) {
 }
 
 export function ProgressTab() {
+  const q = useFitStats();
+  useFitSync(useInvalidateFitStats());
+  const stats = q.data;
   return (
-    <section aria-label="Progresso" className="flex flex-col gap-4 pt-8 md:pt-12">
-      <h2 className="font-display text-2xl font-extrabold tracking-tight md:text-3xl">Seus treinos</h2>
+    <section aria-label="Progresso" className="flex flex-col gap-5 pt-8 md:pt-12">
+      <h2 className="font-display text-2xl font-extrabold tracking-tight md:text-3xl">Seu progresso</h2>
+      {q.isError ? (
+        <div role="alert" className="flex items-center justify-between gap-3 rounded-2xl border border-destructive/40 p-4 text-sm">
+          Não foi possível carregar seu progresso.
+          <Button type="button" size="sm" variant="outline" onClick={() => void q.refetch()}>
+            Tentar de novo
+          </Button>
+        </div>
+      ) : null}
+      {q.isPending ? <p className="text-sm text-muted-foreground">Carregando progresso…</p> : null}
+      {stats && stats.totals.sessions > 0 ? (
+        <>
+          <SummaryCards stats={stats} />
+          <WeeklyChart weeks={stats.weeks} />
+          <RecordsList />
+        </>
+      ) : null}
+      {stats ? <FitAchievements stats={stats} /> : null}
       <FitHistory />
     </section>
   );

@@ -18,6 +18,7 @@ import { fitPlanModule } from "./modules/fit-plan";
 import { fitProgressionModule } from "./modules/fit-progression";
 import { fitPlanSwapModule } from "./modules/fit-plan-swap";
 import { fitSessionsModule } from "./modules/fit-sessions";
+import { fitStatsModule } from "./modules/fit-stats";
 import { fitProfileModule } from "./modules/fit-profile";
 import { profileModule } from "./modules/profile";
 import { trackingModule } from "./modules/tracking";
@@ -39,6 +40,7 @@ export const app = new Elysia()
   .use(fitPlanSwapModule)
   .use(fitSessionsModule)
   .use(fitProgressionModule)
+  .use(fitStatsModule)
   .use(accountModule)
   .use(trackingModule)
   .get("/health", async () => {
