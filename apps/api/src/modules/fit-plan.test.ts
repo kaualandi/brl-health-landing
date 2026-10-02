@@ -1,4 +1,6 @@
-import { describe, expect, test } from "bun:test";
+import { afterAll, beforeAll, describe, expect, test } from "bun:test";
+import { inArray } from "drizzle-orm";
+import { db, schema } from "../db";
 import { api } from "../test/http";
 import { signup } from "../test/users";
 
@@ -7,6 +9,32 @@ const home = {
   equipment: ["bodyweight"], sessionMinutes: 45, limitations: ["knee"],
 };
 const gym = { ...home, goal: "strength", level: "advanced", daysPerWeek: 5, location: "gym", equipment: ["barbell", "dumbbell", "cable"] };
+
+// Catálogo próprio do teste: não depende dos exercícios importados (CI roda com banco vazio).
+const tag = crypto.randomUUID().slice(0, 8);
+const MUSCLES = ["pectorals", "deltoids", "triceps", "latissimus dorsi", "upper back", "biceps", "quadriceps", "hamstrings", "glutes", "calves", "abdominals", "trapezius"];
+const fixtures = MUSCLES.flatMap((m) =>
+  ["bodyweight", "barbell", "dumbbell", "cable"].flatMap((q) =>
+    Array.from({ length: 4 }, (_, i) => ({
+      id: `fx-${tag}-${m.replace(/ /g, "")}-${q}-${i}`,
+      name: `fx ${tag} ${m} ${q} ${i}`,
+      gifUrl: "https://example.test/x.gif",
+      bodyParts: ["upper arms"],
+      targetMuscles: [m],
+      secondaryMuscles: [] as string[],
+      equipments: [q],
+      instructions: [] as string[],
+    })),
+  ),
+);
+
+beforeAll(async () => {
+  await db.insert(schema.exercises).values(fixtures);
+});
+
+afterAll(async () => {
+  await db.delete(schema.exercises).where(inArray(schema.exercises.id, fixtures.map((f) => f.id)));
+});
 
 describe("/fit/plan", () => {
   test("401 sem token", async () => {
