@@ -121,7 +121,7 @@ export default function FitPage() {
           {FEATURES.map((feature) => (
             <article
               key={feature.title}
-              className="flex gap-4 rounded-2xl border border-white/5 bg-brl-card p-6 md:p-7"
+              className="flex gap-4 rounded-2xl border border-foreground/5 bg-card p-6 md:p-7"
             >
               <span
                 aria-hidden
@@ -150,10 +150,10 @@ export default function FitPage() {
       {/* Enquanto isso */}
       <section className="mx-auto w-full max-w-6xl px-4 pb-24 md:px-6 md:pb-28">
         <div
-          className="relative overflow-hidden rounded-3xl border border-white/5 p-8 md:p-12"
+          className="relative overflow-hidden rounded-3xl border border-foreground/5 p-8 md:p-12"
           style={{
             background:
-              "linear-gradient(135deg, #13131f 0%, rgba(150,86,161,0.22) 100%)",
+              "linear-gradient(135deg, var(--card) 0%, rgba(150,86,161,0.22) 100%)",
           }}
         >
           <div
