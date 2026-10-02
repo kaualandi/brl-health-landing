@@ -1,5 +1,5 @@
 import { mkdir } from "node:fs/promises";
-import { eq, sql } from "drizzle-orm";
+import { eq, inArray, sql } from "drizzle-orm";
 import { config } from "../config";
 import { db, schema } from ".";
 import { fetchExercises, fetchRetry, mapExercise } from "./import-exercises.lib";
@@ -37,10 +37,12 @@ async function downloadOne(row: { id: string; gifUrl: string }) {
   await db.update(exercises).set({ mediaPath: file }).where(eq(exercises.id, row.id));
 }
 
-async function downloadMedia(max?: number) {
+async function downloadMedia(ids: string[]) {
   let failed = 0;
   await mkdir(dir, { recursive: true });
-  const rows = await db.select({ id: exercises.id, gifUrl: exercises.gifUrl }).from(exercises).orderBy(exercises.id).limit(max ?? 100000);
+  const rows = ids.length
+    ? await db.select({ id: exercises.id, gifUrl: exercises.gifUrl }).from(exercises).where(inArray(exercises.id, ids))
+    : [];
   const queue = [...rows];
   const worker = async () => {
     for (let row = queue.shift(); row; row = queue.shift()) {
@@ -56,10 +58,12 @@ async function downloadMedia(max?: number) {
 }
 
 let count = 0;
+const ids: string[] = [];
 for await (const page of fetchExercises({ limit })) {
   await upsert(page.map(mapExercise));
   count += page.length;
+  ids.push(...page.map((e) => e.exerciseId));
   console.log(`importados ${count}`);
 }
-const failed = withMedia ? await downloadMedia(limit) : 0;
+const failed = withMedia ? await downloadMedia(ids) : 0;
 process.exit(failed > 0 ? 1 : 0);

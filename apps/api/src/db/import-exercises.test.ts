@@ -53,6 +53,6 @@ describe("importador", () => {
     expect(res.status).toBe(200);
     expect(sleeps).toEqual([500, 1000]);
     const bad = (async () => json({}, 404)) as unknown as typeof fetch;
-    expect(fetchRetry("u", { fetch: bad, sleep: noSleep })).rejects.toThrow("HTTP 404");
+    await expect(fetchRetry("u", { fetch: bad, sleep: noSleep })).rejects.toThrow("HTTP 404");
   });
 });

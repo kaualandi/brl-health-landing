@@ -1,3 +1,4 @@
+import { existsSync } from "node:fs";
 import { and, arrayContains, asc, count, eq, ilike, sql, type SQL } from "drizzle-orm";
 import { Elysia, t } from "elysia";
 import { config } from "../config";
@@ -12,7 +13,7 @@ const byLabel = (a: { label: string }, b: { label: string }) => a.label.localeCo
 const toItem = (e: typeof exercises.$inferSelect) => ({
   id: e.id,
   name: e.name,
-  gifUrl: e.mediaPath ? `${config.publicUrl}/media/exercises/${e.mediaPath}` : e.gifUrl,
+  gifUrl: e.mediaPath && existsSync(`${config.mediaDir}/exercises/${e.mediaPath}`) ? `${config.publicUrl}/media/exercises/${e.mediaPath}` : e.gifUrl,
   bodyParts: labelAll(bodyPartLabels, e.bodyParts),
   targetMuscles: labelAll(muscleLabels, e.targetMuscles),
   secondaryMuscles: labelAll(muscleLabels, e.secondaryMuscles),
@@ -82,6 +83,7 @@ export const exercisesModule = new Elysia()
       if (!FILE.test(params.file)) return status(404, { error: "Arquivo não encontrado" });
       const file = Bun.file(`${config.mediaDir}/exercises/${params.file}`);
       if (!(await file.exists())) return status(404, { error: "Arquivo não encontrado" });
+      set.headers["content-type"] = "image/gif";
       set.headers["cache-control"] = "public, max-age=31536000, immutable";
       return file;
     },

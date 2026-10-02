@@ -1,10 +1,15 @@
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
 import { afterAll, beforeAll, describe, expect, it } from "bun:test";
-import { inArray, sql } from "drizzle-orm";
+import { eq, inArray, sql } from "drizzle-orm";
 import { config } from "../config";
+import { app } from "../app";
 import { db, schema } from "../db";
 import { api } from "../test/http";
 import { bodyPartLabels, equipmentLabels, label, muscleLabels } from "./exercises.labels";
 
+const mediaDir = mkdtempSync(`${tmpdir()}/media-`);
+const realMediaDir = config.mediaDir;
 const tag = crypto.randomUUID().slice(0, 8);
 const mk = (n: string, over: Partial<typeof schema.exercises.$inferInsert> = {}) => ({
   id: `t${tag}${n}`,
@@ -26,9 +31,14 @@ const fixtures = [
 ];
 
 beforeAll(async () => {
+  config.mediaDir = mediaDir;
+  mkdirSync(`${mediaDir}/exercises`);
+  writeFileSync(`${mediaDir}/exercises/x.gif`, "GIF89a");
   await db.insert(schema.exercises).values(fixtures);
 });
 afterAll(async () => {
+  config.mediaDir = realMediaDir;
+  rmSync(mediaDir, { recursive: true, force: true });
   await db.delete(schema.exercises).where(inArray(schema.exercises.id, fixtures.map((f) => f.id)));
 });
 
@@ -80,6 +90,12 @@ describe("GET /exercises", () => {
     expect(byName("c").gifUrl).toBe(`${config.publicUrl}/media/exercises/x.gif`);
     expect(byName("a").gifUrl).toBe("https://example.com/a.gif");
   });
+
+  it("mediaPath com arquivo ausente cai pro gifUrl original", async () => {
+    await db.update(schema.exercises).set({ mediaPath: "sumiu.gif" }).where(eq(schema.exercises.id, `t${tag}e`));
+    const { body } = await api("GET", `/exercises/t${tag}e`);
+    expect(body.gifUrl).toBe("https://example.com/e.gif");
+  });
 });
 
 describe("GET /exercises/filters e /:id", () => {
@@ -104,6 +120,14 @@ describe("GET /exercises/filters e /:id", () => {
 });
 
 describe("GET /media/exercises/:file", () => {
+  it("serve o GIF com content-type e cache longo", async () => {
+    const res = await app.handle(new Request("http://localhost/media/exercises/x.gif"));
+    expect(res.status).toBe(200);
+    expect(res.headers.get("content-type")).toContain("image/gif");
+    expect(res.headers.get("cache-control")).toContain("max-age=31536000");
+    expect(await res.text()).toBe("GIF89a");
+  });
+
   it("bloqueia path traversal e arquivo inexistente", async () => {
     for (const p of ["..%2F..%2F.env", "..%2Fx.gif", "x.png", "nao-existe.gif"]) {
       expect((await api("GET", `/media/exercises/${p}`)).status).toBe(404);

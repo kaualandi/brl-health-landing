@@ -3,3 +3,4 @@ node_modules
 apps/web/.next
 **/.env
 .git
+apps/api/storage
