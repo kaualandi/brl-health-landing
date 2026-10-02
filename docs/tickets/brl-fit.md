@@ -23,7 +23,8 @@ os serve com busca e filtros — base de tudo do Fit.
 
 - [ ] Tabela de exercícios (id externo, nome, GIF, grupos, músculos-alvo, secundários, equipamentos, passo a passo) via migração Drizzle
 - [ ] Script de importação idempotente que pagina a API grátis pelo cursor, respeitando limite de uso (pausa entre páginas) e reexecutável
-- [ ] Dicionário PT-BR dos valores fixos: grupos corporais, músculos e equipamentos (rótulo exibido em português; valor original guardado)
+- [ ] Dicionário PT-BR dos valores fixos: grupos corporais, músculos e equipamentos (rótulo exibido em português; valor original guardado) — é o vocabulário oficial de equipamentos que o perfil de treino (T-4) usa
+- [ ] GIFs copiados pro nosso armazenamento/CDN na importação (não depender do CDN do ExerciseDB em produção), mantendo a atribuição exigida pelos termos
 - [ ] `GET /exercises` com busca por nome, filtro por grupo/equipamento/músculo e paginação; `GET /exercises/:id` (404 `{ error }`)
 - [ ] `GET /exercises/filters` com as listas de grupos/equipamentos/músculos em PT
 - [ ] Atribuição ao ExerciseDB documentada (README) e exposta na resposta/tela
@@ -54,7 +55,7 @@ GIF, músculos trabalhados e passo a passo.
 
 **Bloqueado por:** T-1
 
-- [ ] Tela de biblioteca com busca, filtros (grupo, equipamento) e carregamento paginado
+- [ ] Tela de biblioteca com busca, filtros (grupo, equipamento) e carregamento paginado — rota logada própria, depois absorvida como aba no T-6
 - [ ] Detalhe do exercício: GIF, músculos-alvo/secundários, equipamento, passo a passo
 - [ ] Estados de carregamento, vazio e erro com a identidade da marca; acessível (alt do GIF, foco)
 - [ ] Catálogo via React Query com cache longo, no padrão dos catálogos do Nutri
@@ -68,10 +69,10 @@ no Nutri reaproveita objetivo, idade, peso e horário de treino sem redigitar.
 
 **Bloqueado por:** Nenhum — pode começar já
 
-- [ ] Perfil de treino: nível (iniciante/intermediário/avançado), dias por semana (2–6), local (casa/academia), equipamentos disponíveis, duração da sessão, lesões/limitações
+- [ ] Perfil de treino: nível (iniciante/intermediário/avançado), dias por semana (2–6), local (casa/academia), equipamentos disponíveis (mesmo vocabulário de equipamentos do catálogo do T-1), duração da sessão, lesões/limitações
 - [ ] `GET/PUT /fit/profile` (auth, upsert, validação com mensagens PT, 404 sem perfil)
 - [ ] Wizard no padrão do onboarding do Nutri (passos, revisão editável, rascunho), pulando o que já vem do perfil do Nutri
-- [ ] Editar o perfil depois (equivalente ao `/nutri/perfil`)
+- [ ] Editar o perfil depois (equivalente à tela de perfil do Nutri)
 - [ ] Testes de contrato da API
 
 ## T-5 · Gerar o plano de treino
@@ -87,6 +88,7 @@ dias, exercícios escolhidos do catálogo e séries × reps × descanso pelo obj
 - [ ] Seleção de exercícios por músculo, equipamento disponível e nível, evitando lesões informadas
 - [ ] Prescrição por objetivo (hipertrofia, força, emagrecimento, saúde): faixa de reps, séries, descanso
 - [ ] Plano persistido (`POST /fit/plan/generate`, `GET /fit/plan`) e regenerado ao editar o perfil
+- [ ] Fim do wizard: tela "gerando seu plano" com prévia da semana (como o passo final do Nutri)
 - [ ] Testes do motor (casos por objetivo, nível, dias e equipamento) e de contrato
 
 ## T-6 · App /fit com abas
@@ -167,6 +169,7 @@ progressiva sem planilha — e mostra "na próxima: X kg".
 
 - [ ] Gasto da sessão estimado (MET × peso × duração) e guardado na sessão
 - [ ] Meta de calorias/macros do dia no Nutri soma o gasto do treino, com card "Treinou hoje: +X kcal"
+- [ ] Sem dupla contagem: o TDEE do Nutri já inclui o fator do nível de atividade — somar só o excedente sobre o que esse fator já prevê pro dia (ou usar base sem exercício nos dias de treino), com teste desse caso
 - [ ] Só no dia do treino (reseta no dia seguinte, fuso do app)
 - [ ] Testes do cálculo e do ajuste
 
@@ -192,7 +195,7 @@ Free tem o Fit básico; Pro/Família têm progressão automática e integração
 **O que construir:** o BRL Fit sai do "em breve": a página pública vira porta de entrada e a
 lista de espera é avisada.
 
-**Bloqueado por:** T-6, T-12
+**Bloqueado por:** T-2, T-10, T-12
 
 - [ ] Página pública do Fit com CTA de cadastro/entrar (sem "em breve")
 - [ ] E-mail de lançamento para a lista de espera (Resend), disparo único e idempotente
