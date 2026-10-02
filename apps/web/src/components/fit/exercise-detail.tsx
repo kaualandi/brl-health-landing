@@ -17,10 +17,11 @@ function BackLink() {
   const params = useSearchParams();
   const qs = buildExerciseSearch(parseExerciseQuery(params));
   const aba = params.get("aba") ?? "";
-  const href = aba in FROM_LABEL ? `/fit/app?aba=${aba}${qs ? `&${qs}` : ""}` : `/fit/exercicios${qs ? `?${qs}` : ""}`;
+  const known = Object.hasOwn(FROM_LABEL, aba);
+  const href = known ? `/fit/app?aba=${aba}${qs ? `&${qs}` : ""}` : `/fit/exercicios${qs ? `?${qs}` : ""}`;
   return (
     <Link href={href} className="inline-flex min-h-11 items-center gap-2 text-sm text-muted-foreground">
-      <ArrowLeftIcon aria-hidden className="size-4" /> {FROM_LABEL[aba] ?? "Biblioteca"}
+      <ArrowLeftIcon aria-hidden className="size-4" /> {known ? FROM_LABEL[aba] : "Biblioteca"}
     </Link>
   );
 }
