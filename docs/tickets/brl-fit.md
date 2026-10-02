@@ -69,7 +69,7 @@ no Nutri reaproveita objetivo, idade, peso e horário de treino sem redigitar.
 
 **Bloqueado por:** Nenhum — pode começar já
 
-- [ ] Perfil de treino: nível (iniciante/intermediário/avançado), dias por semana (2–6), local (casa/academia), equipamentos disponíveis (mesmo vocabulário de equipamentos do catálogo do T-1), duração da sessão, lesões/limitações
+- [ ] Perfil de treino: nível (iniciante/intermediário/avançado), dias por semana (2–6), local (casa/academia), equipamentos disponíveis (guarda os valores de equipamento do ExerciseDB, lista pública e fixa — não depende do dicionário do T-1), duração da sessão, lesões/limitações
 - [ ] `GET/PUT /fit/profile` (auth, upsert, validação com mensagens PT, 404 sem perfil)
 - [ ] Wizard no padrão do onboarding do Nutri (passos, revisão editável, rascunho), pulando o que já vem do perfil do Nutri
 - [ ] Editar o perfil depois (equivalente à tela de perfil do Nutri)
@@ -86,6 +86,7 @@ dias, exercícios escolhidos do catálogo e séries × reps × descanso pelo obj
 
 - [ ] Motor puro e testado: divisão por dias (full body, A/B, ABC, PPL…) conforme dias/semana e nível
 - [ ] Seleção de exercícios por músculo, equipamento disponível e nível, evitando lesões informadas
+- [ ] Garante que os equipamentos do perfil (T-4) casam com o dicionário do catálogo (T-1), com teste
 - [ ] Prescrição por objetivo (hipertrofia, força, emagrecimento, saúde): faixa de reps, séries, descanso
 - [ ] Plano persistido (`POST /fit/plan/generate`, `GET /fit/plan`) e regenerado ao editar o perfil
 - [ ] Fim do wizard: tela "gerando seu plano" com prévia da semana (como o passo final do Nutri)
