@@ -1,4 +1,4 @@
-import { eq } from "drizzle-orm";
+import { eq, inArray } from "drizzle-orm";
 import { db, schema } from ".";
 import { chunk, planTranslations, type Current } from "./apply-translations.lib";
 
@@ -10,8 +10,9 @@ export async function applyTranslations(file: URL = FILE) {
   const rows = await db
     .select({ id: exercises.id, instructions: exercises.instructions, namePt: exercises.namePt, instructionsPt: exercises.instructionsPt })
     .from(exercises);
-  const current = new Map<string, Current>(rows.map((r) => [r.id, { name: "", ...r }]));
-  const { updates, report } = planTranslations(raw, current);
+  const current = new Map<string, Current>(rows.map((r) => [r.id, r]));
+  const { updates, clears, report } = planTranslations(raw, current);
+  for (const part of chunk(clears, 200)) await db.update(exercises).set({ instructionsPt: null }).where(inArray(exercises.id, part));
   for (const part of chunk(updates, 200)) {
     await db.transaction(async (tx) => {
       for (const u of part) await tx.update(exercises).set({ namePt: u.name, instructionsPt: u.instructions }).where(eq(exercises.id, u.id));

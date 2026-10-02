@@ -27,7 +27,7 @@ const matchName = (q: string) => {
   const like = `%${escapeLike(q.trim())}%`;
   return or(ilike(exercises.name, like), ilike(exercises.namePt, like));
 };
-const sortName = sql`coalesce(${exercises.namePt}, ${exercises.name})`;
+const sortName = sql`lower(coalesce(${exercises.namePt}, ${exercises.name}))`;
 
 const filterColumns = {
   bodyParts: exercises.bodyParts,

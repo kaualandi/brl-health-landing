@@ -26,6 +26,19 @@ describe("exercícios em PT com fallback para EN", () => {
     expect(body.instructions).toEqual(["Step one", "Step two"]);
   });
 
+  it("ordena sem diferenciar maiúsculas de minúsculas", async () => {
+    const extra = [
+      { ...base, id: `p${tag}c`, name: `zz${tag} x`, namePt: `zz${tag} Banco` },
+      { ...base, id: `p${tag}d`, name: `zz${tag} y`, namePt: `zz${tag} cadeira` },
+      { ...base, id: `p${tag}e`, name: `zz${tag} z`, namePt: `zz${tag} Elevação` },
+    ];
+    await db.insert(schema.exercises).values(extra);
+    const { body } = await api("GET", `/exercises?q=zz${tag}%20&limit=10`);
+    const names = body.items.map((i: { name: string }) => i.name.slice(`zz${tag} `.length));
+    await db.delete(schema.exercises).where(inArray(schema.exercises.id, extra.map((r) => r.id)));
+    expect(names).toEqual(["agachamento", "Banco", "cadeira", "Elevação", "plank"]);
+  });
+
   it("busca por termo PT e EN", async () => {
     const pt = await api("GET", `/exercises?q=zz${tag}%20agacha`);
     expect(pt.body.items.map((i: { id: string }) => i.id)).toEqual([rows[0].id]);
