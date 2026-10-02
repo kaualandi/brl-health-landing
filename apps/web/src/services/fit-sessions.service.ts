@@ -40,7 +40,10 @@ function write(key: string, value: unknown) {
   else window.localStorage.setItem(key, JSON.stringify(value));
 }
 
-export const loadActive = (uid: string) => read<ActiveSession | null>(activeKey(uid), null);
+export function loadActive(uid: string) {
+  const s = read<ActiveSession | null>(activeKey(uid), null);
+  return s?.exercises ? s : null;
+}
 export const saveActive = (uid: string, s: ActiveSession | null) => write(activeKey(uid), s);
 export const loadQueue = (uid: string) => read<SessionPayload[]>(queueKey(uid), []);
 
@@ -101,10 +104,12 @@ export function flushQueue(uid: string): Promise<number> {
 }
 
 /** Conclui: entra na fila (com clientId), limpa o treino em andamento e tenta enviar. */
-export async function submitSession(uid: string, p: SessionPayload): Promise<number> {
+export async function submitSession(uid: string, p: SessionPayload) {
   write(queueKey(uid), enqueue(loadQueue(uid), p));
   saveActive(uid, null);
-  return flushQueue(uid);
+  const left = await flushQueue(uid);
+  const rejected = loadFailed(uid).find((f) => f.payload.clientId === p.clientId)?.error ?? null;
+  return { left, rejected };
 }
 
 export async function getHistory(limit = 30): Promise<SessionSummary[]> {

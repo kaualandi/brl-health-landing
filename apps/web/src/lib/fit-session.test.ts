@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import type { FitPlanDay } from "@/lib/fit-plan";
 import {
   createSession, dequeue, doneCount, enqueue, formatClock, overlayLoads, parseReps, parseWeight,
-  pauseRest, restLeft, resumeRest, skipRest, toggleDone, toPayload, updateSet, volumeKg,
+  pauseRest, restLeft, resumeRest, skipRest, toggleDone, toPayload, updateSet, volumeKg, weightText,
 } from "./fit-session";
 
 const ex = (order: number, id: string, sets: number, reps: string, restSeconds: number) => ({
@@ -77,6 +77,27 @@ describe("fila de reenvio", () => {
     let s = updateSet(base(), 1, 1, { weightKg: 55 });
     s = toggleDone(s, 1, 1, 0);
     expect(overlayLoads({ a: 40, z: 5 }, [toPayload(s, new Date())])).toEqual({ a: 55, z: 5 });
+  });
+});
+
+describe("snapshot e payload", () => {
+  it("guarda o dia como estava e manda o nome", () => {
+    const s = base();
+    expect(s.exercises[0]).toMatchObject({ order: 1, exerciseId: "a", sets: 2, restSeconds: 90 });
+    expect(toPayload(s, new Date("2026-10-02T11:00:00Z")).dayName).toBe("Treino B");
+  });
+
+  it("não deixa o início passar de agora", () => {
+    const p = toPayload(base(), new Date("2026-10-02T09:00:00Z"));
+    expect(p.startedAt).toBe("2026-10-02T09:00:00.000Z");
+  });
+});
+
+describe("weightText", () => {
+  it("usa vírgula", () => {
+    expect(weightText(42.5)).toBe("42,5");
+    expect(weightText(40)).toBe("40");
+    expect(weightText(null)).toBe("");
   });
 });
 

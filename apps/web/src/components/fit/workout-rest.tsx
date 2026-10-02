@@ -57,11 +57,38 @@ type Props = {
   onSkip: () => void;
 };
 
+function Countdown({ rest, left }: { rest: Rest; left: number }) {
+  const pct = Math.round((left / rest.total) * 100);
+  return (
+    <div className="min-w-0 flex-1">
+      <p className="text-xs text-muted-foreground">Descanso{rest.endsAt === null ? " (pausado)" : ""}</p>
+      <p className="font-display text-3xl leading-none font-extrabold tabular-nums">{formatClock(left)}</p>
+      <div className="mt-2 h-1 overflow-hidden rounded-full bg-foreground/10">
+        <div className="h-full bg-brl-purple transition-[width] duration-500" style={{ width: `${pct}%` }} />
+      </div>
+    </div>
+  );
+}
+
+function RestControls({ rest, alerts, onPause, onResume, onSkip }: Pick<Props, "alerts" | "onPause" | "onResume" | "onSkip"> & { rest: Rest }) {
+  const paused = rest.endsAt === null;
+  return (
+    <>
+      <Button type="button" variant="outline" size="icon-lg" onClick={paused ? onResume : onPause} aria-label={paused ? "Retomar descanso" : "Pausar descanso"}>
+        {paused ? <PlayIcon aria-hidden /> : <PauseIcon aria-hidden />}
+      </Button>
+      <Button type="button" variant="outline" className="h-9" onClick={onSkip}>
+        <SkipForwardIcon aria-hidden /> Pular
+      </Button>
+      <Button type="button" variant="ghost" size="icon-lg" onClick={alerts.toggle} aria-pressed={alerts.on} aria-label="Som e vibração ao fim do descanso">
+        {alerts.on ? <Volume2Icon aria-hidden /> : <VolumeXIcon aria-hidden />}
+      </Button>
+    </>
+  );
+}
+
 /** Barra fixa do descanso: contagem regressiva visível, pausar/pular; aria-live avisa o fim. */
-export function RestBar({ rest, done, now, alerts, onPause, onResume, onSkip }: Props) {
-  const left = rest ? restLeft(rest, now) : 0;
-  const paused = rest?.endsAt === null;
-  const pct = rest ? Math.round((left / rest.total) * 100) : 0;
+export function RestBar({ rest, done, now, ...controls }: Props) {
   return (
     <div className="fixed inset-x-0 bottom-0 z-40 border-t border-foreground/10 bg-background/95 backdrop-blur-xl">
       <p role="status" aria-live="polite" className="sr-only">
@@ -69,22 +96,8 @@ export function RestBar({ rest, done, now, alerts, onPause, onResume, onSkip }: 
       </p>
       {rest ? (
         <div className="mx-auto flex w-full max-w-3xl items-center gap-3 px-4 py-3">
-          <div className="min-w-0 flex-1">
-            <p className="text-xs text-muted-foreground">Descanso{paused ? " (pausado)" : ""}</p>
-            <p className="font-display text-3xl leading-none font-extrabold tabular-nums">{formatClock(left)}</p>
-            <div className="mt-2 h-1 overflow-hidden rounded-full bg-foreground/10">
-              <div className="h-full bg-brl-purple transition-[width] duration-500" style={{ width: `${pct}%` }} />
-            </div>
-          </div>
-          <Button type="button" variant="outline" size="icon-lg" onClick={paused ? onResume : onPause} aria-label={paused ? "Retomar descanso" : "Pausar descanso"}>
-            {paused ? <PlayIcon aria-hidden /> : <PauseIcon aria-hidden />}
-          </Button>
-          <Button type="button" variant="outline" className="h-9" onClick={onSkip}>
-            <SkipForwardIcon aria-hidden /> Pular
-          </Button>
-          <Button type="button" variant="ghost" size="icon-lg" onClick={alerts.toggle} aria-pressed={alerts.on} aria-label="Som e vibração ao fim do descanso">
-            {alerts.on ? <Volume2Icon aria-hidden /> : <VolumeXIcon aria-hidden />}
-          </Button>
+          <Countdown rest={rest} left={restLeft(rest, now)} />
+          <RestControls rest={rest} {...controls} />
         </div>
       ) : done ? (
         <p className="px-4 py-3 text-center text-sm font-semibold text-brl-orange">Descanso terminado — próxima série!</p>

@@ -29,7 +29,7 @@ export function FitHistory() {
     const pending = loadQueue(user.id).map((p) => ({
       key: p.clientId,
       date: fmtDate(p.finishedAt),
-      name: `Treino ${p.dayIndex + 1}`,
+      name: p.dayName,
       seconds: elapsedSeconds(p.startedAt, Date.parse(p.finishedAt)),
       volume: formatVolume(volumeKg(p.sets)),
       pending: doneCount(p.sets) > 0,

@@ -1,10 +1,10 @@
-import { and, asc, desc, eq, isNotNull, lt, sql } from "drizzle-orm";
+import { and, asc, desc, eq, inArray, isNotNull, lt, sql } from "drizzle-orm";
 import { Elysia, t } from "elysia";
 import { db, schema } from "../db";
 import { auth } from "../lib/auth";
 import { today } from "../lib/date";
 
-const { fitSessions, fitSessionSets, fitPlanDays, fitPlanExercises, exercises } = schema;
+const { fitSessions, fitSessionSets, exercises } = schema;
 
 const MAX_SETS = 60;
 const MAX_SESSION_SECONDS = 24 * 3600;
@@ -21,7 +21,8 @@ const setSchema = t.Object({
 
 const body = t.Object({
   clientId: t.String({ format: "uuid", error: "Identificador do treino inválido" }),
-  dayIndex: t.Integer({ minimum: 0, error: "Dia do treino inválido" }),
+  dayIndex: t.Integer({ minimum: 0, maximum: 6, error: "Dia do treino inválido" }),
+  dayName: t.String({ minLength: 1, maxLength: 60, error: "Nome do treino deve ter de 1 a 60 caracteres" }),
   startedAt: t.String({ format: "date-time", error: "Início do treino inválido" }),
   finishedAt: t.String({ format: "date-time", error: "Fim do treino inválido" }),
   sets: t.Array(setSchema, { minItems: 1, maxItems: MAX_SETS, error: `Envie de 1 a ${MAX_SETS} séries` }),
@@ -62,15 +63,20 @@ const summaries = (where: ReturnType<typeof and>, limit = 1) =>
     .orderBy(desc(fitSessions.id))
     .limit(limit);
 
-const planErrors = async (userId: number, b: Body) => {
-  const [day] = await db.select().from(fitPlanDays).where(and(eq(fitPlanDays.userId, userId), eq(fitPlanDays.dayIndex, b.dayIndex)));
-  if (!day) return { errors: ["Esse dia não existe no seu plano de treino."] };
-  const planned = await db.select({ id: fitPlanExercises.exerciseId }).from(fitPlanExercises).where(and(eq(fitPlanExercises.userId, userId), eq(fitPlanExercises.dayIndex, b.dayIndex)));
-  const ids = new Set(planned.map((p) => p.id));
-  if (b.sets.some((s) => !ids.has(s.exerciseId))) return { errors: ["Há exercícios que não fazem parte desse treino."] };
+/** O treino é um snapshot: valida contra o catálogo e a consistência interna, não contra o plano atual. */
+const contentErrors = async (b: Body) => {
+  if (!b.dayName.trim()) return "Nome do treino deve ter de 1 a 60 caracteres";
+  const ids = [...new Set(b.sets.map((s) => s.exerciseId))];
+  const found = await db.select({ id: exercises.id }).from(exercises).where(inArray(exercises.id, ids));
+  if (found.length !== ids.length) return "Há exercícios que não existem no catálogo.";
+  const seen = new Map<number, string>();
+  for (const s of b.sets) {
+    const prev = seen.get(s.exerciseOrder);
+    if (prev && prev !== s.exerciseId) return "Há séries com exercício inconsistente na mesma posição.";
+    seen.set(s.exerciseOrder, s.exerciseId);
+  }
   const keys = b.sets.map((s) => `${s.exerciseOrder}:${s.setNumber}`);
-  if (new Set(keys).size !== keys.length) return { errors: ["Há séries repetidas no treino."] };
-  return { day };
+  return new Set(keys).size === keys.length ? null : "Há séries repetidas no treino.";
 };
 
 const dateErrors = (b: Body) => {
@@ -82,7 +88,7 @@ const dateErrors = (b: Body) => {
   return null;
 };
 
-async function saveSession(userId: number, b: Body, dayName: string) {
+async function saveSession(userId: number, b: Body) {
   const startedAt = new Date(b.startedAt);
   const finishedAt = new Date(b.finishedAt);
   return db.transaction(async (tx) => {
@@ -96,7 +102,7 @@ async function saveSession(userId: number, b: Body, dayName: string) {
         clientId: b.clientId,
         date: today(finishedAt),
         dayIndex: b.dayIndex,
-        dayName,
+        dayName: b.dayName.trim(),
         startedAt,
         finishedAt,
         durationSeconds: Math.round((finishedAt.getTime() - startedAt.getTime()) / 1000),
@@ -134,9 +140,9 @@ export const fitSessionsModule = new Elysia({ prefix: "/fit/sessions" })
       if (dup) return (await detail(userId, dup.id))!;
       const bad = dateErrors(b);
       if (bad) return status(400, { errors: [bad] });
-      const plan = await planErrors(userId, b);
-      if ("errors" in plan) return status(400, plan);
-      const id = await saveSession(userId, b, plan.day.name);
+      const invalid = await contentErrors(b);
+      if (invalid) return status(400, { errors: [invalid] });
+      const id = await saveSession(userId, b);
       return (await detail(userId, id))!;
     },
     { auth: true, body },

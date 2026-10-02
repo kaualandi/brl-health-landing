@@ -12,19 +12,31 @@ export type SessionSet = {
 /** Descanso em curso: `endsAt` (ms) corre; sem `endsAt` está pausado com `left` segundos. */
 export type Rest = { total: number; endsAt: number | null; left: number };
 
+/** Exercício como estava no plano ao começar: o treino não depende do plano atual. */
+export type SnapshotExercise = {
+  order: number;
+  exerciseId: string;
+  name: string;
+  gifUrl: string;
+  sets: number;
+  reps: string;
+  restSeconds: number;
+};
+
 export type ActiveSession = {
   clientId: string;
   dayIndex: number;
   dayName: string;
   startedAt: string;
   sets: SessionSet[];
-  restByOrder: Record<number, number>;
+  exercises: SnapshotExercise[];
   rest: Rest | null;
 };
 
 export type SessionPayload = {
   clientId: string;
   dayIndex: number;
+  dayName: string;
   startedAt: string;
   finishedAt: string;
   sets: SessionSet[];
@@ -46,8 +58,16 @@ export function createSession(day: FitPlanDay, loads: Loads, now: Date, clientId
       done: false,
     })),
   );
-  const restByOrder = Object.fromEntries(day.exercises.map((e) => [e.order, e.restSeconds]));
-  return { clientId, dayIndex: day.index, dayName: day.name, startedAt: now.toISOString(), sets, restByOrder, rest: null };
+  const exercises = day.exercises.map((e) => ({
+    order: e.order,
+    exerciseId: e.exercise.id,
+    name: e.exercise.name,
+    gifUrl: e.exercise.gifUrl,
+    sets: e.sets,
+    reps: e.reps,
+    restSeconds: e.restSeconds,
+  }));
+  return { clientId, dayIndex: day.index, dayName: day.name, startedAt: now.toISOString(), sets, exercises, rest: null };
 }
 
 /** Texto digitado (aceita vírgula) → kg entre 0 e 1000, ou null se vazio/inválido. */
@@ -71,7 +91,7 @@ export function toggleDone(s: ActiveSession, order: number, setNumber: number, n
   const cur = s.sets.find((x) => x.exerciseOrder === order && x.setNumber === setNumber);
   if (!cur) return s;
   const next = updateSet(s, order, setNumber, { done: !cur.done });
-  return cur.done ? next : startRest(next, s.restByOrder[order] ?? 60, now);
+  return cur.done ? next : startRest(next, s.exercises.find((e) => e.order === order)?.restSeconds ?? 60, now);
 }
 
 export const startRest = (s: ActiveSession, seconds: number, now: number): ActiveSession => ({
@@ -103,6 +123,7 @@ export const elapsedSeconds = (startedAt: string, now: number) => Math.max(0, Ma
 export const toPayload = (s: ActiveSession, now: Date): SessionPayload => ({
   clientId: s.clientId,
   dayIndex: s.dayIndex,
+  dayName: s.dayName.slice(0, 60),
   startedAt: new Date(Math.min(Date.parse(s.startedAt), now.getTime())).toISOString(),
   finishedAt: now.toISOString(),
   sets: s.sets,
@@ -133,3 +154,6 @@ export function formatClock(total: number): string {
 export function formatVolume(kg: number): string {
   return `${new Intl.NumberFormat("pt-BR", { maximumFractionDigits: 1 }).format(kg)} kg`;
 }
+
+/** Carga como o usuário digita no Brasil: vírgula decimal. */
+export const weightText = (kg: number | null) => (kg === null ? "" : kg.toLocaleString("pt-BR", { maximumFractionDigits: 2 }));

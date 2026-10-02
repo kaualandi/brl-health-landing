@@ -14,7 +14,7 @@ vi.stubGlobal("window", {
 
 const { classify, clearFitSessions, flushQueue, loadFailed, loadQueue, submitSession } = await import("./fit-sessions.service");
 
-const payload = (clientId: string) => ({ clientId, dayIndex: 0, startedAt: "a", finishedAt: "b", sets: [] });
+const payload = (clientId: string) => ({ clientId, dayIndex: 0, dayName: "Treino A", startedAt: "a", finishedAt: "b", sets: [] });
 const err = (status?: number) => Object.assign(new Error("falhou"), { status });
 
 beforeEach(() => {
@@ -34,13 +34,13 @@ describe("classify", () => {
 describe("flushQueue", () => {
   it("2xx sai da fila", async () => {
     post.mockResolvedValue({});
-    expect(await submitSession("u", payload("1"))).toBe(0);
+    expect((await submitSession("u", payload("1"))).left).toBe(0);
     expect(loadQueue("u")).toEqual([]);
   });
 
   it("5xx e rede continuam na fila", async () => {
     post.mockRejectedValueOnce(err(503));
-    expect(await submitSession("u", payload("1"))).toBe(1);
+    expect((await submitSession("u", payload("1"))).left).toBe(1);
     post.mockRejectedValueOnce(err());
     expect(await flushQueue("u")).toBe(1);
     expect(loadQueue("u")).toHaveLength(1);
@@ -49,7 +49,7 @@ describe("flushQueue", () => {
 
   it("4xx vai pros recusados com a mensagem e conta como pendente", async () => {
     post.mockRejectedValue(err(400));
-    expect(await submitSession("u", payload("1"))).toBe(1);
+    expect(await submitSession("u", payload("1"))).toEqual({ left: 1, rejected: "falhou" });
     expect(loadQueue("u")).toEqual([]);
     expect(loadFailed("u")).toEqual([{ payload: payload("1"), error: "falhou" }]);
   });

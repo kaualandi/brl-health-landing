@@ -34,6 +34,7 @@ const payload = (over: object = {}) => {
   return {
     clientId: crypto.randomUUID(),
     dayIndex: 0,
+    dayName: "Treino A",
     startedAt: new Date(finished.getTime() - 1800_000).toISOString(),
     finishedAt: finished.toISOString(),
     sets: [set(), set({ setNumber: 2, weightKg: 22.5, reps: 8 }), set({ setNumber: 3, done: false }), set({ exerciseId: fixtures[1].id, exerciseOrder: 2, weightKg: null, reps: 12 })],
@@ -92,6 +93,19 @@ describe("/fit/sessions", () => {
     expect(b.body.id).toBe(a.body.id);
   });
 
+  test("exercício trocado depois do início e dia que sumiu do plano continuam válidos", async () => {
+    const { token } = await userWithPlan();
+    const swapped = await api("POST", "/fit/sessions", payload({ sets: [set({ exerciseId: fixtures[2].id })] }), token);
+    expect(swapped.status).toBe(200);
+    const orphan = await signup();
+    const gone = await api("POST", "/fit/sessions", payload({ dayIndex: 5, dayName: "Treino F — antigo" }), orphan.token);
+    expect(gone.status).toBe(200);
+    expect(gone.body).toMatchObject({ dayName: "Treino F — antigo", dayIndex: 5 });
+  });
+
+});
+
+describe("/fit/sessions histórico", () => {
   test("histórico: mais recentes primeiro, limit e before", async () => {
     const { token } = await userWithPlan();
     const ids: string[] = [];
@@ -119,15 +133,22 @@ describe("/fit/sessions", () => {
     expect((await api("GET", "/fit/sessions", undefined, b.token)).body).toEqual([]);
   });
 
+});
+
+describe("/fit/sessions validações", () => {
   test.each([
-    ["dia fora do plano", { dayIndex: 9 }, "Esse dia não existe no seu plano de treino."],
+    ["dia fora de 0–6", { dayIndex: 9 }, "Dia do treino inválido"],
+    ["sem nome", { dayName: "" }, "Nome do treino deve ter de 1 a 60 caracteres"],
+    ["nome só com espaços", { dayName: "   " }, "Nome do treino deve ter de 1 a 60 caracteres"],
+    ["nome longo", { dayName: "x".repeat(61) }, "Nome do treino deve ter de 1 a 60 caracteres"],
     ["reps acima de 100", { sets: [set({ reps: 101 })] }, "Repetições devem estar entre 0 e 100"],
     ["carga acima de 1000", { sets: [set({ weightKg: 1001 })] }, "Carga deve estar entre 0 e 1000 kg"],
     ["carga negativa", { sets: [set({ weightKg: -1 })] }, "Carga deve estar entre 0 e 1000 kg"],
     ["sem séries", { sets: [] }, "Envie de 1 a 60 séries"],
     ["séries demais", { sets: Array.from({ length: 61 }, (_, i) => set({ setNumber: (i % 50) + 1 })) }, "Envie de 1 a 60 séries"],
     ["clientId inválido", { clientId: "x" }, "Identificador do treino inválido"],
-    ["exercício fora do treino", { sets: [set({ exerciseId: fixtures[2].id })] }, "Há exercícios que não fazem parte desse treino."],
+    ["exercício desconhecido", { sets: [set({ exerciseId: "nao-existe" })] }, "Há exercícios que não existem no catálogo."],
+    ["mesma posição, outro exercício", { sets: [set(), set({ setNumber: 2, exerciseId: fixtures[1].id })] }, "Há séries com exercício inconsistente na mesma posição."],
     ["série repetida", { sets: [set(), set()] }, "Há séries repetidas no treino."],
     ["fim antes do início", { startedAt: new Date().toISOString(), finishedAt: new Date(Date.now() - 60_000).toISOString() }, "O fim do treino não pode ser antes do início."],
     ["fim no futuro", { finishedAt: new Date(Date.now() + 7200_000).toISOString(), startedAt: new Date().toISOString() }, "O fim do treino não pode estar no futuro."],

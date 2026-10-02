@@ -11,26 +11,32 @@ type Props = {
   onConfirm: () => void;
 };
 
+function Stats({ sets, seconds }: { sets: SessionSet[]; seconds: number }) {
+  const stats = [
+    ["Duração", formatClock(seconds)],
+    ["Séries", `${doneCount(sets)}/${sets.length}`],
+    ["Volume", formatVolume(volumeKg(sets))],
+  ];
+  return (
+    <dl className="grid grid-cols-3 gap-3">
+      {stats.map(([k, v]) => (
+        <div key={k} className="rounded-2xl border border-foreground/10 bg-card p-3 text-center">
+          <dt className="text-xs text-muted-foreground">{k}</dt>
+          <dd className="mt-1 font-display text-xl font-extrabold tabular-nums">{v}</dd>
+        </div>
+      ))}
+    </dl>
+  );
+}
+
 /** Resumo antes de concluir; avisa quando sobram séries sem marcar. */
 export function WorkoutSummary({ sets, seconds, busy, onBack, onConfirm }: Props) {
   const done = doneCount(sets);
   const missing = sets.length - done;
-  const stats = [
-    ["Duração", formatClock(seconds)],
-    ["Séries", `${done}/${sets.length}`],
-    ["Volume", formatVolume(volumeKg(sets))],
-  ];
   return (
     <section aria-label="Resumo do treino" className="flex flex-col gap-5 pt-8">
       <h2 className="font-display text-2xl font-extrabold tracking-tight">Concluir treino</h2>
-      <dl className="grid grid-cols-3 gap-3">
-        {stats.map(([k, v]) => (
-          <div key={k} className="rounded-2xl border border-foreground/10 bg-card p-3 text-center">
-            <dt className="text-xs text-muted-foreground">{k}</dt>
-            <dd className="mt-1 font-display text-xl font-extrabold tabular-nums">{v}</dd>
-          </div>
-        ))}
-      </dl>
+      <Stats sets={sets} seconds={seconds} />
       {missing > 0 ? (
         <p role="alert" className="rounded-xl border border-brl-orange/40 bg-brl-orange/10 p-3 text-sm">
           {missing === 1 ? "Falta 1 série" : `Faltam ${missing} séries`} sem marcar. Elas não entram no volume. Quer concluir mesmo assim?
