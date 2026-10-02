@@ -1,0 +1,1 @@
+ALTER TABLE "fit_sessions" ADD COLUMN "kcal" integer;

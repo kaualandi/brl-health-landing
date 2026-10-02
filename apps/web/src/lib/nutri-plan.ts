@@ -158,3 +158,19 @@ export function estimateWeeksToGoal(
   if (kgPerWeek < 0.02 || remaining < 0.1) return null;
   return Math.ceil(remaining / kgPerWeek);
 }
+
+/**
+ * Soma o bônus de treino do dia à meta: o extra vai todo em carboidrato
+ * (proteína e gordura seguem as da base) e as refeições crescem na mesma proporção.
+ */
+export function applyWorkoutBonus(plan: NutriPlan, bonusKcal: number): NutriPlan {
+  if (bonusKcal <= 0) return plan;
+  const targetCalories = plan.targetCalories + bonusKcal;
+  const ratio = targetCalories / plan.targetCalories;
+  return {
+    ...plan,
+    targetCalories,
+    carbs: plan.carbs + Math.round(bonusKcal / 4),
+    meals: plan.meals.map((m) => ({ ...m, kcal: Math.round((m.kcal * ratio) / 5) * 5 })),
+  };
+}

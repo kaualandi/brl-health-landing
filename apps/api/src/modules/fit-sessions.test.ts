@@ -73,6 +73,15 @@ describe("/fit/sessions", () => {
     expect(one.body).toEqual(res.body);
   });
 
+  test("kcal = MET × peso × horas com o peso do Nutri; sem perfil, null", async () => {
+    const { token, user } = await userWithPlan();
+    expect((await api("POST", "/fit/sessions", payload(), token)).body.kcal).toBeNull();
+    await db.insert(schema.nutriProfiles).values({ userId: Number(user.id), sex: "male", age: 30, heightCm: 180, weightKg: 80, goal: "health", activity: "light", diet: "omnivore", restrictions: [], mealsPerDay: 4, waterGlasses: 8, meals: [] });
+    const res = await api("POST", "/fit/sessions", payload(), token);
+    expect(res.body.kcal).toBe(Math.round(3.5 * 80 * 0.5));
+    expect((await api("GET", "/fit/sessions", undefined, token)).body[0].kcal).toBe(res.body.kcal);
+  });
+
   test("repetir o clientId não duplica", async () => {
     const { token } = await userWithPlan();
     const p = payload();

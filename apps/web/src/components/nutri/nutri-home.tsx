@@ -29,6 +29,8 @@ import { MealDiary } from "@/components/nutri/meal-diary";
 import { MeasurementsCard } from "@/components/nutri/measurements-card";
 import { NutriCoach } from "@/components/nutri/nutri-coach";
 import { PlanSummary } from "@/components/nutri/plan-summary";
+import { WorkoutTodayCard } from "@/components/nutri/workout-today-card";
+import { useTodayEnergy } from "@/hooks/use-today-energy";
 import { WaterCard } from "@/components/nutri/water-card";
 import { WeightCard } from "@/components/nutri/weight-card";
 import { UpgradeNudge } from "@/components/plan/upgrade-nudge";
@@ -279,7 +281,7 @@ function HabitsCard() {
 /* --- conteúdo de cada aba --------------------------------------------- */
 
 function InicioTab({ profile }: { profile: NutriProfile }) {
-  const plan = computeNutriPlan(profile);
+  const { plan, energy } = useTodayEnergy(computeNutriPlan(profile));
   const firstName = profile.name.split(" ")[0] || profile.name;
   const { data: allArticles = [] } = useArticles();
   const articles = curatedArticlesFrom(allArticles, profile.goal, 6);
@@ -307,6 +309,9 @@ function InicioTab({ profile }: { profile: NutriProfile }) {
       <section className="pt-10 md:pt-14">
         <SectionTitle eyebrow="Seu resumo" title="O plano da sua semana" />
         <PlanSummary plan={plan} />
+        <div className="mt-5 empty:hidden">
+          <WorkoutTodayCard energy={energy} />
+        </div>
       </section>
 
       {/* Acompanhamento — IA + nutricionista humano */}
@@ -430,7 +435,7 @@ function CorpoTab({ profile }: { profile: NutriProfile }) {
 }
 
 function NutricaoTab({ profile }: { profile: NutriProfile }) {
-  const plan = computeNutriPlan(profile);
+  const { plan, energy } = useTodayEnergy(computeNutriPlan(profile));
   const recipe = recipeForDiet(profile.diet);
   const hasTimeline = plan.meals.filter((m) => m.time).length >= 2;
 
@@ -439,6 +444,9 @@ function NutricaoTab({ profile }: { profile: NutriProfile }) {
       {/* Seu dia */}
       <section className="pt-8 md:pt-12">
         <SectionTitle eyebrow="Seu dia" title="Marque o que já comeu" />
+        <div className="mb-5 empty:hidden">
+          <WorkoutTodayCard energy={energy} />
+        </div>
         <div className="grid gap-5 lg:grid-cols-[1.2fr_1fr]">
           <MealDiary plan={plan} profile={profile} />
 
