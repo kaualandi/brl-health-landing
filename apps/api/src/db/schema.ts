@@ -262,6 +262,8 @@ export const exercises = pgTable(
     secondaryMuscles: textArray("secondary_muscles"),
     equipments: textArray("equipments"),
     instructions: textArray("instructions"),
+    namePt: text("name_pt"),
+    instructionsPt: text("instructions_pt").array(),
   },
   (t) => [index("ix_exercises_name").on(t.name)],
 );

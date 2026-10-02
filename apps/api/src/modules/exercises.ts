@@ -1,5 +1,5 @@
 import { existsSync } from "node:fs";
-import { and, arrayContains, asc, count, eq, ilike, sql, type SQL } from "drizzle-orm";
+import { and, arrayContains, asc, count, eq, ilike, or, sql, type SQL } from "drizzle-orm";
 import { Elysia, t } from "elysia";
 import { config } from "../config";
 import { db, schema } from "../db";
@@ -12,16 +12,22 @@ const byLabel = (a: { label: string }, b: { label: string }) => a.label.localeCo
 
 const toItem = (e: typeof exercises.$inferSelect) => ({
   id: e.id,
-  name: e.name,
+  name: e.namePt ?? e.name,
+  nameEn: e.name,
   gifUrl: e.mediaPath && existsSync(`${config.mediaDir}/exercises/${e.mediaPath}`) ? `${config.publicUrl}/media/exercises/${e.mediaPath}` : e.gifUrl,
   bodyParts: labelAll(bodyPartLabels, e.bodyParts),
   targetMuscles: labelAll(muscleLabels, e.targetMuscles),
   secondaryMuscles: labelAll(muscleLabels, e.secondaryMuscles),
   equipments: labelAll(equipmentLabels, e.equipments),
-  instructions: e.instructions,
+  instructions: e.instructionsPt ?? e.instructions,
 });
 
 const escapeLike = (s: string) => s.replace(/[\\%_]/g, "\\$&");
+const matchName = (q: string) => {
+  const like = `%${escapeLike(q.trim())}%`;
+  return or(ilike(exercises.name, like), ilike(exercises.namePt, like));
+};
+const sortName = sql`lower(coalesce(${exercises.namePt}, ${exercises.name}))`;
 
 const filterColumns = {
   bodyParts: exercises.bodyParts,
@@ -51,14 +57,14 @@ export const exercisesModule = new Elysia()
       const limit = Math.min(Math.max(Math.trunc(query.limit ?? 24), 1), 100);
       const offset = Math.max(Math.trunc(query.offset ?? 0), 0);
       const filters: (SQL | undefined)[] = [
-        query.q ? ilike(exercises.name, `%${escapeLike(query.q.trim())}%`) : undefined,
+        query.q ? matchName(query.q) : undefined,
         query.bodyPart ? arrayContains(exercises.bodyParts, [query.bodyPart]) : undefined,
         query.equipment ? arrayContains(exercises.equipments, [query.equipment]) : undefined,
         query.muscle ? arrayContains(exercises.targetMuscles, [query.muscle]) : undefined,
       ];
       const where = and(...filters);
       const [{ total }] = await db.select({ total: count() }).from(exercises).where(where);
-      const rows = await db.select().from(exercises).where(where).orderBy(asc(exercises.name), asc(exercises.id)).limit(limit).offset(offset);
+      const rows = await db.select().from(exercises).where(where).orderBy(asc(sortName), asc(exercises.id)).limit(limit).offset(offset);
       return { total, items: rows.map((r) => toItem(r)), hasMore: offset + rows.length < total };
     },
     { query: listQuery },
