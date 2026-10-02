@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState, type MouseEvent } from "react";
-import { LogOutIcon, MenuIcon, SaladIcon } from "lucide-react";
+import { DumbbellIcon, LogOutIcon, MenuIcon, SaladIcon } from "lucide-react";
 
 import { UserMenu } from "@/components/layout/user-menu";
 import { ThemeToggle } from "@/components/theme/theme-toggle";
@@ -257,7 +257,18 @@ export function Header() {
                       render={
                         <Link href="/nutri" onClick={() => setOpen(false)}>
                           <SaladIcon />
-                          Meu Nutri
+                          BRL Nutri
+                        </Link>
+                      }
+                    />
+                    <Button
+                      variant="outline"
+                      size="lg"
+                      nativeButton={false}
+                      render={
+                        <Link href="/fit/app" onClick={() => setOpen(false)}>
+                          <DumbbellIcon />
+                          BRL Fit
                         </Link>
                       }
                     />

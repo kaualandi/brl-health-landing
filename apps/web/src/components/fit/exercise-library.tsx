@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useExerciseFilters, useExerciseList } from "@/hooks/use-exercises";
-import { buildExerciseSearch, parseExerciseQuery, sentenceCase, type Exercise, type ExerciseQuery, type Option } from "@/lib/exercises";
+import { librarySearch, parseExerciseQuery, sentenceCase, type Exercise, type ExerciseQuery, type Option } from "@/lib/exercises";
 
 const FIELD = "min-h-11 w-full rounded-xl border border-foreground/10 bg-card px-3 text-sm text-foreground outline-none focus-visible:ring-3 focus-visible:ring-ring/50";
 
@@ -62,19 +62,20 @@ function GridSkeleton() {
   );
 }
 
-function useLibraryQuery() {
+function useLibraryQuery(embedded: boolean) {
   const router = useRouter();
   const pathname = usePathname();
   const query = parseExerciseQuery(useSearchParams());
   const apply = (next: ExerciseQuery) => {
-    const qs = buildExerciseSearch(next);
+    const qs = librarySearch(next, embedded);
     router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false });
   };
   return { query, apply };
 }
 
-export function ExerciseLibrary() {
-  const { query, apply } = useLibraryQuery();
+/** Biblioteca; `embedded` = dentro da aba do app (sem moldura própria, filtros preservam `aba`). */
+export function ExerciseLibrary({ embedded = false }: { embedded?: boolean }) {
+  const { query, apply } = useLibraryQuery(embedded);
   const [text, setText] = useState(query.q);
   const filters = useExerciseFilters();
   const list = useExerciseList(query);
@@ -91,14 +92,17 @@ export function ExerciseLibrary() {
     setText("");
     apply({ q: "", bodyPart: "", equipment: "" });
   };
-  const back = buildExerciseSearch(query);
+  const back = librarySearch(query, embedded);
+  const Frame = embedded ? "div" : "main";
 
   return (
-    <div className="min-h-dvh bg-background">
-      <main className="mx-auto flex w-full max-w-5xl flex-col gap-5 px-4 py-8 md:px-6">
-        <Link href="/fit" className="inline-flex min-h-11 items-center gap-2 text-sm text-muted-foreground">
-          <ArrowLeftIcon aria-hidden className="size-4" /> BRL Fit
-        </Link>
+    <div className={embedded ? undefined : "min-h-dvh bg-background"}>
+      <Frame className={embedded ? "flex flex-col gap-5 pt-8" : "mx-auto flex w-full max-w-5xl flex-col gap-5 px-4 py-8 md:px-6"}>
+        {embedded ? null : (
+          <Link href="/fit/app" className="inline-flex min-h-11 items-center gap-2 text-sm text-muted-foreground">
+            <ArrowLeftIcon aria-hidden className="size-4" /> BRL Fit
+          </Link>
+        )}
         <h1 className="font-display text-2xl font-extrabold tracking-tight md:text-3xl">Biblioteca de exercícios</h1>
         <div className="flex flex-col gap-3 sm:flex-row">
           <label className="flex flex-[2] flex-col gap-1 text-xs text-muted-foreground">
@@ -135,7 +139,7 @@ export function ExerciseLibrary() {
           </Button>
         ) : null}
         <Attribution />
-      </main>
+      </Frame>
     </div>
   );
 }

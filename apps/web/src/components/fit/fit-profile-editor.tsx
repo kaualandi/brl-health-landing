@@ -98,9 +98,9 @@ function EditorForm({ initial }: { initial: FitProfile }) {
   const error = fitFormError(data, "all");
 
   return (
-    <div className="min-h-dvh bg-brl-dark">
+    <div className="min-h-dvh bg-background">
       <main className="mx-auto flex w-full max-w-2xl flex-col gap-8 px-4 py-8 md:px-6">
-        <Link href="/fit" className="inline-flex min-h-11 items-center gap-2 text-sm text-muted-foreground">
+        <Link href="/fit/app" className="inline-flex min-h-11 items-center gap-2 text-sm text-muted-foreground">
           <ArrowLeftIcon aria-hidden className="size-4" /> BRL Fit
         </Link>
         <h1 className="font-display text-2xl font-extrabold tracking-tight md:text-3xl">Editar perfil de treino</h1>
@@ -126,7 +126,7 @@ export function FitProfileEditor() {
 
   if (!profile) {
     return (
-      <div className="flex min-h-dvh items-center justify-center bg-brl-dark">
+      <div className="flex min-h-dvh items-center justify-center bg-background">
         <Loader2Icon className="size-6 animate-spin text-brl-purple" aria-label="Carregando" />
       </div>
     );

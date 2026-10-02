@@ -28,20 +28,20 @@ export function OptionCard({
       onClick={onSelect}
       aria-pressed={selected}
       className={cn(
-        "group relative flex w-full items-center gap-3 rounded-2xl border bg-brl-card p-4 text-left transition-all duration-200 outline-none",
-        "hover:border-brl-purple/50 hover:bg-white/[0.03]",
+        "group relative flex w-full items-center gap-3 rounded-2xl border bg-card p-4 text-left transition-all duration-200 outline-none",
+        "hover:border-brl-purple/50 hover:bg-foreground/[0.03]",
         "focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50",
         "active:translate-y-px",
         selected
           ? "border-brl-purple/60 bg-brl-purple/10 shadow-[0_0_0_1px_rgba(150,86,161,0.5)]"
-          : "border-white/8",
+          : "border-foreground/8",
         compact ? "flex-row" : "flex-col items-start sm:min-h-32",
       )}
     >
       <span
         aria-hidden
         className={cn(
-          "flex size-11 shrink-0 items-center justify-center rounded-xl bg-white/5 text-2xl transition-colors",
+          "flex size-11 shrink-0 items-center justify-center rounded-xl bg-foreground/5 text-2xl transition-colors",
           selected && "bg-brl-purple/20",
         )}
       >
@@ -64,7 +64,7 @@ export function OptionCard({
           compact ? "ml-auto" : "absolute top-3 right-3",
           selected
             ? "border-brl-purple bg-brl-purple text-white"
-            : "border-white/15 text-transparent",
+            : "border-foreground/15 text-transparent",
         )}
       >
         <CheckIcon className="size-3" strokeWidth={3} />

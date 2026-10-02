@@ -11,11 +11,16 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { useExercise } from "@/hooks/use-exercises";
 import { buildExerciseSearch, parseExerciseQuery, sentenceCase, type Exercise } from "@/lib/exercises";
 
+const FROM_LABEL: Record<string, string> = { hoje: "Hoje", plano: "Plano", biblioteca: "Biblioteca" };
+
 function BackLink() {
-  const qs = buildExerciseSearch(parseExerciseQuery(useSearchParams()));
+  const params = useSearchParams();
+  const qs = buildExerciseSearch(parseExerciseQuery(params));
+  const aba = params.get("aba") ?? "";
+  const href = aba in FROM_LABEL ? `/fit/app?aba=${aba}${qs ? `&${qs}` : ""}` : `/fit/exercicios${qs ? `?${qs}` : ""}`;
   return (
-    <Link href={`/fit/exercicios${qs ? `?${qs}` : ""}`} className="inline-flex min-h-11 items-center gap-2 text-sm text-muted-foreground">
-      <ArrowLeftIcon aria-hidden className="size-4" /> Biblioteca
+    <Link href={href} className="inline-flex min-h-11 items-center gap-2 text-sm text-muted-foreground">
+      <ArrowLeftIcon aria-hidden className="size-4" /> {FROM_LABEL[aba] ?? "Biblioteca"}
     </Link>
   );
 }
