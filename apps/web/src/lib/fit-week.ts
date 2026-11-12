@@ -46,6 +46,37 @@ export function upcomingDays(plan: FitPlan, now: Date, count = 7): UpcomingDay[]
   });
 }
 
+/** "Treino A — Empurrar…" → "A". */
+export const workoutLetter = (d: FitPlanDay) => d.name.split(" — ")[0].replace(/^Treino\s+/, "");
+
+export type YearMonth = { year: number; month: number };
+export type MonthCell = { date: number; day: FitPlanDay | null; past: boolean; today: boolean };
+
+/** Ano, mês (0–11) e dia de "hoje" em São Paulo. */
+export function todayInSaoPaulo(now: Date = new Date()) {
+  const [year, month, date] = new Intl.DateTimeFormat("en-CA", { timeZone: "America/Sao_Paulo" }).format(now).split("-").map(Number);
+  return { year, month: month - 1, date };
+}
+
+export const shiftMonth = ({ year, month }: YearMonth, by: number): YearMonth => {
+  const m = month + by;
+  return { year: year + Math.floor(m / 12), month: ((m % 12) + 12) % 12 };
+};
+
+/** Grade do mês com semanas começando no domingo; null = célula vazia antes do dia 1. */
+export function monthGrid(plan: FitPlan, { year, month }: YearMonth, today = todayInSaoPaulo()): (MonthCell | null)[] {
+  const lead = new Date(Date.UTC(year, month, 1)).getUTCDay();
+  const length = new Date(Date.UTC(year, month + 1, 0)).getUTCDate();
+  const key = (y: number, m: number, d: number) => y * 10_000 + m * 100 + d;
+  const now = key(today.year, today.month, today.date);
+  const cells = Array.from({ length }, (_, i) => {
+    const date = i + 1;
+    const at = key(year, month, date);
+    return { date, day: workoutForWeekday(plan, (lead + i) % 7), past: at < now, today: at === now };
+  });
+  return [...Array<null>(lead).fill(null), ...cells];
+}
+
 /** Tecla de navegação do tablist (APG) → índice da próxima aba; null = ignorar. */
 export function nextTabIndex(key: string, current: number, count: number): number | null {
   if (key === "ArrowRight") return (current + 1) % count;

@@ -8,6 +8,7 @@ import { useRef, useState } from "react";
 import { FitAchievements } from "@/components/fit/fit-achievements";
 import { FitGenerating } from "@/components/fit/fit-generating";
 import { FitHistory } from "@/components/fit/fit-history";
+import { FitMonthCalendar } from "@/components/fit/fit-month-calendar";
 import { FitPlanPreview } from "@/components/fit/fit-plan-preview";
 import { SummaryCards, WeeklyChart } from "@/components/fit/fit-progress";
 import { RecordsList } from "@/components/fit/fit-records";
@@ -81,6 +82,7 @@ export function PlanTab({ plan }: { plan: FitPlan }) {
     <section aria-label="Plano da semana" className="flex flex-col gap-5 pt-8 md:pt-12">
       <h2 className="font-display text-2xl font-extrabold tracking-tight md:text-3xl">Sua semana de treino</h2>
       <FitPlanPreview plan={plan} swappable />
+      <FitMonthCalendar plan={plan} />
       <div className="flex flex-col gap-3 sm:flex-row">
         <Button render={<Link href="/fit/perfil" />} nativeButton={false} variant="outline" className="h-12">
           <PencilIcon aria-hidden /> Editar perfil

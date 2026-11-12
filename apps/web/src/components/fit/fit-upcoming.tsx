@@ -4,14 +4,13 @@ import { BedIcon, ChevronRightIcon } from "lucide-react";
 import { useMemo, useState } from "react";
 
 import { Button } from "@/components/ui/button";
-import type { FitPlan, FitPlanDay } from "@/lib/fit-plan";
-import { upcomingDays, type UpcomingDay } from "@/lib/fit-week";
+import type { FitPlan } from "@/lib/fit-plan";
+import { upcomingDays, workoutLetter, type UpcomingDay } from "@/lib/fit-week";
 import { cn } from "@/lib/utils";
 
 const SHORT = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
 const LONG = ["Domingo", "Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado"];
 
-const letter = (d: FitPlanDay) => d.name.split(" — ")[0].replace(/^Treino\s+/, "");
 const dayLabel = (u: UpcomingDay) => (u.offset === 0 ? "Hoje" : u.offset === 1 ? "Amanhã" : LONG[u.weekday]);
 
 type Pick = (index: number) => void;
@@ -57,7 +56,7 @@ function CalendarDay({ u, onPick }: { u: UpcomingDay; onPick: Pick }) {
       </span>
       {u.day ? (
         <span aria-hidden className="grid size-7 place-items-center rounded-full bg-brl-purple text-xs font-bold text-white">
-          {letter(u.day)}
+          {workoutLetter(u.day)}
         </span>
       ) : (
         <span aria-hidden className="grid size-7 place-items-center text-muted-foreground">
