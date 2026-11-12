@@ -50,7 +50,7 @@ export function upcomingDays(plan: FitPlan, now: Date, count = 7): UpcomingDay[]
 export const workoutLetter = (d: FitPlanDay) => d.name.split(" — ")[0].replace(/^Treino\s+/, "");
 
 export type YearMonth = { year: number; month: number };
-export type MonthCell = { date: number; day: FitPlanDay | null; past: boolean; today: boolean };
+export type MonthCell = { date: number; weekday: number; day: FitPlanDay | null; past: boolean; today: boolean };
 
 /** Ano, mês (0–11) e dia de "hoje" em São Paulo. */
 export function todayInSaoPaulo(now: Date = new Date()) {
@@ -72,7 +72,8 @@ export function monthGrid(plan: FitPlan, { year, month }: YearMonth, today = tod
   const cells = Array.from({ length }, (_, i) => {
     const date = i + 1;
     const at = key(year, month, date);
-    return { date, day: workoutForWeekday(plan, (lead + i) % 7), past: at < now, today: at === now };
+    const weekday = (lead + i) % 7;
+    return { date, weekday, day: workoutForWeekday(plan, weekday), past: at < now, today: at === now };
   });
   return [...Array<null>(lead).fill(null), ...cells];
 }

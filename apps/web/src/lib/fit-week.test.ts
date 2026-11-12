@@ -74,7 +74,7 @@ describe("calendário mensal", () => {
     expect(grid).toHaveLength(30);
     expect(grid[0]).toMatchObject({ date: 1, day: null, past: true });
     expect(grid[1]?.day?.name).toBe("Treino 1"); // seg 2
-    expect(grid[11]).toMatchObject({ date: 12, today: true, past: false, day: null }); // qui
+    expect(grid[11]).toMatchObject({ date: 12, weekday: 4, today: true, past: false, day: null }); // qui
     expect(grid[12]?.day?.name).toBe("Treino 3"); // sex 13
   });
 

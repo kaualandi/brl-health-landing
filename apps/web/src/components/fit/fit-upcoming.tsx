@@ -1,7 +1,7 @@
 "use client";
 
 import { BedIcon, ChevronRightIcon } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 
 import { Button } from "@/components/ui/button";
 import type { FitPlan } from "@/lib/fit-plan";
@@ -89,8 +89,7 @@ function CalendarDay({ u, onPick }: { u: UpcomingDay; onPick: Pick }) {
 }
 
 /** Amanhã em destaque + calendário dos próximos 7 dias; tocar num dia de treino abre esse treino. */
-export function FitUpcoming({ plan, onPick }: { plan: FitPlan; onPick: Pick }) {
-  const [now] = useState(() => new Date());
+export function FitUpcoming({ plan, now, onPick }: { plan: FitPlan; now: Date; onPick: Pick }) {
   const days = useMemo(() => upcomingDays(plan, now), [plan, now]);
   return (
     <section aria-labelledby="fit-upcoming" className="mt-8 flex flex-col gap-4">
