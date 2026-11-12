@@ -43,7 +43,7 @@ export const FIT_LOCATIONS: FitOption<FitLocation>[] = [
   { value: "gym", label: "Academia", description: "Acesso a máquinas e pesos livres.", emoji: "🏢" },
 ];
 
-/** Valor cru do ExerciseDB → rótulo PT (subconjunto exibido nos cards). */
+/** Todos os equipamentos do ExerciseDB v1 (valor cru → rótulo PT); mesma lista que a API aceita. */
 export const FIT_EQUIPMENT_OPTIONS: FitOption<string>[] = [
   { value: "bodyweight", label: "Peso corporal", emoji: "🧍" },
   { value: "dumbbell", label: "Halteres", emoji: "🏋️" },
@@ -51,16 +51,30 @@ export const FIT_EQUIPMENT_OPTIONS: FitOption<string>[] = [
   { value: "olympic barbell", label: "Barra olímpica", emoji: "🏅" },
   { value: "EZ bar", label: "Barra W", emoji: "〰️" },
   { value: "trap bar", label: "Barra hexagonal", emoji: "⬡" },
+  { value: "weighted", label: "Anilha/peso extra", emoji: "🥏" },
   { value: "cable", label: "Cabo", emoji: "🔗" },
   { value: "leverage machine", label: "Máquina", emoji: "⚙️" },
   { value: "smith machine", label: "Smith", emoji: "🏗️" },
+  { value: "assisted", label: "Máquina assistida", emoji: "🤝" },
+  { value: "sled machine", label: "Trenó", emoji: "🛷" },
   { value: "kettlebell", label: "Kettlebell", emoji: "🔔" },
   { value: "resistance band", label: "Elástico", emoji: "🎗️" },
   { value: "suspension trainer", label: "Suspensão (TRX)", emoji: "⛓️" },
   { value: "stability ball", label: "Bola suíça", emoji: "🔵" },
+  { value: "bosu ball", label: "Bosu", emoji: "🌓" },
   { value: "medicine ball", label: "Medicine ball", emoji: "🏀" },
-  { value: "assisted", label: "Máquina assistida", emoji: "🤝" },
-  { value: "stationary bike", label: "Bicicleta", emoji: "🚴" },
+  { value: "ab wheel", label: "Roda abdominal", emoji: "🛞" },
+  { value: "roller", label: "Rolo", emoji: "🧻" },
+  { value: "rope", label: "Corda", emoji: "🪢" },
+  { value: "towel", label: "Toalha", emoji: "🧺" },
+  { value: "tennis ball", label: "Bola de tênis", emoji: "🎾" },
+  { value: "hammer", label: "Marreta", emoji: "🔨" },
+  { value: "tire", label: "Pneu", emoji: "🛞" },
+  { value: "stationary bike", label: "Bicicleta ergométrica", emoji: "🚴" },
+  { value: "elliptical machine", label: "Elíptico", emoji: "🏃" },
+  { value: "stepmill machine", label: "Simulador de escada", emoji: "🪜" },
+  { value: "ski ergometer", label: "Ergômetro de esqui", emoji: "⛷️" },
+  { value: "upper body ergometer", label: "Ergômetro de braços", emoji: "🔄" },
 ];
 
 export const FIT_LIMITATION_OPTIONS: FitOption<FitLimitation>[] = [
@@ -95,9 +109,9 @@ const NUTRI_TO_FIT_GOAL: Record<Goal, FitGoal> = {
 
 export const fitGoalFromNutri = (goal: Goal): FitGoal => NUTRI_TO_FIT_GOAL[goal];
 
-/** Equipamento sugerido ao escolher o local (só quando ainda não há seleção). */
+/** Equipamento sugerido ao escolher o local: academia já vem com tudo marcado (desmarque o que faltar). */
 export function defaultEquipment(location: FitLocation): string[] {
-  return location === "home" ? ["bodyweight"] : ["barbell", "dumbbell", "cable", "leverage machine"];
+  return location === "home" ? ["bodyweight"] : FIT_EQUIPMENT_OPTIONS.map((o) => o.value);
 }
 
 /** Troca o local; ao mudar, reseta os equipamentos pro padrão do novo local. */

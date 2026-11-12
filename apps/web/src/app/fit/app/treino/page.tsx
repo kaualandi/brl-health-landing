@@ -7,10 +7,11 @@ export const metadata: Metadata = {
   title: "Treino em andamento — BRL Fit",
 };
 
-export default function FitWorkoutPage() {
+export default async function FitWorkoutPage({ searchParams }: { searchParams: Promise<{ dia?: string }> }) {
+  const dia = Number.parseInt((await searchParams).dia ?? "", 10);
   return (
     <RequireAuth>
-      <FitWorkout />
+      <FitWorkout day={Number.isInteger(dia) ? dia : undefined} />
     </RequireAuth>
   );
 }

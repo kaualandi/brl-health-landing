@@ -10,7 +10,7 @@ const { fitPlans, fitPlanDays, fitPlanExercises, exercises } = schema;
 
 const hash = (text: string) => [...text].reduce((h, ch) => Math.imul(h ^ ch.charCodeAt(0), 16777619) >>> 0, 2166136261);
 
-/** Gera e persiste (substituindo) o plano; seed nova a cada geração. Null se não há perfil. */
+/** Gera e persiste (substituindo) o plano; seed nova a cada geração. Null se não há perfil; "empty" se nenhum exercício serve. */
 export async function regeneratePlan(userId: number) {
   const [row] = await db.select().from(schema.fitProfiles).where(eq(schema.fitProfiles.userId, userId));
   if (!row) return null;
@@ -27,7 +27,9 @@ export async function regeneratePlan(userId: number) {
     })
     .from(exercises)
     .where(arrayContained(exercises.equipments, profile.equipment));
-  await savePlan(userId, seed, generatePlan(profile, candidates, seed));
+  const plan = generatePlan(profile, candidates, seed);
+  if (!plan.days.some((d) => d.exercises.length)) return "empty" as const;
+  await savePlan(userId, seed, plan);
   return loadPlan(userId);
 }
 
@@ -92,7 +94,10 @@ export const fitPlanModule = new Elysia({ prefix: "/fit/plan" })
   )
   .post(
     "/generate",
-    async ({ userId, status }) =>
-      (await regeneratePlan(userId)) ?? status(400, { errors: ["Monte seu perfil de treino primeiro."] }),
+    async ({ userId, status }) => {
+      const plan = await regeneratePlan(userId);
+      if (plan === "empty") return status(503, { error: "Catálogo de exercícios vazio. Importe o ExerciseDB e tente de novo." });
+      return plan ?? status(400, { errors: ["Monte seu perfil de treino primeiro."] });
+    },
     { auth: true },
   );
