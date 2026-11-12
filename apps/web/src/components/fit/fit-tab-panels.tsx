@@ -6,6 +6,7 @@ import { Loader2Icon, PencilIcon, RefreshCwIcon } from "lucide-react";
 import { useRef, useState } from "react";
 
 import { FitAchievements } from "@/components/fit/fit-achievements";
+import { FitGenerating } from "@/components/fit/fit-generating";
 import { FitHistory } from "@/components/fit/fit-history";
 import { FitPlanPreview } from "@/components/fit/fit-plan-preview";
 import { SummaryCards, WeeklyChart } from "@/components/fit/fit-progress";
@@ -17,6 +18,9 @@ import { useFitSync } from "@/hooks/use-fit-sync";
 import type { FitPlan } from "@/lib/fit-plan";
 import { generateFitPlan } from "@/services/fit-plan.service";
 
+// Tempo mínimo da animação: dá pra ler as três mensagens do "gerando".
+const MIN_GENERATING_MS = 2400;
+
 /** Gera (ou refaz) o plano a partir do perfil, com toast de erro. */
 export function useGenerate() {
   const toast = useToast();
@@ -25,7 +29,7 @@ export function useGenerate() {
   const run = async () => {
     setBusy(true);
     try {
-      await generateFitPlan();
+      await Promise.all([generateFitPlan(), new Promise((r) => setTimeout(r, MIN_GENERATING_MS))]);
       void qc.invalidateQueries({ queryKey: ["fit-progression"] });
     } catch (e) {
       toast({ variant: "error", title: "Não foi possível gerar o plano", description: (e as Error).message });
@@ -43,6 +47,12 @@ export function GenerateButton({ label, confirm }: { label: string; confirm?: st
     setAsking(false);
     requestAnimationFrame(() => main.current?.focus());
   };
+  if (busy)
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/95 backdrop-blur-xl">
+        <FitGenerating />
+      </div>
+    );
   if (asking)
     return (
       <div role="alertdialog" aria-labelledby="fit-regen-confirm" className="flex flex-col gap-3 sm:flex-row sm:items-center">
