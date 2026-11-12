@@ -13,7 +13,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { useFitPlan } from "@/hooks/use-fit-plan";
 import { useFitSync } from "@/hooks/use-fit-sync";
 import { useFitProfile } from "@/hooks/use-fit-profile";
-import { FIT_TABS, nextTabIndex, parseFitTab, weekdayInSaoPaulo, type FitTab } from "@/lib/fit-week";
+import { FIT_TABS, nextTabIndex, parseFitTab, type FitTab } from "@/lib/fit-week";
 import { cn } from "@/lib/utils";
 
 const TABS: { id: FitTab; label: string; icon: typeof ZapIcon }[] = [
@@ -115,7 +115,8 @@ export function FitApp() {
   const router = useRouter();
   const { tab, change } = useTab();
   useFitSync();
-  const [weekday] = useState(() => weekdayInSaoPaulo());
+  // Um só "agora" pra aba Hoje inteira: botões e calendário não divergem se virar a meia-noite.
+  const [now] = useState(() => new Date());
 
   useEffect(() => {
     if (profile === null) router.replace("/fit/comecar");
@@ -130,7 +131,7 @@ export function FitApp() {
       <main id="fit-panel" role="tabpanel" aria-labelledby={`fit-tab-${tab}`} className="mx-auto w-full max-w-5xl px-4 md:px-6">
         {tab === "progresso" ? <ProgressTab /> : null}
         {tab === "biblioteca" ? <ExerciseLibrary embedded /> : null}
-        {tab === "hoje" ? plan ? <FitToday plan={plan} weekday={weekday} /> : <NoPlan /> : null}
+        {tab === "hoje" ? plan ? <FitToday plan={plan} now={now} /> : <NoPlan /> : null}
         {tab === "plano" ? plan ? <PlanTab plan={plan} /> : <NoPlan /> : null}
       </main>
     </div>

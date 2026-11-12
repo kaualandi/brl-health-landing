@@ -16,7 +16,7 @@ import type { ProgressionItem } from "@/lib/fit-progression";
 import type { FitPlan, FitPlanDay, FitPlanExercise } from "@/lib/fit-plan";
 import { sentenceCase } from "@/lib/exercises";
 import { cn } from "@/lib/utils";
-import { workoutForWeekday } from "@/lib/fit-week";
+import { weekdayInSaoPaulo, workoutForWeekday } from "@/lib/fit-week";
 
 function Rest() {
   return (
@@ -109,23 +109,28 @@ function DayPicker({ plan, scheduled, picked, onPick }: { plan: FitPlan; schedul
   );
 }
 
-/** Aba Hoje: começa no treino do dia da semana (0 = domingo) ou descanso; dá pra escolher qualquer treino do plano. */
-export function FitToday({ plan, weekday }: { plan: FitPlan; weekday: number }) {
-  const scheduled = workoutForWeekday(plan, weekday)?.index ?? null;
+/** Aba Hoje: começa no treino do dia da semana de `now` ou descanso; dá pra escolher qualquer treino do plano. */
+export function FitToday({ plan, now }: { plan: FitPlan; now: Date }) {
+  const scheduled = workoutForWeekday(plan, weekdayInSaoPaulo(now))?.index ?? null;
   const [picked, setPicked] = useState(scheduled);
   const day = plan.days.find((d) => d.index === picked) ?? null;
-  const top = useRef<HTMLElement>(null);
+  const panel = useRef<HTMLDivElement>(null);
+  // Vindo do calendário: leva o foco (e a rolagem) pro treino aberto, pra teclado e leitor de tela acompanharem.
   const open = (index: number) => {
     setPicked(index);
-    top.current?.scrollIntoView({ block: "start" });
+    requestAnimationFrame(() => panel.current?.focus());
   };
   return (
-    <section ref={top} aria-label="Treino de hoje" className="scroll-mt-24 pt-8 md:pt-12">
-      <p className="mb-4 text-xs font-medium tracking-wide text-brl-purple uppercase">Hoje</p>
-      <FitUnsynced />
-      <DayPicker plan={plan} scheduled={scheduled} picked={picked} onPick={setPicked} />
-      {day ? <Workout day={day} /> : <Rest />}
-      <FitUpcoming plan={plan} onPick={open} />
-    </section>
+    <>
+      <section aria-label="Treino de hoje" className="pt-8 md:pt-12">
+        <p className="mb-4 text-xs font-medium tracking-wide text-brl-purple uppercase">Hoje</p>
+        <FitUnsynced />
+        <DayPicker plan={plan} scheduled={scheduled} picked={picked} onPick={setPicked} />
+        <div ref={panel} tabIndex={-1} className="scroll-mt-40 rounded-2xl outline-none">
+          {day ? <Workout day={day} /> : <Rest />}
+        </div>
+      </section>
+      <FitUpcoming plan={plan} now={now} onPick={open} />
+    </>
   );
 }

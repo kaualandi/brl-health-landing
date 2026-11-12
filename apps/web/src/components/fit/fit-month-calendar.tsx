@@ -30,15 +30,18 @@ function Cell({ cell }: { cell: MonthCell | null }) {
           "flex h-12 flex-col items-center justify-center gap-1 rounded-lg text-sm tabular-nums sm:h-14",
           cell.today && "ring-2 ring-brl-purple",
           cell.day && "bg-brl-purple/10",
-          cell.past && "opacity-45",
+          cell.past && "text-muted-foreground",
         )}
       >
-        <span className="sr-only">{`Dia ${cell.date}${cell.today ? " (hoje)" : ""}: ${cell.day ? cell.day.name : "descanso"}`}</span>
+        <span className="sr-only">{`${WEEK[cell.weekday][1]}, dia ${cell.date}${cell.today ? " (hoje)" : ""}: ${cell.day ? cell.day.name : "descanso"}`}</span>
         <span aria-hidden className={cn("leading-none", cell.today && "font-bold")}>
           {cell.date}
         </span>
         {cell.day ? (
-          <span aria-hidden className="grid size-5 place-items-center rounded-full bg-brl-purple text-[10px] font-bold text-white">
+          <span
+            aria-hidden
+            className={cn("grid size-5 place-items-center rounded-full text-[10px] font-bold", cell.past ? "bg-brl-purple/35 text-foreground" : "bg-brl-purple text-white")}
+          >
             {workoutLetter(cell.day)}
           </span>
         ) : (
@@ -77,9 +80,8 @@ export function FitMonthCalendar({ plan }: { plan: FitPlan }) {
           <tr>
             {WEEK.map(([short, long]) => (
               <th key={long} scope="col" className="pb-2 text-xs font-medium text-muted-foreground">
-                <abbr title={long} className="no-underline">
-                  {short}
-                </abbr>
+                <span aria-hidden>{short}</span>
+                <span className="sr-only">{long}</span>
               </th>
             ))}
           </tr>
