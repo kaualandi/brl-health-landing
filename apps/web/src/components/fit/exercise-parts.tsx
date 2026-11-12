@@ -18,8 +18,17 @@ export function ExerciseGif({ src, name, eager, className }: { src: string; name
   const box = cn("aspect-square w-full overflow-hidden rounded-xl", className);
   if (failedSrc === src || !src)
     return (
-      <div role="img" aria-label={`Sem demonstração para ${name}`} className={cn(box, "grid place-items-center bg-brl-purple/10 text-brl-purple")}>
-        <DumbbellIcon aria-hidden className="size-1/3 max-h-16 max-w-16" />
+      <div
+        role="img"
+        aria-label={`Ainda estamos gravando a demonstração de ${name}`}
+        className={cn(box, "@container flex flex-col items-center justify-center gap-3 bg-brl-purple/10 p-4 text-center")}
+      >
+        <DumbbellIcon aria-hidden className="size-1/3 max-h-14 max-w-14 text-brl-purple" />
+        {/* Texto só cabe nos tamanhos maiores; miniaturas ficam só com o ícone. */}
+        <div aria-hidden className="hidden @[10rem]:block">
+          <p className="text-sm font-semibold text-foreground @[18rem]:text-base">Ainda estamos gravando este exercício</p>
+          <p className="mt-1 text-xs text-muted-foreground @[18rem]:text-sm">Enquanto isso, siga o passo a passo.</p>
+        </div>
       </div>
     );
   return (
