@@ -2,10 +2,11 @@
 
 import Link from "next/link";
 import { BedIcon, FootprintsIcon, TimerIcon } from "lucide-react";
-import { useState } from "react";
+import { useRef, useState } from "react";
 
 import { SwapButton } from "@/components/fit/fit-swap";
 import { FitUnsynced } from "@/components/fit/fit-unsynced";
+import { FitUpcoming } from "@/components/fit/fit-upcoming";
 import { StartWorkoutButton } from "@/components/fit/fit-start-button";
 import { ExerciseGif } from "@/components/fit/exercise-parts";
 import { DeloadBanner, NextHint } from "@/components/fit/fit-progression";
@@ -113,12 +114,18 @@ export function FitToday({ plan, weekday }: { plan: FitPlan; weekday: number }) 
   const scheduled = workoutForWeekday(plan, weekday)?.index ?? null;
   const [picked, setPicked] = useState(scheduled);
   const day = plan.days.find((d) => d.index === picked) ?? null;
+  const top = useRef<HTMLElement>(null);
+  const open = (index: number) => {
+    setPicked(index);
+    top.current?.scrollIntoView({ block: "start" });
+  };
   return (
-    <section aria-label="Treino de hoje" className="pt-8 md:pt-12">
+    <section ref={top} aria-label="Treino de hoje" className="scroll-mt-24 pt-8 md:pt-12">
       <p className="mb-4 text-xs font-medium tracking-wide text-brl-purple uppercase">Hoje</p>
       <FitUnsynced />
       <DayPicker plan={plan} scheduled={scheduled} picked={picked} onPick={setPicked} />
       {day ? <Workout day={day} /> : <Rest />}
+      <FitUpcoming plan={plan} onPick={open} />
     </section>
   );
 }

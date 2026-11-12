@@ -33,6 +33,19 @@ export function workoutForWeekday(plan: FitPlan, weekday: number): FitPlanDay | 
   return slot === -1 ? null : (plan.days[slot] ?? null);
 }
 
+export type UpcomingDay = { offset: number; weekday: number; date: number; day: FitPlanDay | null };
+
+const dayOfMonth = new Intl.DateTimeFormat("en-US", { day: "numeric", timeZone: "America/Sao_Paulo" });
+
+/** Hoje (offset 0) e os próximos dias no fuso de São Paulo, com o treino de cada um (null = descanso). */
+export function upcomingDays(plan: FitPlan, now: Date, count = 7): UpcomingDay[] {
+  return Array.from({ length: count }, (_, offset) => {
+    const at = new Date(now.getTime() + offset * 86_400_000);
+    const weekday = weekdayInSaoPaulo(at);
+    return { offset, weekday, date: Number(dayOfMonth.format(at)), day: workoutForWeekday(plan, weekday) };
+  });
+}
+
 /** Tecla de navegação do tablist (APG) → índice da próxima aba; null = ignorar. */
 export function nextTabIndex(key: string, current: number, count: number): number | null {
   if (key === "ArrowRight") return (current + 1) % count;

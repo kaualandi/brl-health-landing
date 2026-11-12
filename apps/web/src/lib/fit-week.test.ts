@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import type { FitPlan } from "./fit-plan";
-import { nextTabIndex, parseFitTab, weekdayInSaoPaulo, workoutForWeekday } from "./fit-week";
+import { nextTabIndex, parseFitTab, upcomingDays, weekdayInSaoPaulo, workoutForWeekday } from "./fit-week";
 
 const plan = (n: number): FitPlan => ({
   generatedAt: "",
@@ -53,4 +53,13 @@ describe("nextTabIndex", () => {
     expect(nextTabIndex("End", 0, 4)).toBe(3);
   });
   it("ignora outras teclas", () => expect(nextTabIndex("Enter", 1, 4)).toBeNull());
+});
+
+describe("upcomingDays", () => {
+  it("parte de hoje em São Paulo e segue a mesma regra de dias fixos", () => {
+    // 2026-11-13 01:00 UTC = quinta 12/11, 22h em São Paulo
+    const days = upcomingDays(plan(3), new Date("2026-11-13T01:00:00Z"));
+    expect(days.map((d) => [d.weekday, d.date])).toEqual([[4, 12], [5, 13], [6, 14], [0, 15], [1, 16], [2, 17], [3, 18]]);
+    expect(days.map((d) => d.day?.name ?? null)).toEqual([null, "Treino 3", null, null, "Treino 1", null, "Treino 2"]);
+  });
 });
