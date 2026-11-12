@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
   ArrowRightIcon,
+  DumbbellIcon,
   LogOutIcon,
   RotateCcwIcon,
   SaladIcon,
@@ -16,6 +17,9 @@ import { PlanManager } from "@/components/plan/plan-manager";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/toast";
 import { useAuth } from "@/hooks/use-auth";
+import { useFitPlan } from "@/hooks/use-fit-plan";
+import { useFitProfile } from "@/hooks/use-fit-profile";
+import { FIT_GOALS, FIT_LEVELS, labelOf } from "@/lib/fit-profile";
 import { computeNutriPlan } from "@/lib/nutri-plan";
 import { goalLabel } from "@/lib/nutri-options";
 import { clearFitAchievements } from "@/lib/fit-achievements";
@@ -56,6 +60,66 @@ function Row({ label, value }: { label: string; value: string }) {
       <span className="text-sm text-muted-foreground">{label}</span>
       <span className="text-sm font-medium text-foreground">{value}</span>
     </div>
+  );
+}
+
+function Chip({ children }: { children: React.ReactNode }) {
+  return (
+    <span className="rounded-full border border-foreground/10 bg-foreground/5 px-3 py-1 text-xs font-medium">
+      {children}
+    </span>
+  );
+}
+
+function FitSection() {
+  const profile = useFitProfile();
+  const plan = useFitPlan();
+  if (profile === undefined) return null;
+  return (
+    <Section
+      title="Seu BRL Fit"
+      description={profile ? "Seu plano de treino personalizado." : "Você ainda não montou seu treino."}
+    >
+      {profile ? (
+        <div className="flex flex-col gap-4">
+          <div className="flex flex-wrap gap-2">
+            <Chip>🎯 {labelOf(FIT_GOALS, profile.goal)}</Chip>
+            <Chip>⚡ {labelOf(FIT_LEVELS, profile.level)}</Chip>
+            <Chip>📅 {profile.daysPerWeek}x por semana · {profile.sessionMinutes} min</Chip>
+            {plan ? <Chip>🗂️ {plan.split}</Chip> : null}
+          </div>
+          <div className="flex flex-wrap gap-3">
+            <Button
+              nativeButton={false}
+              className="w-fit bg-brl-purple text-white hover:bg-brl-purple/90"
+              render={
+                <Link href="/fit/app">
+                  <DumbbellIcon />
+                  Abrir meu Fit
+                </Link>
+              }
+            />
+            <Button
+              nativeButton={false}
+              variant="outline"
+              className="w-fit border-foreground/15 bg-foreground/5 hover:bg-foreground/10"
+              render={<Link href="/fit/perfil">Editar treino</Link>}
+            />
+          </div>
+        </div>
+      ) : (
+        <Button
+          nativeButton={false}
+          className="w-fit bg-brl-purple text-white hover:bg-brl-purple/90"
+          render={
+            <Link href="/fit/comecar">
+              Montar meu treino
+              <ArrowRightIcon />
+            </Link>
+          }
+        />
+      )}
+    </Section>
   );
 }
 
@@ -180,6 +244,8 @@ export function AccountView() {
             />
           )}
         </Section>
+
+        <FitSection />
 
         <Section
           title="Assinatura"
