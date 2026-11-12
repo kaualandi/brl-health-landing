@@ -52,6 +52,15 @@ describe("/fit/plan", () => {
     expect(gen.body).toEqual({ errors: ["Monte seu perfil de treino primeiro."] });
   });
 
+  test("503 quando nenhum exercício do catálogo serve (não salva plano vazio)", async () => {
+    const { token } = await signup();
+    await api("PUT", "/fit/profile", { ...gym, equipment: ["tennis ball"] }, token);
+    const gen = await api("POST", "/fit/plan/generate", undefined, token);
+    expect(gen.status).toBe(503);
+    expect(gen.body).toEqual({ error: "Catálogo de exercícios vazio. Importe o ExerciseDB e tente de novo." });
+    expect((await api("GET", "/fit/plan", undefined, token)).status).toBe(404);
+  });
+
   test("gera, persiste e devolve o shape", async () => {
     const { token } = await signup();
     await api("PUT", "/fit/profile", home, token);

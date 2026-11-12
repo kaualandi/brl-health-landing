@@ -22,9 +22,13 @@ function DayCard({ day, swappable }: { day: FitPlanDay; swappable?: boolean }) {
           </li>
         ))}
       </ol>
-      <p className="mt-3 flex items-center gap-1.5 text-xs text-muted-foreground">
-        <TimerIcon aria-hidden className="size-3.5" /> Descanso de {day.exercises[0]?.restSeconds ?? 0}s entre séries
-      </p>
+      {day.exercises.length ? (
+        <p className="mt-3 flex items-center gap-1.5 text-xs text-muted-foreground">
+          <TimerIcon aria-hidden className="size-3.5" /> Descanso de {day.exercises[0].restSeconds}s entre séries
+        </p>
+      ) : (
+        <p className="mt-3 text-xs text-muted-foreground">Nenhum exercício para os seus equipamentos. Gere o plano de novo.</p>
+      )}
     </li>
   );
 }

@@ -55,6 +55,7 @@ type Props = {
   onPause: () => void;
   onResume: () => void;
   onSkip: () => void;
+  onAdjust: (delta: number) => void;
 };
 
 function Countdown({ rest, left }: { rest: Rest; left: number }) {
@@ -70,10 +71,16 @@ function Countdown({ rest, left }: { rest: Rest; left: number }) {
   );
 }
 
-function RestControls({ rest, alerts, onPause, onResume, onSkip }: Pick<Props, "alerts" | "onPause" | "onResume" | "onSkip"> & { rest: Rest }) {
+function RestControls({ rest, alerts, onPause, onResume, onSkip, onAdjust }: Pick<Props, "alerts" | "onPause" | "onResume" | "onSkip" | "onAdjust"> & { rest: Rest }) {
   const paused = rest.endsAt === null;
   return (
     <>
+      <Button type="button" variant="outline" className="h-9 tabular-nums" onClick={() => onAdjust(-15)} aria-label="Menos 15 segundos de descanso">
+        −15s
+      </Button>
+      <Button type="button" variant="outline" className="h-9 tabular-nums" onClick={() => onAdjust(15)} aria-label="Mais 15 segundos de descanso">
+        +15s
+      </Button>
       <Button type="button" variant="outline" size="icon-lg" onClick={paused ? onResume : onPause} aria-label={paused ? "Retomar descanso" : "Pausar descanso"}>
         {paused ? <PlayIcon aria-hidden /> : <PauseIcon aria-hidden />}
       </Button>
@@ -95,9 +102,11 @@ export function RestBar({ rest, done, now, ...controls }: Props) {
         {done ? "Descanso terminado. Hora da próxima série." : ""}
       </p>
       {rest ? (
-        <div className="mx-auto flex w-full max-w-3xl items-center gap-3 px-4 py-3">
+        <div className="mx-auto flex w-full max-w-3xl flex-wrap items-center gap-2 px-4 py-3 sm:flex-nowrap sm:gap-3">
           <Countdown rest={rest} left={restLeft(rest, now)} />
-          <RestControls rest={rest} {...controls} />
+          <div className="flex items-center gap-2">
+            <RestControls rest={rest} {...controls} />
+          </div>
         </div>
       ) : done ? (
         <p className="px-4 py-3 text-center text-sm font-semibold text-brl-orange">Descanso terminado — próxima série!</p>

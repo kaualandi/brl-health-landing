@@ -10,8 +10,8 @@ export type SessionSet = {
   done: boolean;
 };
 
-/** Descanso em curso: `endsAt` (ms) corre; sem `endsAt` está pausado com `left` segundos. */
-export type Rest = { total: number; endsAt: number | null; left: number };
+/** Descanso em curso: `endsAt` (ms) corre; sem `endsAt` está pausado com `left` segundos. `order` = exercício que o disparou. */
+export type Rest = { total: number; endsAt: number | null; left: number; order?: number };
 
 /** Exercício como estava no plano ao começar: o treino não depende do plano atual. */
 export type SnapshotExercise = {
@@ -93,13 +93,23 @@ export function toggleDone(s: ActiveSession, order: number, setNumber: number, n
   const cur = s.sets.find((x) => x.exerciseOrder === order && x.setNumber === setNumber);
   if (!cur) return s;
   const next = updateSet(s, order, setNumber, { done: !cur.done });
-  return cur.done ? next : startRest(next, s.exercises.find((e) => e.order === order)?.restSeconds ?? 60, now);
+  return cur.done ? next : startRest(next, s.exercises.find((e) => e.order === order)?.restSeconds || 60, now, order);
 }
 
-export const startRest = (s: ActiveSession, seconds: number, now: number): ActiveSession => ({
+export const startRest = (s: ActiveSession, seconds: number, now: number, order?: number): ActiveSession => ({
   ...s,
-  rest: { total: seconds, endsAt: now + seconds * 1000, left: seconds },
+  rest: { total: seconds, endsAt: now + seconds * 1000, left: seconds, order },
 });
+
+/** Soma `delta` s ao descanso em curso (entre 0 e 10 min) e grava como o descanso do exercício no resto do treino. */
+export function adjustRest(s: ActiveSession, delta: number, now: number): ActiveSession {
+  if (!s.rest) return s;
+  const left = Math.min(600, Math.max(0, restLeft(s.rest, now) + delta));
+  const total = Math.min(600, Math.max(15, s.rest.total + delta));
+  const rest = { ...s.rest, total: Math.max(total, left), left, endsAt: s.rest.endsAt === null ? null : now + left * 1000 };
+  const exercises = s.exercises.map((e) => (e.order === s.rest?.order ? { ...e, restSeconds: total } : e));
+  return { ...s, rest, exercises };
+}
 
 export const restLeft = (r: Rest, now: number) => (r.endsAt === null ? r.left : Math.max(0, Math.ceil((r.endsAt - now) / 1000)));
 

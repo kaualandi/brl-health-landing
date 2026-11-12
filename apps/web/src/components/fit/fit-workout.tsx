@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/use-auth";
 import { useActiveSession, useRestEnd, useWorkoutActions } from "@/hooks/use-workout-session";
 import {
-  doneCount, elapsedSeconds, formatClock, pauseRest, resumeRest, skipRest, toggleDone, updateSet,
+  adjustRest, doneCount, elapsedSeconds, formatClock, pauseRest, resumeRest, skipRest, toggleDone, updateSet,
   type ActiveSession,
 } from "@/lib/fit-session";
 
@@ -93,15 +93,16 @@ function WorkoutBody({ session, now, alerts, restDone, onEdit, onToggle, actions
         onPause={() => onEdit((s) => pauseRest(s, Date.now()))}
         onResume={() => onEdit((s) => resumeRest(s, Date.now()))}
         onSkip={() => onEdit(skipRest)}
+        onAdjust={(delta) => onEdit((s) => adjustRest(s, delta, Date.now()))}
       />
     </>
   );
 }
 
-export function FitWorkout() {
+export function FitWorkout({ day }: { day?: number }) {
   const { user } = useAuth();
   const router = useRouter();
-  const { ready, session, setSession } = useActiveSession(user?.id);
+  const { ready, session, setSession } = useActiveSession(user?.id, day);
   const alerts = useAlerts();
   const { restDone, setRestDone } = useRestEnd(session, setSession, alerts.fire);
   const actions = useWorkoutActions(user?.id, session);

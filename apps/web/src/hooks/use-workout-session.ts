@@ -13,8 +13,8 @@ import { weekdayInSaoPaulo, workoutForWeekday } from "@/lib/fit-week";
 import { fitProgressionQuery } from "@/hooks/use-fit-progression";
 import { getLastLoads, loadActive, saveActive, submitSession } from "@/services/fit-sessions.service";
 
-/** Retoma o treino salvo ou começa o de hoje (snapshot do plano); undefined = carregando, null = nada hoje. */
-export function useActiveSession(uid: string | undefined) {
+/** Retoma o treino salvo ou começa o `dayIndex` escolhido (padrão: o do dia da semana); undefined = carregando, null = nada. */
+export function useActiveSession(uid: string | undefined, dayIndex?: number) {
   const plan = useFitPlan();
   const qc = useQueryClient();
   const [session, setSession] = useState<ActiveSession | null | undefined>(undefined);
@@ -24,7 +24,7 @@ export function useActiveSession(uid: string | undefined) {
     const start = async () => {
       const existing = loadActive(uid);
       if (existing) return existing;
-      const day = workoutForWeekday(plan, weekdayInSaoPaulo());
+      const day = dayIndex === undefined ? workoutForWeekday(plan, weekdayInSaoPaulo()) : (plan.days.find((d) => d.index === dayIndex) ?? null);
       if (!day) return null;
       const [loads, prog] = await Promise.all([
         getLastLoads(uid),
@@ -38,7 +38,7 @@ export function useActiveSession(uid: string | undefined) {
     return () => {
       live = false;
     };
-  }, [uid, plan, qc]);
+  }, [uid, plan, qc, dayIndex]);
   return { ready: !!plan, session, setSession };
 }
 

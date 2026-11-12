@@ -90,6 +90,7 @@ export function RoutineStep({ data, update }: StepProps) {
 export function LocationStep({ data, update, patch }: StepProps) {
   const toggle = (value: string) =>
     update("equipment", data.equipment.includes(value) ? data.equipment.filter((e) => e !== value) : [...data.equipment, value]);
+  const allPicked = data.equipment.length === FIT_EQUIPMENT_OPTIONS.length;
   return (
     <div className="flex flex-col gap-6">
       <div className={GRID} role="group" aria-label="Local de treino">
@@ -107,7 +108,16 @@ export function LocationStep({ data, update, patch }: StepProps) {
       </div>
       {data.location ? (
         <fieldset>
-          <legend className="mb-3 text-sm font-semibold">Equipamentos disponíveis</legend>
+          <legend className="mb-3 flex w-full items-center justify-between gap-3 text-sm font-semibold">
+            Equipamentos disponíveis
+            <button
+              type="button"
+              onClick={() => update("equipment", allPicked ? [] : FIT_EQUIPMENT_OPTIONS.map((o) => o.value))}
+              className="min-h-11 rounded-lg px-3 text-xs font-semibold text-brl-purple outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
+            >
+              {allPicked ? "Limpar" : "Marcar todos"}
+            </button>
+          </legend>
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
             {FIT_EQUIPMENT_OPTIONS.map((o) => (
               <OptionCard key={o.value} emoji={o.emoji} label={o.label} selected={data.equipment.includes(o.value)} onSelect={() => toggle(o.value)} />

@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import type { FitPlanDay } from "@/lib/fit-plan";
 import {
-  createSession, dequeue, doneCount, enqueue, formatClock, overlayLoads, parseReps, parseWeight,
+  adjustRest, createSession, dequeue, doneCount, enqueue, formatClock, overlayLoads, parseReps, parseWeight,
   pauseRest, restLeft, resumeRest, skipRest, toggleDone, toPayload, updateSet, volumeKg, weightText,
 } from "./fit-session";
 
@@ -58,7 +58,7 @@ describe("volume e contagem", () => {
 describe("timer de descanso", () => {
   it("marcar inicia o descanso do exercício e desmarcar não", () => {
     let s = toggleDone(base(), 1, 1, 1000);
-    expect(s.rest).toEqual({ total: 90, endsAt: 91_000, left: 90 });
+    expect(s.rest).toEqual({ total: 90, endsAt: 91_000, left: 90, order: 1 });
     s = skipRest(s);
     s = toggleDone(s, 1, 1, 2000);
     expect(s.rest).toBeNull();
@@ -116,5 +116,25 @@ describe("formatClock", () => {
   it("formata mm:ss e h:mm:ss", () => {
     expect(formatClock(65)).toBe("1:05");
     expect(formatClock(3725)).toBe("1:02:05");
+  });
+});
+
+describe("adjustRest", () => {
+  it("soma/subtrai no descanso em curso e grava no exercício que o disparou", () => {
+    const s = toggleDone(base(), 1, 1, 0);
+    expect(s.rest).toMatchObject({ total: 90, left: 90, order: 1 });
+    const more = adjustRest(s, 15, 10_000);
+    expect(restLeft(more.rest!, 10_000)).toBe(95);
+    expect(more.exercises.find((e) => e.order === 1)?.restSeconds).toBe(105);
+    expect(more.exercises.find((e) => e.order === 2)?.restSeconds).toBe(45);
+    const less = adjustRest(more, -200, 10_000);
+    expect(restLeft(less.rest!, 10_000)).toBe(0);
+    expect(less.exercises.find((e) => e.order === 1)?.restSeconds).toBe(15);
+  });
+
+  it("sem descanso não faz nada; descanso 0 no plano cai pra 60s", () => {
+    expect(adjustRest(base(), 15, 0)).toEqual(base());
+    const zero = createSession({ ...day, exercises: [ex(1, "a", 1, "8", 0)] }, {}, new Date(0), "c2");
+    expect(toggleDone(zero, 1, 1, 0).rest?.total).toBe(60);
   });
 });
