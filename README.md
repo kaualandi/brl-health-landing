@@ -140,7 +140,8 @@ Conta semeada (`apps/api/src/db/seed.sql`): **`demo@brl.com`** / **`123456`**.
 | `bun run test`      | Vitest (front) + `bun test` (API, precisa do Postgres up). |
 
 Da API (`cd apps/api`): `db:generate` (gera migração a partir do `schema.ts`),
-`db:migrate`, `db:seed`.
+`db:migrate`, `db:seed`, `db:import-exercises` (catálogo do Fit; `--media` baixa os
+GIFs) e `db:translate` (reaplica as traduções PT-BR).
 
 ---
 
@@ -195,6 +196,8 @@ RESEND_API_KEY=... bun run fit:launch-email   # envio real (aborta sem a chave)
 `<WEB_URL>/fit`; sem ela cai em `CORS_ORIGIN`). O script pega um advisory lock do
 Postgres: uma segunda execução simultânea aborta. A entrega é *at-least-once*: se o
 processo cair entre o envio e a marcação, aquele único e-mail pode duplicar na reexecução.
+
+---
 
 ## Estrutura
 
