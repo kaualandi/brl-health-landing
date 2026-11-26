@@ -17,6 +17,53 @@ produtos sob a mesma marca:
 > [`CLAUDE.md`](./CLAUDE.md); backlog da API nas
 > [issues do GitHub](https://github.com/kaualandi/brl-health-landing/issues).
 
+---
+
+## Integrantes
+
+| Nome                        | Matrícula | Papel          |
+| --------------------------- | --------- | -------------- |
+| Kauã Landi Fernando         | 06009262  | Product Owner  |
+| Guilherme da Cunha Sequeira | 06002529  | Scrum Master   |
+| Lucas Abrahão Anes          | 06009881  | Desenvolvedor  |
+| Natan de Souza Sampaio      | 06010668  | Desenvolvedor  |
+| Murilo de Melo Mouteira     | 06010561  | Desenvolvedor  |
+| Lucas Gomes Coco da Silva   | 06011471  | Desenvolvedor  |
+
+---
+
+## Situação-problema
+
+Quem tenta cuidar da alimentação e do treino esbarra sempre nos mesmos obstáculos:
+
+- **A maioria desiste da dieta:** planos rígidos, que não cabem na rotina real.
+- **Apps genéricos:** "almoço: 600 kcal", sem dizer o que comer nem respeitar a
+  dieta e as restrições de cada um.
+- **Sem acompanhamento humano:** ou é só app, ou é só consulta, e uma coisa não
+  conversa com a outra.
+- **Calcular na mão é chato:** calorias, gasto diário, macros, água e IMC pedem
+  fórmula e paciência.
+- **Treino e nutrição separados:** cada um num app, sem um ajustar o outro.
+
+---
+
+## MVP
+
+Aplicação web full-stack (front Next.js + API Elysia/PostgreSQL) que resolve isso
+de ponta a ponta:
+
+- **Calculadora pública** (sem conta) de calorias, TDEE, macros, IMC e água; as
+  respostas seguem pro cadastro, sem redigitar.
+- **Onboarding em 8 passos** (perfil, objetivo, atividade, dieta, restrições,
+  rotina) que gera o plano personalizado.
+- **BRL Nutri:** cardápio em nível de alimento com troca compatível com a dieta,
+  diário do dia, lista de compras e acompanhamento de peso, medidas, água, sono,
+  passos e hábitos.
+- **Nutricionista:** agendamento de consulta, com saldo de consultas por plano.
+- **BRL Fit:** plano de treino gerado pelo perfil, catálogo de exercícios em PT
+  com GIF, registro com timer e progresso.
+- **Planos Free / Pro / Família** com checkout (mock ou Stripe) e gestão da
+  assinatura (upgrade, downgrade e cancelamento).
 
 ---
 
@@ -51,6 +98,10 @@ produtos sob a mesma marca:
 ## Começando
 
 ```bash
+# 0. Clonar
+git clone https://github.com/kaualandi/brl-health-landing.git
+cd brl-health-landing
+
 # 1. Dependências (todas as apps)
 bun install
 
@@ -62,7 +113,10 @@ docker compose up -d db
 cp apps/api/.env.example apps/api/.env  # ajuste JWT_SECRET (32+ caracteres)
 cd apps/api && bun run db:migrate && bun run db:seed && cd -
 
-# 4. Sobe front (:3000) e API (:3333) juntos
+# 4. Catálogo de exercícios do BRL Fit (uma vez; baixa do ExerciseDB, precisa de internet)
+cd apps/api && bun run db:import-exercises && cd -
+
+# 5. Sobe front (:3000) e API (:3333) juntos
 bun run dev
 ```
 
@@ -182,14 +236,6 @@ turbo.json
 > Só faça deploy de código **revisado e mergeado** no `main`.
 
 ---
-
-## Integrantes
-- Lucas Abrahão Anes - 06009881
-- Kauã Landi Fernando - 06009262
-- Natan de Souza Sampaio - 06010668
-- Guilherme da Cunha Sequeira - 06002529
-- Murilo de Melo Mouteira - 06010561
-- Lucas Gomes Coco da Silva - 06011471
 
 ## Créditos
 
